@@ -1,5 +1,5 @@
 // Plays the game with a simple bot and prints the pace.
-// Usage: npm run sim [-- --taps-per-second=4]
+// Usage: npm run sim [-- --taps-per-second=1 --shop=0]
 import { ACTIVITIES } from '../src/content/activities';
 import { NEED_THRESHOLD, REAL_SECONDS_PER_DAY, barSize } from '../src/content/tuning';
 import { UPGRADES } from '../src/content/upgrades';
@@ -15,7 +15,7 @@ const arg = (name: string, fallback: number) => {
 };
 
 /** How fast a human taps, in taps per real second. */
-const TAPS_PER_SECOND = arg('taps-per-second', 4);
+const TAPS_PER_SECOND = arg('taps-per-second', 1);
 const MAX_DAYS = arg('days', 60);
 /** 1 = the bot hires staff and buys upgrades. */
 const SHOP = arg('shop', 1);
@@ -59,7 +59,7 @@ while (s.minute - start < MAX_DAYS * 1440) {
       taps++;
     }
   }
-  tapBudget = Math.min(tapBudget, TAPS_PER_SECOND); // a human does not bank taps
+  tapBudget = Math.min(tapBudget, 1); // a human does not bank taps
 
   const needs = activeNeeds(r);
   if (needs.some((n) => r.needs[n] < NEED_THRESHOLD)) minutesLow++;

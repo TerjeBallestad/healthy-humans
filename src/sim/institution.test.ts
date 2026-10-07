@@ -40,7 +40,7 @@ describe('staff', () => {
     s.staff = ['Kari'];
     s.resident.needs.hygiene = 5;
     const omsorg = s.omsorg;
-    run(s, 4 * 60);
+    run(s, 8 * 60);
     expect(s.resident.bars.shower).toBeGreaterThan(0);
     expect(s.resident.bars.eat).toBe(0);
     expect(s.omsorg).toBeGreaterThan(omsorg);

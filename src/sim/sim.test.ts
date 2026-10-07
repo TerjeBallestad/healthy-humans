@@ -5,6 +5,7 @@ import {
   LEARNING_WINDOW,
   MAX_SKILL,
   OMSORG_CAP,
+  OMSORG_PER_NUDGE,
   barSize,
 } from '../content/tuning';
 import { canNudge, nudge } from './actions';
@@ -54,17 +55,17 @@ describe('omsorg', () => {
 });
 
 describe('nudges', () => {
-  test('a nudge spends one omsorg and fills the bar', () => {
+  test('a nudge spends omsorg and fills the bar', () => {
     const s = newGame();
     const start = s.omsorg;
     expect(nudge(s, 'eat')).toBe(true);
-    expect(s.omsorg).toBe(start - 1);
+    expect(s.omsorg).toBe(start - OMSORG_PER_NUDGE);
     expect(s.resident.bars.eat).toBe(1);
   });
 
   test('no nudge without omsorg', () => {
     const s = newGame();
-    s.omsorg = 0.5;
+    s.omsorg = OMSORG_PER_NUDGE - 0.5;
     expect(canNudge(s, 'eat')).toBe(false);
   });
 

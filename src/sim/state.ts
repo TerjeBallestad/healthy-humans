@@ -8,7 +8,7 @@ import {
 } from '../content/tuning';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface CurrentActivity {
   id: ActivityId;

@@ -34,7 +34,7 @@ One word, one meaning.
 ### Time
 - Game time runs only while the game is open. No offline progress.
 - The calendar shows days and weeks. Speed controls: pause, 1x, 2x, 4x.
-- 1 game day = 12 real seconds at 1x (was 20, felt too slow).
+- 1 game day = 18 real seconds at 1x. Tried 20 (felt slow, but omsorg was too scarce then) and 12 (frantic).
 
 ### Needs
 - Five needs, 0 to 100, each with its own decay rate per archetype.
@@ -65,9 +65,8 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 - Discharge tiers open at: rung 6 (fit to live alone), rung 9 (fit for work), rung 12 (healthy human).
 
 ### Nudges and skill
-- Nudge bar cost by skill level: L0 = 12 clicks, L1 = 6, L2 = 3, L3 = 0 (automatic).
+- One nudge costs 3 omsorg. Bars need L0 = 4 nudges, L1 = 2, L2 = 1, L3 = 0 (automatic). Few, heavy taps: the game is tactical, not a tapping race.
 - Each completed activity gives skill XP for that activity: 5 completions per level. Nudging is allowed when the need is full, so omsorg sets the pace.
-- One click = 1 omsorg.
 
 ### Omsorg
 - Builds up at 1.25 per game hour (2.5 per real second at 1x), up to a cap of 40. Omsorg, not tap speed, must be the limit.
@@ -108,7 +107,7 @@ Relapse, Acts 2 and 3, the clock speed-up, more than one bed, procedural persona
 - **Content as data:** activities, archetypes and events live in typed TS files under `src/content/`.
 - **Save:** JSON in localStorage, with a version field. Wipe on version mismatch while we prototype.
 - **Debug panel:** time speed up to 100x, add omsorg and budget, set skill levels, reset the save. Toggle with a key.
-- **Balance script:** `npm run sim` runs a greedy bot in Node and prints real time to each rung, time with low needs, and taps per second. Target: 6 to 8 minutes per resident ladder.
+- **Balance script:** `npm run sim` runs a greedy bot in Node and prints real time to each rung, time with low needs, and taps per second. Target: 6 to 8 minutes per resident ladder at about one tap every two seconds.
 - **Deploy:** GitHub Actions to GitHub Pages on push to main.
 
 ### Layout

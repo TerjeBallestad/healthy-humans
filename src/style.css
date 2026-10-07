@@ -108,3 +108,5 @@ button:disabled { cursor: default; opacity: 0.5; }
 }
 .buy .effect { display: block; font-size: 0.8rem; color: var(--accent); }
 .buy .price { font-size: 0.85rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.hint { font-size: 0.8rem; }

@@ -7,7 +7,7 @@ import {
   MAX_SKILL,
   NEED_THRESHOLD,
   SPIRAL_PER_EMPTY_NEED,
-  STAFF_TAPS_PER_HOUR,
+  STAFF_NUDGES_PER_HOUR,
   barSize,
 } from '../content/tuning';
 import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
@@ -34,10 +34,10 @@ export function tickMinute(state: GameState) {
   if (!r.current) startNextActivity(r);
 }
 
-/** Staff put free taps into the learning bar whose need is lowest. */
+/** Staff put free nudges into the learning bar whose need is lowest. */
 function staffWork(state: GameState, r: Resident) {
   if (state.staff.length === 0) return;
-  state.staffCarry += (state.staff.length * STAFF_TAPS_PER_HOUR) / 60;
+  state.staffCarry += (state.staff.length * STAFF_NUDGES_PER_HOUR) / 60;
   while (state.staffCarry >= 1) {
     const target = unlockedActivities(r)
       .filter((a) => {
