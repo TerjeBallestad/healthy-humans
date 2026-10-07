@@ -1,4 +1,5 @@
-import { OMSORG_CAP, SPEEDS } from '../content/tuning';
+import { SPEEDS } from '../content/tuning';
+import { netIncomePerDay, omsorgCap } from '../sim/institution';
 import { formatClock, formatDate } from '../sim/time';
 import { act, useGame } from '../store';
 
@@ -6,6 +7,7 @@ const SPEED_LABEL: Record<number, string> = { 0: '❚❚', 1: '▶', 2: '▶▶'
 
 export function TopBar() {
   const s = useGame();
+  const cap = omsorgCap(s);
   return (
     <header class="topbar">
       <div class="clock">
@@ -25,11 +27,17 @@ export function TopBar() {
       <div class="omsorg">
         <span class="muted">Omsorg</span>
         <strong>
-          {Math.floor(s.omsorg)} <span class="muted">/ {OMSORG_CAP}</span>
+          {Math.floor(s.omsorg)} <span class="muted">/ {cap}</span>
         </strong>
         <div class="meter">
-          <div class="fill" style={{ width: `${(s.omsorg / OMSORG_CAP) * 100}%` }} />
+          <div class="fill" style={{ width: `${(s.omsorg / cap) * 100}%` }} />
         </div>
+      </div>
+      <div class="budget">
+        <span class="muted">Budget</span>
+        <strong>
+          {Math.floor(s.budget)} kr <span class="muted">+{netIncomePerDay(s)}/day</span>
+        </strong>
       </div>
     </header>
   );

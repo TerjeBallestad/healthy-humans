@@ -6,11 +6,11 @@ import {
   LEARNING_WINDOW,
   MAX_SKILL,
   NEED_THRESHOLD,
-  OMSORG_CAP,
-  OMSORG_PER_HOUR,
   SPIRAL_PER_EMPTY_NEED,
+  STAFF_TAPS_PER_HOUR,
   barSize,
 } from '../content/tuning';
+import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
 import { activeNeeds, unlockedActivities } from './selectors';
 import type { GameState, Resident } from './state';
 
@@ -24,12 +24,35 @@ export function log(state: GameState, text: string) {
 /** Advance the sim by one game minute. */
 export function tickMinute(state: GameState) {
   state.minute += 1;
-  state.omsorg = Math.min(OMSORG_CAP, state.omsorg + OMSORG_PER_HOUR / 60);
+  state.omsorg = Math.min(omsorgCap(state), state.omsorg + omsorgPerHour(state) / 60);
+  state.budget += netIncomePerDay(state) / 1440;
 
   const r = state.resident;
+  staffWork(state, r);
   decayNeeds(state, r);
   progressActivity(state, r);
   if (!r.current) startNextActivity(r);
+}
+
+/** Staff put free taps into the learning bar whose need is lowest. */
+function staffWork(state: GameState, r: Resident) {
+  if (state.staff.length === 0) return;
+  state.staffCarry += (state.staff.length * STAFF_TAPS_PER_HOUR) / 60;
+  while (state.staffCarry >= 1) {
+    const target = unlockedActivities(r)
+      .filter((a) => {
+        const size = barSize(r.skill[a.id]);
+        return size > 0 && r.bars[a.id] < size;
+      })
+      .sort((x, y) => r.needs[x.trigger] - r.needs[y.trigger])[0];
+    if (!target) {
+      // Nothing to help with. Staff do not bank work.
+      state.staffCarry = Math.min(state.staffCarry, 1);
+      return;
+    }
+    r.bars[target.id] += 1;
+    state.staffCarry -= 1;
+  }
 }
 
 function decayNeeds(state: GameState, r: Resident) {

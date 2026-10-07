@@ -129,17 +129,16 @@ scripts/
 
 Each step ends with something playable and one question to answer by playing.
 
-1. **Scaffold.** Vite + Preact + TS, git repo, GitHub Pages deploy, empty debug panel.
-   *Question: does the link work on your phone?*
-2. **Clock, needs, nudges.** Calendar, speed controls, five needs decaying, omsorg pool, nudge bars for rungs 1 to 3.
-   *Question: is nudging a bar and seeing the resident act satisfying by itself?*
-3. **Skill and the ladder.** Skill levels shrink the bars, rungs go automatic and fade, new rungs appear.
-   *Question: does a rung going automatic feel good?*
-4. **Overskudd and proposals.** Overskudd builds while needs are met, proposal dialog, odds words, milestone rungs.
+1. **Scaffold.** Done.
+2. **Clock, needs, nudges.** Done.
+3. **Skill and the ladder.** Done. Retuned after play: 12 s days, three rungs at once, omsorg as the limit.
+4. **Budget, staff and the shop.** Kommune grant, staff that autoclick the lowest need, one-off omsorg upgrades. Moved before proposals after play: the early struggle makes help feel good now, and overskudd needs green needs.
+   *Question: does hiring the first staff member feel like relief?*
+5. **Overskudd and proposals.** Overskudd builds while needs are met, proposal dialog, odds words, milestone rungs.
    *Question: are proposals interesting choices or noise?*
-5. **Discharge and the next resident.** Tiers, vedtak, tax, budget, waiting list number, three archetypes.
+6. **Discharge and the next resident.** Tiers, vedtak, tax, waiting list number, three archetypes.
    *Question: is "discharge now or wait" a real decision?*
-6. **Staff and balance.** One staff hire, the balance script, a first tuning pass.
+7. **Balance pass.** Tune with `npm run sim`.
    *Question: the 30-minute test.*
 
 ## Open questions to answer in play

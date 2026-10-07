@@ -1,7 +1,8 @@
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { NEED_ORDER } from '../content/needs';
-import { DEBUG_SPEEDS, OMSORG_CAP } from '../content/tuning';
+import { DEBUG_SPEEDS } from '../content/tuning';
+import { omsorgCap } from '../sim/institution';
 import { act, resetGame } from '../store';
 
 const open = signal(false);
@@ -30,7 +31,8 @@ export function DebugPanel() {
             ))}
           </div>
           <div class="row">
-            <button onClick={() => act((g) => (g.omsorg = OMSORG_CAP))}>Fill omsorg</button>
+            <button onClick={() => act((g) => (g.omsorg = omsorgCap(g)))}>Fill omsorg</button>
+            <button onClick={() => act((g) => (g.budget += 1000))}>+1000 kr</button>
             <button
               onClick={() =>
                 act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))

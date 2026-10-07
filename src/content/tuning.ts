@@ -32,3 +32,13 @@ export const AUTO_BELOW = 50;
 
 /** How many rungs the resident is learning at the same time. */
 export const LEARNING_WINDOW = 3;
+
+/** Kommune grant in kr per game day. */
+export const GRANT_PER_DAY = 120;
+export const BUDGET_START = 0;
+/** First recruitment fee. Each hire multiplies it. */
+export const HIRE_COST_BASE = 400;
+export const HIRE_COST_GROWTH = 1.5;
+export const STAFF_WAGE_PER_DAY = 40;
+/** Free taps each staff member puts into nudge bars per game hour. */
+export const STAFF_TAPS_PER_HOUR = 0.75;

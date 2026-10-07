@@ -80,7 +80,7 @@ button:disabled { cursor: default; opacity: 0.5; }
 .nudge.doing .fill { opacity: 0.1; }
 .nudge.waiting { border-style: dashed; }
 
-.log { list-style: none; padding: 0; margin: 24px 0 64px; font-size: 0.9rem; display: grid; gap: 4px; }
+.log { list-style: none; padding: 0; margin: 24px 0 0; font-size: 0.9rem; display: grid; gap: 4px; }
 .log li:first-child { color: var(--fg); }
 .log li { color: var(--muted); }
 
@@ -89,3 +89,19 @@ button:disabled { cursor: default; opacity: 0.5; }
 .pips { margin-left: 8px; font-size: 0.7rem; letter-spacing: 2px; color: var(--accent); }
 .alone { margin-top: 16px; font-size: 0.9rem; line-height: 1.5; }
 .alone .doing { color: var(--accent); }
+
+.budget { grid-column: 1 / -1; display: flex; justify-content: space-between; }
+.budget strong { font-variant-numeric: tabular-nums; }
+.budget strong .muted { font-weight: 400; font-size: 0.85rem; }
+
+.institution { margin: 32px 0 64px; padding-top: 16px; border-top: 1px solid var(--line); }
+.institution h3 {
+  margin: 16px 0 8px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted);
+}
+.buy {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-bottom: 8px; padding: 10px 14px; text-align: left;
+}
+.buy .effect { display: block; font-size: 0.8rem; color: var(--accent); }
+.buy .price { font-size: 0.85rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }

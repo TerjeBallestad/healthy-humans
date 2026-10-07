@@ -1,8 +1,14 @@
 import { ACTIVITIES, type ActivityId } from '../content/activities';
 import type { NeedId } from '../content/needs';
-import { LEARNING_WINDOW, OMSORG_START, START_MINUTE_OF_DAY } from '../content/tuning';
+import {
+  BUDGET_START,
+  LEARNING_WINDOW,
+  OMSORG_START,
+  START_MINUTE_OF_DAY,
+} from '../content/tuning';
+import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -35,6 +41,13 @@ export interface GameState {
   minute: number;
   speed: number;
   omsorg: number;
+  /** Kroner. */
+  budget: number;
+  /** Names of hired staff. */
+  staff: string[];
+  /** Staff taps not yet spent, carried between minutes. */
+  staffCarry: number;
+  upgrades: UpgradeId[];
   resident: Resident;
   log: LogEntry[];
 }
@@ -61,6 +74,10 @@ export function newGame(): GameState {
     minute: START_MINUTE_OF_DAY,
     speed: 1,
     omsorg: OMSORG_START,
+    budget: BUDGET_START,
+    staff: [],
+    staffCarry: 0,
+    upgrades: [],
     resident: newResident(),
     log: [{ minute: START_MINUTE_OF_DAY, text: 'Arvid moves in. He brought one bag.' }],
   };

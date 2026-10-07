@@ -2,7 +2,9 @@
 // Usage: npm run sim [-- --taps-per-second=4]
 import { ACTIVITIES } from '../src/content/activities';
 import { NEED_THRESHOLD, REAL_SECONDS_PER_DAY, barSize } from '../src/content/tuning';
-import { nudge } from '../src/sim/actions';
+import { UPGRADES } from '../src/content/upgrades';
+import { buyUpgrade, hire, nudge } from '../src/sim/actions';
+import { canBuy, canHire } from '../src/sim/institution';
 import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
 import { newGame } from '../src/sim/state';
 import { tickMinute } from '../src/sim/tick';
@@ -15,6 +17,9 @@ const arg = (name: string, fallback: number) => {
 /** How fast a human taps, in taps per real second. */
 const TAPS_PER_SECOND = arg('taps-per-second', 4);
 const MAX_DAYS = arg('days', 60);
+/** 1 = the bot hires staff and buys upgrades. */
+const SHOP = arg('shop', 1);
+const purchases: { what: string; minute: number }[] = [];
 const REAL_SEC_PER_MINUTE = REAL_SECONDS_PER_DAY / 1440;
 
 const s = newGame();
@@ -29,6 +34,19 @@ const start = s.minute;
 
 while (s.minute - start < MAX_DAYS * 1440) {
   tickMinute(s);
+
+  // Spend budget: staff first, then the cheapest upgrade.
+  if (SHOP) {
+    if (canHire(s)) {
+      hire(s);
+      purchases.push({ what: `hire ${s.staff.at(-1)}`, minute: s.minute - start });
+    }
+    const u = UPGRADES.find((x) => canBuy(s, x.id));
+    if (u && !canHire(s)) {
+      buyUpgrade(s, u.id);
+      purchases.push({ what: u.label, minute: s.minute - start });
+    }
+  }
   tapBudget += TAPS_PER_SECOND * REAL_SEC_PER_MINUTE;
 
   // Greedy bot: tap the learning activity whose need is lowest.
@@ -64,10 +82,12 @@ const real = (minutes: number) => {
 };
 const day = (minutes: number) => `day ${(minutes / 1440 + 1).toFixed(1)}`;
 
-console.log(`Bot taps up to ${TAPS_PER_SECOND}/s. Real time at 1x.\n`);
+console.log(`Bot taps up to ${TAPS_PER_SECOND}/s, shop ${SHOP ? 'on' : 'off'}. Real time at 1x.\n`);
 for (const u of unlockedAt) {
   console.log(`  rung ${String(u.rung).padStart(2)} ${u.label.padEnd(16)} ${real(u.minute).padStart(8)}  (${day(u.minute)})`);
 }
+if (purchases.length) console.log('');
+for (const p of purchases) console.log(`  buy  ${p.what.padEnd(36)} ${real(p.minute).padStart(8)}`);
 const done = ACTIVITIES.every((a) => barSize(r.skill[a.id]) === 0);
 console.log(`\n  ${done ? 'All automatic' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`);
 console.log(`  Any need below ${NEED_THRESHOLD}: ${((minutesLow / elapsed) * 100).toFixed(0)}% of the time`);
