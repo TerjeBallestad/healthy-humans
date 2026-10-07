@@ -45,7 +45,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
     label: 'Social',
     decayPerHour: 1,
     lowState: 'phone off',
-    idleLine: 'The phone lights up. He turns it face down.',
+    idleLine: 'The phone lights up. Face down it goes.',
   },
 };
 

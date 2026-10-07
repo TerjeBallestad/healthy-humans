@@ -1,5 +1,5 @@
 import type { ActivityDef } from '../content/activities';
-import { barSize } from '../content/tuning';
+import { MAX_SKILL, barSize } from '../content/tuning';
 import { canNudge, nudge } from '../sim/actions';
 import { act, useGame } from '../store';
 
@@ -14,7 +14,7 @@ export function NudgeBar({ activity }: { activity: ActivityDef }) {
   let note = `${filled} / ${size}`;
   if (doing) note = 'doing it';
   else if (waiting) note = 'ready';
-  else if (size === 0) note = 'handles this themselves';
+  const skill = r.skill[activity.id];
 
   return (
     <button
@@ -23,7 +23,12 @@ export function NudgeBar({ activity }: { activity: ActivityDef }) {
       onClick={() => act((g) => nudge(g, activity.id))}
     >
       <div class="fill" style={{ width: `${doing ? 100 : (filled / size) * 100}%` }} />
-      <span class="label">{activity.label}</span>
+      <span class="label">
+        {activity.label}
+        <span class="pips" aria-label={`Skill ${skill} of ${MAX_SKILL}`}>
+          {Array.from({ length: MAX_SKILL }, (_, i) => (i < skill ? '●' : '○')).join('')}
+        </span>
+      </span>
       <span class="note">{note}</span>
     </button>
   );

@@ -2,7 +2,7 @@ import { ACTIVITIES, type ActivityId } from '../content/activities';
 import type { NeedId } from '../content/needs';
 import { OMSORG_START, START_MINUTE_OF_DAY } from '../content/tuning';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -17,6 +17,8 @@ export interface Resident {
   /** Clicks put into each nudge bar. */
   bars: Record<ActivityId, number>;
   skill: Record<ActivityId, number>;
+  /** Completions toward the next skill level. */
+  xp: Record<ActivityId, number>;
   /** Highest rung that is visible. */
   unlockedRung: number;
   current: CurrentActivity | null;
@@ -44,10 +46,11 @@ export function newResident(): Resident {
   return {
     name: 'Arvid',
     intro: "41. Has not left his flat in a year. The curtains stay closed.",
-    needs: { food: 35, hygiene: 25, energy: 50, home: 15, social: 10 },
+    needs: { food: 35, hygiene: 35, energy: 50, home: 40, social: 35 },
     bars: perActivity(0),
     skill: perActivity(0),
-    unlockedRung: 3,
+    xp: perActivity(0),
+    unlockedRung: 1,
     current: null,
   };
 }

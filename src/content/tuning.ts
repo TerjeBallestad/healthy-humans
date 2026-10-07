@@ -23,3 +23,9 @@ export const BAR_SIZE_BY_SKILL = [10, 5, 2, 0] as const;
 export function barSize(skill: number): number {
   return BAR_SIZE_BY_SKILL[Math.min(skill, BAR_SIZE_BY_SKILL.length - 1)] ?? 0;
 }
+
+/** Completions needed to gain one skill level. */
+export const COMPLETIONS_PER_LEVEL = 3;
+export const MAX_SKILL = BAR_SIZE_BY_SKILL.length - 1;
+/** An automatic activity starts when its trigger need drops below this. */
+export const AUTO_BELOW = 50;

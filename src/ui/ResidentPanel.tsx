@@ -1,5 +1,5 @@
 import { NEEDS } from '../content/needs';
-import { NEED_THRESHOLD } from '../content/tuning';
+import { MAX_SKILL, NEED_THRESHOLD } from '../content/tuning';
 import { activeNeeds, statusLine, unlockedActivities } from '../sim/selectors';
 import { useGame } from '../store';
 import { NudgeBar } from './NudgeBar';
@@ -7,6 +7,9 @@ import { NudgeBar } from './NudgeBar';
 export function ResidentPanel() {
   const s = useGame();
   const r = s.resident;
+  const open = unlockedActivities(r);
+  const alone = open.filter((a) => r.skill[a.id] >= MAX_SKILL);
+  const learning = open.filter((a) => r.skill[a.id] < MAX_SKILL).reverse();
   return (
     <section class="resident">
       <h2>{r.name}</h2>
@@ -30,10 +33,22 @@ export function ResidentPanel() {
       </ul>
 
       <div class="nudges">
-        {unlockedActivities(r).map((a) => (
+        {learning.map((a) => (
           <NudgeBar activity={a} />
         ))}
       </div>
+
+      {alone.length > 0 && (
+        <p class="alone">
+          <span class="muted">Handles alone: </span>
+          {alone.map((a, i) => (
+            <span class={r.current?.id === a.id ? 'doing' : ''}>
+              {i > 0 ? ', ' : ''}
+              {a.noun}
+            </span>
+          ))}
+        </p>
+      )}
     </section>
   );
 }

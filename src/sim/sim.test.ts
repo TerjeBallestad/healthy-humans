@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { OMSORG_CAP, barSize } from '../content/tuning';
+import { AUTO_BELOW, COMPLETIONS_PER_LEVEL, MAX_SKILL, OMSORG_CAP, barSize } from '../content/tuning';
 import { canNudge, nudge } from './actions';
 import { activeNeeds } from './selectors';
 import { newGame } from './state';
@@ -11,7 +11,10 @@ const run = (s: ReturnType<typeof newGame>, minutes: number) => {
 
 describe('needs', () => {
   test('only needs with an unlocked activity are active', () => {
-    expect(activeNeeds(newGame().resident)).toEqual(['food', 'hygiene', 'energy']);
+    const s = newGame();
+    expect(activeNeeds(s.resident)).toEqual(['food']);
+    s.resident.unlockedRung = 3;
+    expect(activeNeeds(s.resident)).toEqual(['food', 'hygiene', 'energy']);
   });
 
   test('active needs decay, inactive needs stay', () => {
@@ -25,6 +28,8 @@ describe('needs', () => {
   test('an empty need makes the others decay faster', () => {
     const calm = newGame();
     const spiral = newGame();
+    calm.resident.unlockedRung = 3;
+    spiral.resident.unlockedRung = 3;
     spiral.resident.needs.energy = 0;
     run(calm, 60);
     run(spiral, 60);
@@ -72,6 +77,7 @@ describe('nudges', () => {
 
   test('a full bar waits while the resident is busy', () => {
     const s = newGame();
+    s.resident.unlockedRung = 2;
     s.omsorg = OMSORG_CAP;
     for (let i = 0; i < 10; i++) nudge(s, 'eat');
     tickMinute(s);
@@ -81,5 +87,47 @@ describe('nudges', () => {
     expect(s.resident.bars.shower).toBe(10);
     run(s, 25);
     expect(s.resident.current?.id).toBe('shower');
+  });
+});
+
+/** Nudge an activity until it starts, then run until it is done. */
+const complete = (s: ReturnType<typeof newGame>, id: 'eat' | 'shower') => {
+  s.omsorg = OMSORG_CAP;
+  while (nudge(s, id));
+  tickMinute(s);
+  while (s.resident.current) tickMinute(s);
+};
+
+describe('skill and the ladder', () => {
+  test('three completions raise the skill and shrink the bar', () => {
+    const s = newGame();
+    for (let i = 0; i < COMPLETIONS_PER_LEVEL; i++) complete(s, 'eat');
+    expect(s.resident.skill.eat).toBe(1);
+    expect(barSize(s.resident.skill.eat)).toBe(5);
+  });
+
+  test('max skill makes the activity automatic and opens the next rung', () => {
+    const s = newGame();
+    for (let i = 0; i < COMPLETIONS_PER_LEVEL * MAX_SKILL; i++) complete(s, 'eat');
+    expect(s.resident.skill.eat).toBe(MAX_SKILL);
+    expect(canNudge(s, 'eat')).toBe(false);
+    expect(s.resident.unlockedRung).toBe(2);
+    expect(activeNeeds(s.resident)).toContain('hygiene');
+  });
+
+  test('an automatic activity starts when its need drops low', () => {
+    const s = newGame();
+    s.resident.skill.eat = MAX_SKILL;
+    s.resident.needs.food = AUTO_BELOW - 1;
+    tickMinute(s);
+    expect(s.resident.current?.id).toBe('eat');
+  });
+
+  test('an automatic activity waits while the need is fine', () => {
+    const s = newGame();
+    s.resident.skill.eat = MAX_SKILL;
+    s.resident.needs.food = 90;
+    tickMinute(s);
+    expect(s.resident.current).toBeNull();
   });
 });
