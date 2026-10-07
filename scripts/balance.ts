@@ -5,6 +5,8 @@ import { NEED_THRESHOLD, REAL_SECONDS_PER_DAY, barSize } from '../src/content/tu
 import { UPGRADES } from '../src/content/upgrades';
 import { buyUpgrade, hire, nudge } from '../src/sim/actions';
 import { canBuy, canHire } from '../src/sim/institution';
+import { accept, canSupport, closeProposal } from '../src/sim/proposals';
+import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
 import { newGame } from '../src/sim/state';
 import { tickMinute } from '../src/sim/tick';
@@ -16,7 +18,7 @@ const arg = (name: string, fallback: number) => {
 
 /** How fast a human taps, in taps per real second. */
 const TAPS_PER_SECOND = arg('taps-per-second', 1);
-const MAX_DAYS = arg('days', 60);
+const MAX_DAYS = arg('days', 120);
 /** 1 = the bot hires staff and buys upgrades. */
 const SHOP = arg('shop', 1);
 const purchases: { what: string; minute: number }[] = [];
@@ -28,12 +30,29 @@ let tapBudget = 0;
 let minutesLow = 0;
 let minutesEmpty = 0;
 let taps = 0;
+let trySuccess = 0;
+let tryFail = 0;
+let milestoneSuccess = 0;
+let milestoneFail = 0;
 const unlockedAt: { rung: number; label: string; minute: number }[] = [];
 let lastRung = r.unlockedRung;
 const start = s.minute;
 
 while (s.minute - start < MAX_DAYS * 1440) {
   tickMinute(s);
+
+  // Proposals: accept with the most support the bot can afford.
+  if (s.proposal) {
+    const step = [2, 1, 0].find((i) => canSupport(s, i))!;
+    const kind = s.proposal.subject.kind;
+    accept(s, step);
+    if (s.proposal.outcome === 'success') kind === 'try' ? trySuccess++ : milestoneSuccess++;
+    else kind === 'try' ? tryFail++ : milestoneFail++;
+    if (kind === 'milestone' && s.proposal.outcome === 'success') {
+      purchases.push({ what: `milestone ${s.resident.milestones.at(-1)}`, minute: s.minute - start });
+    }
+    closeProposal(s);
+  }
 
   // Spend budget: staff first, then the cheapest upgrade.
   if (SHOP) {
@@ -72,7 +91,7 @@ while (s.minute - start < MAX_DAYS * 1440) {
     }
     lastRung = r.unlockedRung;
   }
-  if (ACTIVITIES.every((a) => barSize(r.skill[a.id]) === 0)) break;
+  if (r.milestones.length === MILESTONES.length) break;
 }
 
 const elapsed = s.minute - start;
@@ -88,8 +107,9 @@ for (const u of unlockedAt) {
 }
 if (purchases.length) console.log('');
 for (const p of purchases) console.log(`  buy  ${p.what.padEnd(36)} ${real(p.minute).padStart(8)}`);
-const done = ACTIVITIES.every((a) => barSize(r.skill[a.id]) === 0);
-console.log(`\n  ${done ? 'All automatic' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`);
+const done = r.milestones.length === MILESTONES.length;
+console.log(`\n  ${done ? 'Work trial done' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`);
+console.log(`  Proposals: try ${trySuccess} ok / ${tryFail} failed, milestones ${milestoneSuccess} ok / ${milestoneFail} failed`);
 console.log(`  Any need below ${NEED_THRESHOLD}: ${((minutesLow / elapsed) * 100).toFixed(0)}% of the time`);
 console.log(`  Any need at 0:     ${((minutesEmpty / elapsed) * 100).toFixed(0)}% of the time`);
 console.log(`  Taps: ${taps} (${(taps / (elapsed * REAL_SEC_PER_MINUTE)).toFixed(2)} per real second)`);

@@ -1,5 +1,6 @@
 import { NEEDS } from '../content/needs';
-import { MAX_SKILL, NEED_THRESHOLD } from '../content/tuning';
+import { MILESTONE_BY_ID } from '../content/milestones';
+import { MAX_SKILL, NEED_THRESHOLD, OVERSKUDD_CAP } from '../content/tuning';
 import { activeNeeds, statusLine, unlockedActivities } from '../sim/selectors';
 import { useGame } from '../store';
 import { NudgeBar } from './NudgeBar';
@@ -10,6 +11,7 @@ export function ResidentPanel() {
   const open = unlockedActivities(r);
   const alone = open.filter((a) => r.skill[a.id] >= MAX_SKILL);
   const learning = open.filter((a) => r.skill[a.id] < MAX_SKILL);
+  const growing = activeNeeds(r).every((n) => r.needs[n] >= NEED_THRESHOLD);
   return (
     <section class="resident">
       <h2>{r.name}</h2>
@@ -32,6 +34,14 @@ export function ResidentPanel() {
         })}
       </ul>
 
+      <div class="overskudd">
+        <span class="label">Overskudd</span>
+        <div class="meter">
+          <div class="fill" style={{ width: `${(r.overskudd / OVERSKUDD_CAP) * 100}%` }} />
+        </div>
+        <span class="state">{growing ? '' : 'not growing while a need is low'}</span>
+      </div>
+
       <div class="nudges">
         {learning.map((a) => (
           <NudgeBar activity={a} />
@@ -47,6 +57,13 @@ export function ResidentPanel() {
               {a.noun}
             </span>
           ))}
+        </p>
+      )}
+
+      {r.milestones.length > 0 && (
+        <p class="alone">
+          <span class="muted">Milestones: </span>
+          {r.milestones.map((id) => MILESTONE_BY_ID[id].label).join(', ')}
         </p>
       )}
     </section>

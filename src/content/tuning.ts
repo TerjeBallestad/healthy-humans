@@ -44,3 +44,22 @@ export const HIRE_COST_GROWTH = 1.5;
 export const STAFF_WAGE_PER_DAY = 40;
 /** Free nudges each staff member gives per game hour. */
 export const STAFF_NUDGES_PER_HOUR = 0.25;
+
+/** Overskudd gained per game hour while every active need is at or above the threshold. */
+export const OVERSKUDD_PER_HOUR = 1;
+export const OVERSKUDD_CAP = 60;
+/** Overskudd a proposal needs and uses up. */
+export const PROPOSAL_COST_SKILL = 12;
+export const PROPOSAL_COST_MILESTONE = 20;
+/** Shortest gap between two proposals. */
+export const PROPOSAL_COOLDOWN_DAYS = 3;
+/** Try-alone odds: base plus a bonus per skill level the resident has. */
+export const TRY_ALONE_BASE = 0.35;
+export const TRY_ALONE_PER_SKILL = 0.15;
+/** Omsorg the player can add to a proposal, and the odds each step adds. */
+export const SUPPORT_STEPS = [
+  { omsorg: 0, bonus: 0 },
+  { omsorg: 6, bonus: 0.2 },
+  { omsorg: 12, bonus: 0.35 },
+] as const;
+export const MAX_CHANCE = 0.95;

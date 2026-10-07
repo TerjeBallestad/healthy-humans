@@ -6,11 +6,14 @@ import {
   LEARNING_WINDOW,
   MAX_SKILL,
   NEED_THRESHOLD,
+  OVERSKUDD_CAP,
+  OVERSKUDD_PER_HOUR,
   SPIRAL_PER_EMPTY_NEED,
   STAFF_NUDGES_PER_HOUR,
   barSize,
 } from '../content/tuning';
 import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
+import { maybePropose } from './proposals';
 import { activeNeeds, unlockedActivities } from './selectors';
 import type { GameState, Resident } from './state';
 
@@ -32,6 +35,14 @@ export function tickMinute(state: GameState) {
   decayNeeds(state, r);
   progressActivity(state, r);
   if (!r.current) startNextActivity(r);
+  gainOverskudd(r);
+  maybePropose(state);
+}
+
+/** Overskudd builds only while every active need is above the threshold. */
+function gainOverskudd(r: Resident) {
+  if (activeNeeds(r).some((n) => r.needs[n] < NEED_THRESHOLD)) return;
+  r.overskudd = Math.min(OVERSKUDD_CAP, r.overskudd + OVERSKUDD_PER_HOUR / 60);
 }
 
 /** Staff put free nudges into the learning bar whose need is lowest. */
@@ -90,6 +101,12 @@ function gainSkill(state: GameState, r: Resident, a: ActivityDef) {
   if (r.skill[a.id] >= MAX_SKILL) return;
   r.xp[a.id] += 1;
   if (r.xp[a.id] < COMPLETIONS_PER_LEVEL) return;
+  levelUp(state, r, a);
+}
+
+/** Raise one skill level. Opens new rungs when the activity becomes automatic. */
+export function levelUp(state: GameState, r: Resident, a: ActivityDef) {
+  if (r.skill[a.id] >= MAX_SKILL) return;
   r.xp[a.id] = 0;
   r.skill[a.id] += 1;
   // Clicks already in the bar carry over, capped at the new size.

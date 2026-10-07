@@ -6,9 +6,10 @@ import {
   OMSORG_START,
   START_MINUTE_OF_DAY,
 } from '../content/tuning';
+import type { MilestoneId } from '../content/milestones';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -28,6 +29,20 @@ export interface Resident {
   /** Highest rung that is visible. */
   unlockedRung: number;
   current: CurrentActivity | null;
+  overskudd: number;
+  milestones: MilestoneId[];
+}
+
+export type ProposalSubject =
+  | { kind: 'try'; activity: ActivityId }
+  | { kind: 'milestone'; milestone: MilestoneId };
+
+export interface Proposal {
+  subject: ProposalSubject;
+  /** Set once the player has chosen. */
+  outcome?: 'success' | 'failure' | 'declined';
+  /** What happened, in one line. */
+  result?: string;
 }
 
 export interface LogEntry {
@@ -50,6 +65,12 @@ export interface GameState {
   upgrades: UpgradeId[];
   resident: Resident;
   log: LogEntry[];
+  /** Open proposal. The game is paused while it is set. */
+  proposal: Proposal | null;
+  /** Speed to return to when the proposal closes. */
+  resumeSpeed: number;
+  lastProposalMinute: number;
+  seed: number;
 }
 
 const perActivity = (value: number) =>
@@ -65,6 +86,8 @@ export function newResident(): Resident {
     xp: perActivity(0),
     unlockedRung: LEARNING_WINDOW,
     current: null,
+    overskudd: 0,
+    milestones: [],
   };
 }
 
@@ -80,5 +103,9 @@ export function newGame(): GameState {
     upgrades: [],
     resident: newResident(),
     log: [{ minute: START_MINUTE_OF_DAY, text: 'Arvid moves in. He brought one bag.' }],
+    proposal: null,
+    resumeSpeed: 1,
+    lastProposalMinute: START_MINUTE_OF_DAY,
+    seed: (Math.random() * 2 ** 32) | 0,
   };
 }

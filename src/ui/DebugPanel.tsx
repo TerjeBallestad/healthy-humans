@@ -35,6 +35,16 @@ export function DebugPanel() {
             <button onClick={() => act((g) => (g.budget += 1000))}>+1000 kr</button>
             <button
               onClick={() =>
+                act((g) => {
+                  g.resident.overskudd = 60;
+                  g.lastProposalMinute = -1e9;
+                })
+              }
+            >
+              Proposal now
+            </button>
+            <button
+              onClick={() =>
                 act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))
               }
             >

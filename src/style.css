@@ -5,6 +5,7 @@
   --line: #d8d2c4;
   --accent: #3d6b5a;
   --warn: #a5573b;
+  --gold: #b48a2c;
   color-scheme: light dark;
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
@@ -16,6 +17,7 @@
     --line: #34312c;
     --accent: #7fb39f;
     --warn: #d98a6a;
+    --gold: #d8b25a;
   }
 }
 * { box-sizing: border-box; }
@@ -110,3 +112,25 @@ button:disabled { cursor: default; opacity: 0.5; }
 .buy .price { font-size: 0.85rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .hint { font-size: 0.8rem; }
+
+.overskudd { display: grid; grid-template-columns: 90px 1fr; gap: 2px 12px; align-items: center; margin: 0 0 16px; }
+.overskudd .fill { background: var(--gold); }
+.overskudd .state { grid-column: 2; font-size: 0.8rem; color: var(--muted); min-height: 1em; }
+.need { grid-template-columns: 90px 1fr; }
+
+.overlay {
+  position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); display: flex;
+  align-items: flex-end; justify-content: center; padding: 16px; z-index: 10;
+}
+.dialog {
+  width: min(560px, 100%); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px; margin-bottom: env(safe-area-inset-bottom);
+}
+.dialog blockquote { margin: 8px 0 20px; font-size: 1.2rem; line-height: 1.4; }
+.choices { display: grid; gap: 8px; }
+.choice { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; text-align: left; width: 100%; }
+.choice.quiet { color: var(--muted); }
+.odds { white-space: nowrap; }
+.outcome { font-size: 1.05rem; line-height: 1.4; margin: 0 0 16px; }
+.outcome.success { color: var(--accent); }
+.outcome.failure { color: var(--warn); }

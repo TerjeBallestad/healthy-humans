@@ -133,7 +133,7 @@ Each step ends with something playable and one question to answer by playing.
 3. **Skill and the ladder.** Done. Retuned after play: 12 s days, three rungs at once, omsorg as the limit.
 4. **Budget, staff and the shop.** Kommune grant, staff that autoclick the lowest need, one-off omsorg upgrades. Moved before proposals after play: the early struggle makes help feel good now, and overskudd needs green needs.
    *Question: does hiring the first staff member feel like relief?*
-5. **Overskudd and proposals.** Overskudd builds while needs are met, proposal dialog, odds words, milestone rungs.
+5. **Overskudd and proposals.** Done. Overskudd builds while all needs are green. Proposals pause the game: try-alone (success = one skill level) or a milestone (NAV, job application, work trial). Support with 0, 6 or 12 omsorg. Odds as words.
    *Question: are proposals interesting choices or noise?*
 6. **Discharge and the next resident.** Tiers, vedtak, tax, waiting list number, three archetypes.
    *Question: is "discharge now or wait" a real decision?*
