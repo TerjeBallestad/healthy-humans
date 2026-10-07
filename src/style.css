@@ -19,6 +19,9 @@
   }
 }
 * { box-sizing: border-box; }
+/* Fast tapping must never zoom or select text on iOS. Pinch zoom still works. */
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+body { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 body { margin: 0; background: var(--bg); color: var(--fg); }
 .app { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
 h1 { font-weight: 600; letter-spacing: -0.01em; }
@@ -35,7 +38,7 @@ h1 { font-weight: 600; letter-spacing: -0.01em; }
 button {
   font: inherit; color: inherit; background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
-  touch-action: manipulation; cursor: pointer;
+  cursor: pointer;
 }
 button:disabled { cursor: default; opacity: 0.5; }
 
