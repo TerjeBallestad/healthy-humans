@@ -1,9 +1,12 @@
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
+import { NEED_ORDER } from '../content/needs';
+import { DEBUG_SPEEDS, OMSORG_CAP } from '../content/tuning';
+import { act, resetGame } from '../store';
 
 const open = signal(false);
 
-// Toggle with the backtick key. Tools are added as the sim grows.
+// Toggle with the backtick key.
 export function DebugPanel() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -21,6 +24,24 @@ export function DebugPanel() {
       {open.value && (
         <aside class="debug">
           <strong>Debug</strong>
+          <div class="row">
+            {DEBUG_SPEEDS.map((sp) => (
+              <button onClick={() => act((g) => (g.speed = sp))}>{sp}x</button>
+            ))}
+          </div>
+          <div class="row">
+            <button onClick={() => act((g) => (g.omsorg = OMSORG_CAP))}>Fill omsorg</button>
+            <button
+              onClick={() =>
+                act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))
+              }
+            >
+              Fill needs
+            </button>
+          </div>
+          <div class="row">
+            <button onClick={resetGame}>Reset save</button>
+          </div>
           <p class="muted">Build {__BUILD_TIME__}</p>
         </aside>
       )}

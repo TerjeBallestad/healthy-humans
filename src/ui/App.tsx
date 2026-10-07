@@ -1,10 +1,14 @@
 import { DebugPanel } from './DebugPanel';
+import { Log } from './Log';
+import { ResidentPanel } from './ResidentPanel';
+import { TopBar } from './TopBar';
 
 export function App() {
   return (
     <main class="app">
-      <h1>Healthy Humans</h1>
-      <p class="muted">A bed is free. Nobody has arrived yet.</p>
+      <TopBar />
+      <ResidentPanel />
+      <Log />
       <DebugPanel />
     </main>
   );
