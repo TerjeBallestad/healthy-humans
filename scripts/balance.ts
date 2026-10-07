@@ -41,9 +41,9 @@ const start = s.minute;
 while (s.minute - start < MAX_DAYS * 1440) {
   tickMinute(s);
 
-  // Proposals: accept with the most support the bot can afford.
+  // Proposals: accept with some help when it can afford it.
   if (s.proposal) {
-    const step = [2, 1, 0].find((i) => canSupport(s, i))!;
+    const step = [1, 0].find((i) => canSupport(s, i))!;
     const kind = s.proposal.subject.kind;
     accept(s, step);
     if (s.proposal.outcome === 'success') kind === 'try' ? trySuccess++ : milestoneSuccess++;

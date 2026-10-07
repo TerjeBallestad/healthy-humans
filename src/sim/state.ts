@@ -9,7 +9,7 @@ import {
 import type { MilestoneId } from '../content/milestones';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -43,6 +43,8 @@ export interface Proposal {
   outcome?: 'success' | 'failure' | 'declined';
   /** What happened, in one line. */
   result?: string;
+  /** What the player gained, when it worked. */
+  gain?: string;
 }
 
 export interface LogEntry {

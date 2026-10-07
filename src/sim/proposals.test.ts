@@ -47,14 +47,14 @@ describe('proposals', () => {
     expect(s.proposal).toBeNull();
   });
 
-  test('support costs omsorg and raises the odds', () => {
+  test('support costs kroner and raises the odds', () => {
     const s = ready();
     maybePropose(s);
     const subject = s.proposal!.subject;
     expect(chance(s.resident, subject, 2)).toBeGreaterThan(chance(s.resident, subject, 0));
-    s.omsorg = 20;
+    s.budget = 1000;
     accept(s, 2);
-    expect(s.omsorg).toBe(20 - SUPPORT_STEPS[2].omsorg);
+    expect(s.budget).toBe(1000 - SUPPORT_STEPS[2].kr);
     expect(s.resident.overskudd).toBe(30 - PROPOSAL_COST_SKILL);
     expect(s.proposal!.outcome).toMatch(/success|failure/);
     expect(s.proposal!.result).toBeTruthy();
@@ -67,10 +67,11 @@ describe('proposals', () => {
       maybePropose(s);
       const sub = s.proposal!.subject;
       if (sub.kind !== 'try') continue;
-      s.omsorg = 40;
+      s.budget = 1000;
       accept(s, 2);
       if (s.proposal!.outcome !== 'success') continue;
       expect(s.resident.skill[sub.activity]).toBe(1);
+      expect(s.proposal!.gain).toContain('○○○ → ●○○');
       return;
     }
     throw new Error('no success in 50 tries');

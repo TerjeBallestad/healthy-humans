@@ -14,6 +14,8 @@ export interface MilestoneDef {
   after?: MilestoneId;
   /** Every routine must be automatic first. */
   needsAllRoutines?: boolean;
+  /** The discharge tier this milestone is needed for. */
+  forTier: string;
 }
 
 export const MILESTONES: MilestoneDef[] = [
@@ -25,6 +27,7 @@ export const MILESTONES: MilestoneDef[] = [
     failure: 'Sat in the waiting room. Left before the name was called.',
     baseChance: 0.45,
     needsRung: 7,
+    forTier: 'fit for work',
   },
   {
     id: 'application',
@@ -35,6 +38,7 @@ export const MILESTONES: MilestoneDef[] = [
     baseChance: 0.35,
     needsRung: 9,
     after: 'nav',
+    forTier: 'fit for work',
   },
   {
     id: 'worktrial',
@@ -46,6 +50,7 @@ export const MILESTONES: MilestoneDef[] = [
     needsRung: 9,
     after: 'application',
     needsAllRoutines: true,
+    forTier: 'healthy human',
   },
 ];
 

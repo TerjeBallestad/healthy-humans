@@ -56,10 +56,10 @@ export const PROPOSAL_COOLDOWN_DAYS = 3;
 /** Try-alone odds: base plus a bonus per skill level the resident has. */
 export const TRY_ALONE_BASE = 0.35;
 export const TRY_ALONE_PER_SKILL = 0.15;
-/** Omsorg the player can add to a proposal, and the odds each step adds. */
+/** Kroner the player can spend on a proposal, and the odds each step adds. */
 export const SUPPORT_STEPS = [
-  { omsorg: 0, bonus: 0 },
-  { omsorg: 6, bonus: 0.2 },
-  { omsorg: 12, bonus: 0.35 },
+  { kr: 0, bonus: 0 },
+  { kr: 150, bonus: 0.2 },
+  { kr: 350, bonus: 0.35 },
 ] as const;
 export const MAX_CHANCE = 0.95;

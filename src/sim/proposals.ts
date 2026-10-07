@@ -9,6 +9,7 @@ import {
   SUPPORT_STEPS,
   TRY_ALONE_BASE,
   TRY_ALONE_PER_SKILL,
+  barSize,
 } from '../content/tuning';
 import { random } from './rng';
 import { unlockedActivities } from './selectors';
@@ -72,7 +73,21 @@ export function maybePropose(state: GameState) {
 }
 
 export function canSupport(state: GameState, step: number): boolean {
-  return state.omsorg >= (SUPPORT_STEPS[step]?.omsorg ?? Infinity);
+  return state.budget >= (SUPPORT_STEPS[step]?.kr ?? Infinity);
+}
+
+const pips = (n: number) => Array.from({ length: MAX_SKILL }, (_, i) => (i < n ? '●' : '○')).join('');
+
+/** What the player gets if it works, in one line. */
+export function rewardText(r: Resident, subject: ProposalSubject): string {
+  if (subject.kind === 'milestone') {
+    const m = MILESTONE_BY_ID[subject.milestone];
+    return `${m.label} done. Needed before ${r.name} can be discharged as "${m.forTier}".`;
+  }
+  const a = ACTIVITY_BY_ID[subject.activity];
+  const next = r.skill[a.id] + 1;
+  if (next >= MAX_SKILL) return `${a.label} becomes automatic.`;
+  return `${a.label} gets easier: ${barSize(r.skill[a.id])} → ${barSize(next)} nudges.`;
 }
 
 /** Accept with a support step. Rolls the outcome. */
@@ -81,20 +96,27 @@ export function accept(state: GameState, step: number): boolean {
   if (!p || p.outcome || !canSupport(state, step)) return false;
   const r = state.resident;
   const odds = chance(r, p.subject, step);
-  state.omsorg -= SUPPORT_STEPS[step]!.omsorg;
+  state.budget -= SUPPORT_STEPS[step]!.kr;
+  const reward = rewardText(r, p.subject);
   r.overskudd -= proposalCost(p.subject);
   const won = random(state) < odds;
   p.outcome = won ? 'success' : 'failure';
   if (p.subject.kind === 'milestone') {
     const m = MILESTONE_BY_ID[p.subject.milestone];
-    if (won) r.milestones.push(m.id);
+    if (won) {
+      r.milestones.push(m.id);
+      p.gain = reward;
+    }
     p.result = won ? m.success : m.failure;
     log(state, p.result);
   } else {
     const a = ACTIVITY_BY_ID[p.subject.activity];
     p.result = won ? a.askSuccess : a.askFailure;
     log(state, p.result);
-    if (won) levelUp(state, r, a);
+    if (won) {
+      p.gain = `${a.label} ${pips(r.skill[a.id])} → ${pips(r.skill[a.id] + 1)}`;
+      levelUp(state, r, a);
+    }
   }
   return true;
 }

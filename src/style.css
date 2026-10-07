@@ -134,3 +134,12 @@ button:disabled { cursor: default; opacity: 0.5; }
 .outcome { font-size: 1.05rem; line-height: 1.4; margin: 0 0 16px; }
 .outcome.success { color: var(--accent); }
 .outcome.failure { color: var(--warn); }
+
+.stakes { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0 0 20px; font-size: 0.9rem; }
+.stakes dt { color: var(--muted); }
+.stakes dd { margin: 0; }
+.stakes .win { color: var(--accent); }
+.gain {
+  margin: 0 0 16px; padding: 10px 12px; border-radius: 6px; font-weight: 600;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
