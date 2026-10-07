@@ -1,8 +1,8 @@
 import { ACTIVITIES, type ActivityId } from '../content/activities';
 import type { NeedId } from '../content/needs';
-import { OMSORG_START, START_MINUTE_OF_DAY } from '../content/tuning';
+import { LEARNING_WINDOW, OMSORG_START, START_MINUTE_OF_DAY } from '../content/tuning';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -46,11 +46,11 @@ export function newResident(): Resident {
   return {
     name: 'Arvid',
     intro: "41. Has not left his flat in a year. The curtains stay closed.",
-    needs: { food: 35, hygiene: 35, energy: 50, home: 40, social: 35 },
+    needs: { food: 70, hygiene: 55, energy: 80, home: 60, social: 50 },
     bars: perActivity(0),
     skill: perActivity(0),
     xp: perActivity(0),
-    unlockedRung: 1,
+    unlockedRung: LEARNING_WINDOW,
     current: null,
   };
 }

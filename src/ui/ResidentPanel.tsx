@@ -9,7 +9,7 @@ export function ResidentPanel() {
   const r = s.resident;
   const open = unlockedActivities(r);
   const alone = open.filter((a) => r.skill[a.id] >= MAX_SKILL);
-  const learning = open.filter((a) => r.skill[a.id] < MAX_SKILL).reverse();
+  const learning = open.filter((a) => r.skill[a.id] < MAX_SKILL);
   return (
     <section class="resident">
       <h2>{r.name}</h2>

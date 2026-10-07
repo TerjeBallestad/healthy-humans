@@ -1,0 +1,76 @@
+// Plays the game with a simple bot and prints the pace.
+// Usage: npm run sim [-- --taps-per-second=4]
+import { ACTIVITIES } from '../src/content/activities';
+import { NEED_THRESHOLD, REAL_SECONDS_PER_DAY, barSize } from '../src/content/tuning';
+import { nudge } from '../src/sim/actions';
+import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
+import { newGame } from '../src/sim/state';
+import { tickMinute } from '../src/sim/tick';
+
+const arg = (name: string, fallback: number) => {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
+  return hit ? Number(hit.split('=')[1]) : fallback;
+};
+
+/** How fast a human taps, in taps per real second. */
+const TAPS_PER_SECOND = arg('taps-per-second', 4);
+const MAX_DAYS = arg('days', 60);
+const REAL_SEC_PER_MINUTE = REAL_SECONDS_PER_DAY / 1440;
+
+const s = newGame();
+const r = s.resident;
+let tapBudget = 0;
+let minutesLow = 0;
+let minutesEmpty = 0;
+let taps = 0;
+const unlockedAt: { rung: number; label: string; minute: number }[] = [];
+let lastRung = r.unlockedRung;
+const start = s.minute;
+
+while (s.minute - start < MAX_DAYS * 1440) {
+  tickMinute(s);
+  tapBudget += TAPS_PER_SECOND * REAL_SEC_PER_MINUTE;
+
+  // Greedy bot: tap the learning activity whose need is lowest.
+  const learning = unlockedActivities(r)
+    .filter((a) => barSize(r.skill[a.id]) > 0 && r.bars[a.id] < barSize(r.skill[a.id]))
+    .sort((a, b) => r.needs[a.trigger] - r.needs[b.trigger]);
+  for (const a of learning) {
+    while (tapBudget >= 1 && nudge(s, a.id)) {
+      tapBudget -= 1;
+      taps++;
+    }
+  }
+  tapBudget = Math.min(tapBudget, TAPS_PER_SECOND); // a human does not bank taps
+
+  const needs = activeNeeds(r);
+  if (needs.some((n) => r.needs[n] < NEED_THRESHOLD)) minutesLow++;
+  if (needs.some((n) => r.needs[n] <= 0)) minutesEmpty++;
+
+  if (r.unlockedRung !== lastRung) {
+    for (let rung = lastRung + 1; rung <= r.unlockedRung; rung++) {
+      const a = ACTIVITIES.find((x) => x.rung === rung)!;
+      unlockedAt.push({ rung, label: a.label, minute: s.minute - start });
+    }
+    lastRung = r.unlockedRung;
+  }
+  if (ACTIVITIES.every((a) => barSize(r.skill[a.id]) === 0)) break;
+}
+
+const elapsed = s.minute - start;
+const real = (minutes: number) => {
+  const sec = Math.round(minutes * REAL_SEC_PER_MINUTE);
+  return `${Math.floor(sec / 60)}m ${String(sec % 60).padStart(2, '0')}s`;
+};
+const day = (minutes: number) => `day ${(minutes / 1440 + 1).toFixed(1)}`;
+
+console.log(`Bot taps up to ${TAPS_PER_SECOND}/s. Real time at 1x.\n`);
+for (const u of unlockedAt) {
+  console.log(`  rung ${String(u.rung).padStart(2)} ${u.label.padEnd(16)} ${real(u.minute).padStart(8)}  (${day(u.minute)})`);
+}
+const done = ACTIVITIES.every((a) => barSize(r.skill[a.id]) === 0);
+console.log(`\n  ${done ? 'All automatic' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`);
+console.log(`  Any need below ${NEED_THRESHOLD}: ${((minutesLow / elapsed) * 100).toFixed(0)}% of the time`);
+console.log(`  Any need at 0:     ${((minutesEmpty / elapsed) * 100).toFixed(0)}% of the time`);
+console.log(`  Taps: ${taps} (${(taps / (elapsed * REAL_SEC_PER_MINUTE)).toFixed(2)} per real second)`);
+console.log(`  Omsorg at cap:     ${s.omsorg.toFixed(0)} now`);

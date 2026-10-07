@@ -3,6 +3,7 @@ import { NEEDS } from '../content/needs';
 import {
   AUTO_BELOW,
   COMPLETIONS_PER_LEVEL,
+  LEARNING_WINDOW,
   MAX_SKILL,
   NEED_THRESHOLD,
   OMSORG_CAP,
@@ -42,7 +43,7 @@ function decayNeeds(state: GameState, r: Resident) {
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);
     if (before >= NEED_THRESHOLD && r.needs[id] < NEED_THRESHOLD) {
-      log(state, `${r.name} is ${NEEDS[id].lowState}.`);
+      log(state, NEEDS[id].lowLog.replace('{name}', r.name));
     }
   }
 }
@@ -75,12 +76,20 @@ function gainSkill(state: GameState, r: Resident, a: ActivityDef) {
     return;
   }
   log(state, a.independent);
-  // The newest rung going automatic opens the next one.
-  const next = ACTIVITIES.find((n) => n.rung === r.unlockedRung + 1);
-  if (a.rung === r.unlockedRung && next) {
+  for (const opened of fillLearningWindow(r)) log(state, opened.appears);
+}
+
+/** Open new rungs until the resident is learning LEARNING_WINDOW activities. Returns the new ones. */
+export function fillLearningWindow(r: Resident): ActivityDef[] {
+  const opened: ActivityDef[] = [];
+  const learning = () => unlockedActivities(r).filter((a) => r.skill[a.id] < MAX_SKILL).length;
+  while (learning() < LEARNING_WINDOW) {
+    const next = ACTIVITIES.find((n) => n.rung === r.unlockedRung + 1);
+    if (!next) break;
     r.unlockedRung = next.rung;
-    log(state, next.appears);
+    opened.push(next);
   }
+  return opened;
 }
 
 function startNextActivity(r: Resident) {
