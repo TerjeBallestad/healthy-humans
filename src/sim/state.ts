@@ -15,7 +15,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -40,11 +40,21 @@ export interface Resident {
   waitedWeeks: number;
   /** Extra need decay from the wait, as a fraction. Fades over time. */
   strain: number;
+  /** When this resident last proposed something. */
+  lastProposalTick: number;
+}
+
+export interface WaitingPerson {
+  archetype: ArchetypeId;
+  /** The tick they joined the list. */
+  joined: number;
 }
 
 export type ProposalSubject = { kind: 'milestone'; milestone: MilestoneId };
 
 export interface Proposal {
+  /** The bed of the resident who proposes. */
+  bed: number;
   subject: ProposalSubject;
   /** Set once the player has chosen. */
   outcome?: 'success' | 'failure' | 'declined';
@@ -62,6 +72,7 @@ export interface Discharged {
 
 /** Open discharge dialog. The game is paused while it is set. */
 export interface Discharge {
+  bed: number;
   tier: TierId;
   /** True once the vedtak is signed and the resident has left. */
   signed: boolean;
@@ -69,6 +80,8 @@ export interface Discharge {
 
 export interface LogEntry {
   tick: number;
+  /** The resident it is about, if any. */
+  who?: string;
   text: string;
 }
 
@@ -85,18 +98,22 @@ export interface GameState {
   /** Staff taps not yet spent, carried between ticks. */
   staffCarry: number;
   upgrades: UpgradeId[];
-  resident: Resident;
+  /** One slot per bed. Null is an empty bed. */
+  beds: (Resident | null)[];
+  /** The bed the player looks at. */
+  selected: number;
+  /** Index into ARCHETYPES for the next person who joins the waiting list. */
+  nextArchetype: number;
   /** Everyone discharged so far. Each one pays tax for the rest of the game. */
   discharged: Discharged[];
   discharge: Discharge | null;
-  /** The tick each person on the waiting list joined. First in line first. */
-  waiting: number[];
+  /** First in line first. */
+  waiting: WaitingPerson[];
   log: LogEntry[];
   /** Open proposal. The game is paused while it is set. */
   proposal: Proposal | null;
   /** Speed to return to when a dialog closes. */
   resumeSpeed: number;
-  lastProposalTick: number;
   seed: number;
 }
 
@@ -104,7 +121,7 @@ const perActivity = (value: number) =>
   Object.fromEntries(ACTIVITIES.map((a) => [a.id, value])) as Record<ActivityId, number>;
 
 /** A resident who waited longer arrives with lower needs and a strain on decay. */
-export function newResident(id: ArchetypeId = 'arvid', waitedWeeks = 0): Resident {
+export function newResident(id: ArchetypeId = 'arvid', waitedWeeks = 0, tick = 0): Resident {
   const a = ARCHETYPE_BY_ID[id];
   const loss = waitedWeeks * WAIT_NEED_LOSS_PER_WEEK;
   const needs = Object.fromEntries(
@@ -123,6 +140,7 @@ export function newResident(id: ArchetypeId = 'arvid', waitedWeeks = 0): Residen
     milestones: [],
     waitedWeeks,
     strain: Math.min(WAIT_STRAIN_CAP, waitedWeeks * WAIT_STRAIN_PER_WEEK),
+    lastProposalTick: tick,
   };
 }
 
@@ -136,14 +154,28 @@ export function newGame(): GameState {
     staff: [],
     staffCarry: 0,
     upgrades: [],
-    resident: newResident(ARCHETYPES[0]!.id),
+    beds: [newResident(ARCHETYPES[0]!.id)],
+    selected: 0,
+    nextArchetype: 1 + WAITLIST_START,
     discharged: [],
     discharge: null,
-    waiting: Array.from({ length: WAITLIST_START }, () => 0),
+    waiting: Array.from({ length: WAITLIST_START }, (_, i) => ({
+      archetype: ARCHETYPES[(1 + i) % ARCHETYPES.length]!.id,
+      joined: 0,
+    })),
     log: [{ tick: 0, text: ARCHETYPES[0]!.arrives }],
     proposal: null,
     resumeSpeed: 1,
-    lastProposalTick: 0,
     seed: (Math.random() * 2 ** 32) | 0,
   };
+}
+
+/** The resident in the selected bed, or null when it is empty. */
+export function selectedResident(s: GameState): Resident | null {
+  return s.beds[s.selected] ?? null;
+}
+
+/** Every occupied bed with its index. */
+export function occupied(s: GameState): [number, Resident][] {
+  return s.beds.flatMap((r, i) => (r ? [[i, r] as [number, Resident]] : []));
 }

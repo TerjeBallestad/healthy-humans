@@ -17,8 +17,8 @@ const CHOICE_LABELS = ['Go for it', 'Pay for some help', 'Pay for proper help'];
 export function ProposalDialog() {
   const s = useGame();
   const p = s.proposal;
-  if (!p) return null;
-  const r = s.resident;
+  const r = p && s.beds[p.bed];
+  if (!p || !r) return null;
 
   return (
     <div class="overlay">

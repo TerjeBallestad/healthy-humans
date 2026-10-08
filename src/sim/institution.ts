@@ -1,7 +1,10 @@
 import {
+  BED_COST_BASE,
+  BED_COST_GROWTH,
   GRANT_PER_WEEK,
   HIRE_COST_BASE,
   HIRE_COST_GROWTH,
+  MAX_BEDS,
   OMSORG_CAP,
   OMSORG_PER_SECOND,
   STAFF_WAGE_PER_WEEK,
@@ -44,4 +47,12 @@ export function canHire(s: GameState): boolean {
 
 export function canBuy(s: GameState, id: UpgradeId): boolean {
   return !s.upgrades.includes(id) && s.budget >= UPGRADE_BY_ID[id].cost;
+}
+
+export function bedCost(s: GameState): number {
+  return Math.round(BED_COST_BASE * BED_COST_GROWTH ** (s.beds.length - 1));
+}
+
+export function canBuyBed(s: GameState): boolean {
+  return s.beds.length < MAX_BEDS && s.budget >= bedCost(s);
 }

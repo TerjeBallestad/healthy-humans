@@ -331,7 +331,7 @@ button:disabled {
 /* Layout: landscape first. Three columns, each scrolls on its own. */
 .app {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(280px, 360px) 1fr;
+  grid-template-columns: minmax(220px, 280px) 1fr;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
   height: 100dvh;
@@ -355,6 +355,19 @@ button:disabled {
 .panel h3 {
   margin: 0 0 10px;
 }
+/* The strip of beds on top, the selected resident below. */
+.main {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
+.main-cols {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 16px;
+  min-height: 0;
+}
 @media (max-width: 899px) {
   .app {
     grid-template-columns: 1fr;
@@ -362,9 +375,14 @@ button:disabled {
     height: auto;
     max-width: 640px;
   }
-  /* One column: the resident and the activities come first. */
-  .col {
+  /* One column: the beds, the resident and the activities come first. */
+  .col,
+  .main,
+  .main-cols {
     display: contents;
+  }
+  .strip {
+    order: 0;
   }
   .resident {
     order: 1;
@@ -623,4 +641,93 @@ button:disabled {
 }
 .train:active:not(:disabled) {
   transform: translateY(-2px);
+}
+
+/* Beds */
+.strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+.bed {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  gap: 4px 10px;
+  min-width: 170px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-width: 2px;
+  background: var(--panel);
+  text-align: left;
+}
+.bed.selected {
+  border-color: var(--accent);
+}
+.bed .name {
+  font-weight: 600;
+}
+.bed .tag {
+  margin-left: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+.bed .now {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  font-size: 1.4rem;
+}
+.bed .mini {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 22px;
+}
+.bed .bar {
+  position: relative;
+  width: 7px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.bed .bar .fill {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: var(--accent);
+}
+.bed .bar.low .fill {
+  background: var(--warn);
+}
+.buy-bed {
+  border-style: dashed;
+  align-content: center;
+}
+.buy-bed .price {
+  grid-column: 1;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.waitlist .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 1.6em;
+}
+.admit {
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  border-color: var(--accent);
+  white-space: nowrap;
 }

@@ -9,12 +9,12 @@ import {
   trainCost,
 } from '../src/content/tuning';
 import { UPGRADES } from '../src/content/upgrades';
-import { buyUpgrade, hire, nudge, train } from '../src/sim/actions';
+import { admit, buyBed, buyUpgrade, freeBed, hire, nudge, train } from '../src/sim/actions';
 import { canBuy, canHire } from '../src/sim/institution';
 import { accept, canSupport, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
-import { newGame } from '../src/sim/state';
+import { newGame, occupied } from '../src/sim/state';
 import { tick } from '../src/sim/tick';
 import { TICKS_PER_WEEK } from '../src/sim/time';
 
@@ -30,11 +30,13 @@ const MAX_WEEKS = arg('weeks', 120);
 const SHOP = arg('shop', 1);
 /** 1 = train the most-trained activity first (finish one), 0 = the cheapest first (spread). */
 const DEEP = arg('deep', 0);
+/** 1 = the bot buys beds and admits people. Stats still follow bed 0. */
+const BEDS = arg('beds', 0);
 const purchases: { what: string; tick: number }[] = [];
 const REAL_SEC_PER_TICK = SECONDS_PER_WEEK / TICKS_PER_WEEK;
 
 const s = newGame();
-const r = s.resident;
+const r = s.beds[0]!;
 let tapBudget = 0;
 let ticksLow = 0;
 let ticksEmpty = 0;
@@ -58,11 +60,17 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
     else milestoneFail++;
     if (s.proposal.outcome === 'success') {
       purchases.push({
-        what: `milestone ${s.resident.milestones.at(-1)}`,
+        what: `milestone ${s.beds[s.proposal.bed]?.name} ${s.beds[s.proposal.bed]?.milestones.at(-1)}`,
         tick: s.tick - start,
       });
     }
     closeProposal(s);
+  }
+
+  // Beds: buy when affordable, fill free beds at once.
+  if (BEDS) {
+    if (buyBed(s)) purchases.push({ what: `bed ${s.beds.length}`, tick: s.tick - start });
+    if (freeBed(s) >= 0 && s.waiting.length > 0) admit(s, 0);
   }
 
   // Spend budget: staff first, then the cheapest upgrade.
@@ -78,7 +86,8 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
     }
   }
   // Overskudd: save for an open milestone, else train.
-  if (eligibleSubjects(r).length === 0) {
+  for (const [bed, r] of occupied(s)) {
+    if (eligibleSubjects(r).length > 0) continue;
     const cheapest = unlockedActivities(r)
       .filter((a) => r.skill[a.id] < MAX_SKILL)
       .sort(
@@ -88,17 +97,21 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
           a.rung - b.rung,
       )[0];
     // Deep play waits for the next level of its chosen activity.
-    if (cheapest && train(s, cheapest.id)) trained++;
+    if (cheapest && train(s, bed, cheapest.id)) trained++;
   }
 
   tapBudget += TAPS_PER_SECOND * REAL_SEC_PER_TICK;
 
-  // Greedy bot: tap the learning activity whose need is lowest.
-  const learning = unlockedActivities(r)
-    .filter((a) => barSize(r.skill[a.id]) > 0 && r.bars[a.id] < barSize(r.skill[a.id]))
-    .sort((a, b) => r.needs[a.trigger] - r.needs[b.trigger]);
-  for (const a of learning) {
-    while (tapBudget >= 1 && nudge(s, a.id)) {
+  // Greedy bot: tap the open bar whose need is lowest, in any bed.
+  const learning = occupied(s)
+    .flatMap(([bed, x]) =>
+      unlockedActivities(x)
+        .filter((a) => barSize(x.skill[a.id]) > 0 && x.bars[a.id] < barSize(x.skill[a.id]))
+        .map((a) => ({ bed, a, need: x.needs[a.trigger] })),
+    )
+    .sort((a, b) => a.need - b.need);
+  for (const { bed, a } of learning) {
+    while (tapBudget >= 1 && nudge(s, bed, a.id)) {
       tapBudget -= 1;
       taps++;
     }

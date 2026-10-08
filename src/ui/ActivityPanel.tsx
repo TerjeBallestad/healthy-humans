@@ -3,11 +3,13 @@ import { MAX_SKILL, barSize, trainCost } from '../content/tuning';
 import { canNudge, canTrain, nudge, train } from '../sim/actions';
 import { readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
+import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
 
 export function ActivityPanel() {
   const s = useGame();
-  const r = s.resident;
+  const r = selectedResident(s);
+  if (!r) return null;
   const queue = readyQueue(r);
   return (
     <section class="panel activities">
@@ -23,7 +25,8 @@ export function ActivityPanel() {
 
 function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priority: number }) {
   const s = useGame();
-  const r = s.resident;
+  const bed = s.selected;
+  const r = s.beds[bed]!;
   const skill = r.skill[a.id];
   const size = barSize(skill);
   const auto = size === 0;
@@ -35,7 +38,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
     .filter(Boolean)
     .join(' ');
 
-  const nudgeable = canNudge(s, a.id);
+  const nudgeable = canNudge(s, bed, a.id);
   // A div, not a button: the train button sits inside the card.
   return (
     <div
@@ -43,11 +46,11 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
       role="button"
       tabIndex={auto ? -1 : 0}
       aria-disabled={!nudgeable}
-      onClick={() => act((g) => nudge(g, a.id))}
+      onClick={() => act((g) => nudge(g, bed, a.id))}
       onKeyDown={(e) => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
         e.preventDefault();
-        act((g) => nudge(g, a.id));
+        act((g) => nudge(g, bed, a.id));
       }}
     >
       {priority > 0 && <span class="priority">#{priority}</span>}
@@ -82,7 +85,8 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
 /** Level label and an arrow that spends overskudd on the next level. */
 function TrainButton({ activity: a }: { activity: ActivityDef }) {
   const s = useGame();
-  const skill = s.resident.skill[a.id];
+  const bed = s.selected;
+  const skill = s.beds[bed]!.skill[a.id];
   const next = skill + 1;
   const effect =
     next >= MAX_SKILL ? 'becomes automatic' : `${barSize(skill)} → ${barSize(next)} nudges`;
@@ -91,13 +95,13 @@ function TrainButton({ activity: a }: { activity: ActivityDef }) {
       <span class="lvl">lvl {next}</span>
       <button
         class="train"
-        disabled={!canTrain(s, a.id)}
+        disabled={!canTrain(s, bed, a.id)}
         title={`Train for ${trainCost(skill)} overskudd: ${effect}`}
         aria-label={`Train ${a.label} for ${trainCost(skill)} overskudd: ${effect}`}
         onClick={(e) => {
           // Keep the click from nudging the card.
           e.stopPropagation();
-          act((g) => train(g, a.id));
+          act((g) => train(g, bed, a.id));
         }}
       >
         {trainCost(skill)}

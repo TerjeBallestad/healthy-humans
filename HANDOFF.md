@@ -7,7 +7,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7c are done.** 7c (training with overskudd) is live. Waiting for Terje to play it.
+- **Steps 1 to 7d are done.** 7d (more beds) is live. Waiting for Terje to play it.
 
 ## What the game does now
 
@@ -20,10 +20,12 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
    Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
 
-6. **Discharge:** when a tier opens, a button shows it. The vedtak shows the tax, what waiting gives, and who comes next. Signing shows a two-line glimpse, then the next resident moves in.
+6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
+   - **Beds:** you start with one. "+ Bed" in the strip buys more (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. Staff help the lowest need across all beds.
+   - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
-   - Residents cycle: Arvid, then Maja (23, sleeps all day). Both are grey-boxes in `src/content/archetypes.ts`.
+   - The waiting list cycles archetypes: Arvid, Maja (23, sleeps all day), Rolf (67, retired, drinks a little). All are grey-boxes in `src/content/archetypes.ts`. With three archetypes, names can repeat across beds and the list.
 7. **Two clocks, as in Game Dev Story.** The calendar shows `Y1 M4 W2`, and one week is 24 s at 1x. Activities last real seconds (eat 2 s, sleep 4 s) and are not tied to the calendar. Everything that was per day is now per week, with the same numbers. The sim counts ticks: 60 per real second (`src/sim/time.ts`).
 
 ## Feedback from playtests, in order
@@ -40,6 +42,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 | Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                                                                      |
 | Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                                                                  |
 | Skill should be active, bought with overskudd       | 7c: training with overskudd. No practice XP, no try-alone. Overskudd now grows with the green share of needs.                               |
+| Time for more beds                                  | 7d: beds bought with kroner, a strip of bed cards, Legg inn. Bot with 2 to 3 beds and no staff: needs low 66% of the time.                  |
 | Training panel not needed. Hold-to-nudge unwanted   | Training moved to an arrow on each card. One click is one nudge. Terje trains the cheap levels first, then finishes one activity at a time. |
 | Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.                                             |
 | Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.                                          |
@@ -72,15 +75,15 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
   - With one bed, the list always grows. That pressure is part of the test.
   - Tuning is at the end of `src/content/tuning.ts`.
 - **If the test fails:** two beds that share omsorg and staff. `PLAN.md` puts more than one bed out of scope for Act 1, so that changes the plan. UI idea: tabs, or two compact cards.
-- **Third archetype:** the retired man who drinks a little too much. Add an entry to `ARCHETYPES`.
+- ~~Third archetype~~: Rolf, added in 7d.
 - **Small issue:** the "needs" text for the next tier lists all parts, also the parts that are done.
 
 ## How to work on it
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 40 tests
-npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1
+npm test           # vitest, 44 tests
+npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```
 

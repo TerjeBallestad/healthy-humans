@@ -1,7 +1,7 @@
 import type { NeedId } from './needs';
 import type { TierId } from './tiers';
 
-export type ArchetypeId = 'arvid' | 'maja';
+export type ArchetypeId = 'arvid' | 'maja' | 'rolf';
 
 /** Personality colours, as in lifelines-core-loop's character_profile.gd. Unused for now. */
 export type Colour = 'white' | 'blue' | 'black' | 'red' | 'green';
@@ -64,6 +64,29 @@ export const ARCHETYPES: ArchetypeDef[] = [
       ],
     },
     colours: { red: 0.5, green: 0.4 },
+  },
+  {
+    id: 'rolf',
+    name: 'Rolf',
+    intro: '67. Retired from the post office. A few beers by lunch.',
+    arrives: 'Rolf moves in. He asks where the nearest shop is.',
+    startNeeds: { food: 50, hygiene: 60, energy: 70, home: 40, social: 45 },
+    decay: { home: 1.3, food: 1.2, energy: 0.8 },
+    glimpse: {
+      alone: [
+        'Rolf has a flat with a balcony in Ammerud.',
+        'He waters the tomatoes before the first beer. Usually.',
+      ],
+      work: [
+        'Rolf sorts parcels three mornings a week.',
+        'He tells the young ones how it was done before.',
+      ],
+      healthy: [
+        'Rolf plays boules on Thursdays and stays for coffee.',
+        'His grandson visits. Rolf makes waffles.',
+      ],
+    },
+    colours: { black: 0.4, green: 0.4 },
   },
 ];
 

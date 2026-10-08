@@ -1,5 +1,4 @@
 import { ACTIVITIES } from '../content/activities';
-import { ARCHETYPES } from '../content/archetypes';
 import { TIERS, TIER_BY_ID, type TierDef, type TierId } from '../content/tiers';
 import {
   MAX_SKILL,
@@ -8,7 +7,7 @@ import {
   WAIT_STRAIN_CAP,
   WAIT_STRAIN_PER_WEEK,
 } from '../content/tuning';
-import { newResident, type GameState, type Resident } from './state';
+import type { GameState, Resident } from './state';
 import { log } from './tick';
 import { TICKS_PER_WEEK } from './time';
 
@@ -46,11 +45,12 @@ export function taxPerWeek(s: GameState): number {
   return s.discharged.reduce((sum, d) => sum + TIER_BY_ID[d.tier].taxPerWeek, 0);
 }
 
-/** Open the vedtak for the best tier. Pauses the game. */
-export function openDischarge(s: GameState): boolean {
-  const tier = bestTier(s.resident);
+/** Open the vedtak for the resident in a bed, at their best tier. Pauses the game. */
+export function openDischarge(s: GameState, bed: number): boolean {
+  const r = s.beds[bed];
+  const tier = r && bestTier(r);
   if (!tier || s.discharge || s.proposal) return false;
-  s.discharge = { tier: tier.id, signed: false };
+  s.discharge = { bed, tier: tier.id, signed: false };
   s.resumeSpeed = s.speed || s.resumeSpeed;
   s.speed = 0;
   return true;
@@ -62,41 +62,29 @@ export function cancelDischarge(s: GameState) {
   s.speed = s.resumeSpeed;
 }
 
-/** Sign the vedtak. The resident leaves and starts paying tax. */
+/** Sign the vedtak. The resident starts paying tax. The dialog shows a glimpse next. */
 export function signDischarge(s: GameState): boolean {
   const d = s.discharge;
-  if (!d || d.signed) return false;
-  const r = s.resident;
+  const r = d && s.beds[d.bed];
+  if (!d || d.signed || !r) return false;
   s.discharged.push({ name: r.name, tier: d.tier, tick: s.tick });
   d.signed = true;
-  log(s, `${r.name} is discharged: ${TIER_BY_ID[d.tier].label.toLowerCase()}.`);
+  log(s, `Discharged: ${TIER_BY_ID[d.tier].label.toLowerCase()}.`, r.name);
   return true;
 }
 
-/** The archetype after the current resident. Cycles through the list. */
-export function nextArchetype(s: GameState) {
-  const i = ARCHETYPES.findIndex((a) => a.id === s.resident.archetype);
-  return ARCHETYPES[(i + 1) % ARCHETYPES.length]!;
-}
-
-/** Whole weeks the first person in line has waited. */
-export function nextWaitWeeks(s: GameState): number {
-  const joined = s.waiting[0];
-  return joined === undefined ? 0 : Math.floor((s.tick - joined) / TICKS_PER_WEEK);
-}
-
-/** Close the dialog and move the first person in line into the empty bed. */
-export function admitNext(s: GameState) {
-  if (!s.discharge?.signed) return;
-  const a = nextArchetype(s);
-  const waited = nextWaitWeeks(s);
-  s.waiting.shift();
-  s.resident = newResident(a.id, waited);
+/** Close the glimpse. The resident leaves and the bed stands empty. */
+export function closeDischarge(s: GameState) {
+  const d = s.discharge;
+  if (!d?.signed) return;
+  s.beds[d.bed] = null;
   s.discharge = null;
-  s.lastProposalTick = s.tick;
-  log(s, a.arrives);
-  if (waited > 0) log(s, `${a.name} waited ${waited} weeks for a place.`);
   s.speed = s.resumeSpeed;
+}
+
+/** Whole weeks a person on the waiting list has waited. */
+export function waitedWeeks(s: GameState, joined: number): number {
+  return Math.floor((s.tick - joined) / TICKS_PER_WEEK);
 }
 
 /** What the wait has cost the next person so far, for the vedtak. */

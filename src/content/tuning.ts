@@ -39,6 +39,10 @@ export const LEARNING_WINDOW = 6;
 /** Kommune grant in kr per week. */
 export const GRANT_PER_WEEK = 120;
 export const BUDGET_START = 0;
+/** First extra bed. Each bed bought multiplies it. */
+export const BED_COST_BASE = 1500;
+export const BED_COST_GROWTH = 1.6;
+export const MAX_BEDS = 4;
 /** First recruitment fee. Each hire multiplies it. */
 export const HIRE_COST_BASE = 400;
 export const HIRE_COST_GROWTH = 1.5;

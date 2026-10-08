@@ -9,7 +9,8 @@ export function Log() {
     <ol class="panel log">
       {s.log.slice(0, SHOWN).map((e) => (
         <li>
-          <span class="muted">{formatDate(e.tick)}</span> {e.text}
+          <span class="muted">{formatDate(e.tick)}</span> {e.who && <strong>{e.who}: </strong>}
+          {e.text}
         </li>
       ))}
     </ol>

@@ -1,0 +1,50 @@
+import { ACTIVITY_BY_ID } from '../content/activities';
+import { MAX_BEDS, NEED_THRESHOLD } from '../content/tuning';
+import { buyBed } from '../sim/actions';
+import { bestTier } from '../sim/discharge';
+import { bedCost, canBuyBed } from '../sim/institution';
+import { activeNeeds } from '../sim/selectors';
+import { act, useGame } from '../store';
+
+/** One small card per bed. Click a card to look at that bed. */
+export function ResidentStrip() {
+  const s = useGame();
+  return (
+    <nav class="strip">
+      {s.beds.map((r, i) => (
+        <button
+          class={i === s.selected ? 'bed selected' : 'bed'}
+          aria-pressed={i === s.selected}
+          onClick={() => act((g) => (g.selected = i))}
+        >
+          {r ? (
+            <>
+              <span class="name">
+                {r.name}
+                {bestTier(r) && <span class="tag">discharge</span>}
+              </span>
+              <span class="now" aria-hidden="true">
+                {r.current ? ACTIVITY_BY_ID[r.current.id].icon : ''}
+              </span>
+              <span class="mini">
+                {activeNeeds(r).map((n) => (
+                  <span class={r.needs[n] < NEED_THRESHOLD ? 'bar low' : 'bar'}>
+                    <span class="fill" style={{ height: `${r.needs[n]}%` }} />
+                  </span>
+                ))}
+              </span>
+            </>
+          ) : (
+            <span class="name muted">Empty bed</span>
+          )}
+        </button>
+      ))}
+      {s.beds.length < MAX_BEDS && (
+        <button class="bed buy-bed" disabled={!canBuyBed(s)} onClick={() => act(buyBed)}>
+          <span class="name">+ Bed</span>
+          <span class="price">{bedCost(s)} kr</span>
+        </button>
+      )}
+    </nav>
+  );
+}

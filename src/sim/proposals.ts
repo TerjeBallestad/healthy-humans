@@ -8,7 +8,7 @@ import {
 } from '../content/tuning';
 import { random } from './rng';
 import { unlockedActivities } from './selectors';
-import type { GameState, ProposalSubject, Resident } from './state';
+import { occupied, type GameState, type ProposalSubject, type Resident } from './state';
 import { log } from './tick';
 import { TICKS_PER_WEEK } from './time';
 
@@ -45,17 +45,19 @@ export function eligibleSubjects(r: Resident): ProposalSubject[] {
   ).map((m) => ({ kind: 'milestone', milestone: m.id }));
 }
 
-/** Open a proposal when the cooldown is over and the resident has the overskudd. */
+/** Open a proposal for the first resident whose cooldown is over and who has the overskudd. */
 export function maybePropose(state: GameState) {
   if (state.proposal || state.discharge) return;
-  if (state.tick - state.lastProposalTick < PROPOSAL_COOLDOWN_WEEKS * TICKS_PER_WEEK) return;
-  const r = state.resident;
-  const subject = eligibleSubjects(r)[0];
-  if (!subject || r.overskudd < proposalCost(subject)) return;
-  state.proposal = { subject };
-  state.lastProposalTick = state.tick;
-  state.resumeSpeed = state.speed || state.resumeSpeed;
-  state.speed = 0;
+  for (const [bed, r] of occupied(state)) {
+    if (state.tick - r.lastProposalTick < PROPOSAL_COOLDOWN_WEEKS * TICKS_PER_WEEK) continue;
+    const subject = eligibleSubjects(r)[0];
+    if (!subject || r.overskudd < proposalCost(subject)) continue;
+    state.proposal = { bed, subject };
+    r.lastProposalTick = state.tick;
+    state.resumeSpeed = state.speed || state.resumeSpeed;
+    state.speed = 0;
+    return;
+  }
 }
 
 export function canSupport(state: GameState, step: number): boolean {
@@ -71,8 +73,8 @@ export function rewardText(r: Resident, subject: ProposalSubject): string {
 /** Accept with a support step. Rolls the outcome. */
 export function accept(state: GameState, step: number): boolean {
   const p = state.proposal;
-  if (!p || p.outcome || !canSupport(state, step)) return false;
-  const r = state.resident;
+  const r = p && state.beds[p.bed];
+  if (!p || !r || p.outcome || !canSupport(state, step)) return false;
   const odds = chance(r, p.subject, step);
   state.budget -= SUPPORT_STEPS[step]!.kr;
   const reward = rewardText(r, p.subject);
@@ -85,7 +87,7 @@ export function accept(state: GameState, step: number): boolean {
     p.gain = reward;
   }
   p.result = won ? m.success : m.failure;
-  log(state, p.result);
+  log(state, p.result, r.name);
   return true;
 }
 

@@ -1,5 +1,5 @@
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
-import { ARCHETYPE_BY_ID } from '../content/archetypes';
+import { ARCHETYPES, ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
 import {
   READY_BELOW,
@@ -17,13 +17,14 @@ import {
 import { netIncomePerWeek, omsorgCap, omsorgPerSecond } from './institution';
 import { maybePropose } from './proposals';
 import { activeNeeds, readyQueue, unlockedActivities } from './selectors';
-import type { GameState, Resident } from './state';
+import { occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
 
 const LOG_LIMIT = 30;
 
-export function log(state: GameState, text: string) {
-  state.log.unshift({ tick: state.tick, text });
+/** Add a log line. Pass who when the line is about one resident. */
+export function log(state: GameState, text: string, who?: string) {
+  state.log.unshift({ tick: state.tick, text, ...(who && { who }) });
   if (state.log.length > LOG_LIMIT) state.log.length = LOG_LIMIT;
 }
 
@@ -36,16 +37,20 @@ export function tick(state: GameState) {
   );
   state.budget += netIncomePerWeek(state) / TICKS_PER_WEEK;
 
-  if (state.tick % (WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK) === 0)
-    state.waiting.push(state.tick);
+  if (state.tick % (WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK) === 0) {
+    const a = ARCHETYPES[state.nextArchetype % ARCHETYPES.length]!;
+    state.waiting.push({ archetype: a.id, joined: state.tick });
+    state.nextArchetype += 1;
+  }
 
-  const r = state.resident;
-  r.strain = Math.max(0, r.strain - WAIT_STRAIN_FADE_PER_WEEK / TICKS_PER_WEEK);
-  staffWork(state, r);
-  decayNeeds(state, r);
-  progressActivity(state, r);
-  if (!r.current) startNextActivity(r);
-  gainOverskudd(r);
+  staffWork(state);
+  for (const [, r] of occupied(state)) {
+    r.strain = Math.max(0, r.strain - WAIT_STRAIN_FADE_PER_WEEK / TICKS_PER_WEEK);
+    decayNeeds(state, r);
+    progressActivity(state, r);
+    if (!r.current) startNextActivity(r);
+    gainOverskudd(r);
+  }
   maybePropose(state);
 }
 
@@ -59,23 +64,27 @@ function gainOverskudd(r: Resident) {
   );
 }
 
-/** Staff put free nudges into the learning bar whose need is lowest. */
-function staffWork(state: GameState, r: Resident) {
+/** Staff put free nudges into the open bar with the lowest need, across all beds. */
+function staffWork(state: GameState) {
   if (state.staff.length === 0) return;
   state.staffCarry += (state.staff.length * STAFF_NUDGES_PER_SECOND) / TICKS_PER_SECOND;
   while (state.staffCarry >= 1) {
-    const target = unlockedActivities(r)
-      .filter((a) => {
-        const size = barSize(r.skill[a.id]);
-        return size > 0 && r.bars[a.id] < size;
-      })
-      .sort((x, y) => r.needs[x.trigger] - r.needs[y.trigger])[0];
+    const target = occupied(state)
+      .flatMap(([, r]) =>
+        unlockedActivities(r)
+          .filter((a) => {
+            const size = barSize(r.skill[a.id]);
+            return size > 0 && r.bars[a.id] < size;
+          })
+          .map((a) => ({ r, a, need: r.needs[a.trigger] })),
+      )
+      .sort((x, y) => x.need - y.need)[0];
     if (!target) {
       // Nothing to help with. Staff do not bank work.
       state.staffCarry = Math.min(state.staffCarry, 1);
       return;
     }
-    r.bars[target.id] += 1;
+    target.r.bars[target.a.id] += 1;
     state.staffCarry -= 1;
   }
 }
@@ -109,7 +118,7 @@ function progressActivity(state: GameState, r: Resident) {
   r.current.remaining -= 1;
   if (r.current.remaining > 0) return;
   r.current = null;
-  log(state, a.done);
+  log(state, a.done, r.name);
 }
 
 /** Raise one skill level. Opens new rungs when the activity becomes automatic. */
@@ -119,11 +128,11 @@ export function levelUp(state: GameState, r: Resident, a: ActivityDef) {
   // Clicks already in the bar carry over, capped at the new size.
   r.bars[a.id] = Math.min(r.bars[a.id], barSize(r.skill[a.id]));
   if (r.skill[a.id] < MAX_SKILL) {
-    log(state, `${a.label}: a little easier now.`);
+    log(state, `${a.label}: a little easier now.`, r.name);
     return;
   }
-  log(state, a.independent);
-  for (const opened of fillLearningWindow(r)) log(state, opened.appears);
+  log(state, a.independent, r.name);
+  for (const opened of fillLearningWindow(r)) log(state, opened.appears, r.name);
 }
 
 /** Open new rungs until the resident is learning LEARNING_WINDOW activities. Returns the new ones. */

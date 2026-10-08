@@ -39,11 +39,11 @@ describe('staff', () => {
   test('staff fill the bar of the lowest need for free', () => {
     const s = newGame();
     s.staff = ['Kari'];
-    s.resident.needs.hygiene = 5;
+    s.beds[0]!.needs.hygiene = 5;
     const omsorg = s.omsorg;
     run(s, 8 * 60);
-    expect(s.resident.bars.shower).toBeGreaterThan(0);
-    expect(s.resident.bars.eat).toBe(0);
+    expect(s.beds[0]!.bars.shower).toBeGreaterThan(0);
+    expect(s.beds[0]!.bars.eat).toBe(0);
     expect(s.omsorg).toBeGreaterThan(omsorg);
   });
 });
@@ -51,11 +51,11 @@ describe('staff', () => {
 test('staff cannot make a rested resident sleep again', () => {
   const s = newGame();
   s.staff = ['Kari', 'Per', 'Lise'];
-  s.resident.skill.sleep = 2;
-  s.resident.needs.energy = 95;
+  s.beds[0]!.skill.sleep = 2;
+  s.beds[0]!.needs.energy = 95;
   for (let i = 0; i < 4 * 60; i++) {
     tick(s);
-    expect(s.resident.current?.id).not.toBe('sleep');
+    expect(s.beds[0]!.current?.id).not.toBe('sleep');
   }
 });
 

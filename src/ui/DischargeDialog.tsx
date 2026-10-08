@@ -1,25 +1,24 @@
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { TIER_BY_ID } from '../content/tiers';
 import {
-  admitNext,
   cancelDischarge,
-  nextArchetype,
+  closeDischarge,
   nextTier,
-  nextWaitWeeks,
   signDischarge,
   waitCost,
+  waitedWeeks,
 } from '../sim/discharge';
 import { act, useGame } from '../store';
 
 export function DischargeDialog() {
   const s = useGame();
   const d = s.discharge;
-  if (!d) return null;
-  const r = s.resident;
+  const r = d && s.beds[d.bed];
+  if (!d || !r) return null;
   const tier = TIER_BY_ID[d.tier];
   const better = nextTier(r);
-  const next = nextArchetype(s);
-  const waited = nextWaitWeeks(s);
+  const first = s.waiting[0];
+  const waited = first ? waitedWeeks(s, first.joined) : 0;
   const cost = waitCost(waited);
 
   return (
@@ -44,18 +43,17 @@ export function DischargeDialog() {
                   </dd>
                 </>
               )}
-              <dt>Next in the bed</dt>
-              <dd>
-                {next.name}. {next.intro}
-              </dd>
-              <dt>Waited</dt>
-              <dd class="warn">
-                {waited} weeks.{' '}
-                {waited > 0
-                  ? `Arrives with needs −${cost.needLoss} and decay +${cost.strainPct}% for a while. `
-                  : ''}
-                Every week you wait makes it worse.
-              </dd>
+              {first && (
+                <>
+                  <dt>First in line</dt>
+                  <dd class="warn">
+                    {ARCHETYPE_BY_ID[first.archetype].name}, {waited} weeks.{' '}
+                    {waited > 0 &&
+                      `Arrives with needs −${cost.needLoss} and decay +${cost.strainPct}%. `}
+                    Every week makes it worse.
+                  </dd>
+                </>
+              )}
             </dl>
             <div class="choices">
               <button class="choice" onClick={() => act(signDischarge)}>
@@ -77,8 +75,8 @@ export function DischargeDialog() {
               ))}
             </blockquote>
             <p class="gain">+{tier.taxPerWeek} kr per week</p>
-            <button class="choice" onClick={() => act(admitNext)}>
-              {next.name} is at the door
+            <button class="choice" onClick={() => act(closeDischarge)}>
+              The bed is free
             </button>
           </>
         )}

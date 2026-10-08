@@ -5,9 +5,17 @@ import { MILESTONES } from '../content/milestones';
 import { NEED_ORDER } from '../content/needs';
 import { DEBUG_SPEEDS, MAX_SKILL } from '../content/tuning';
 import { omsorgCap } from '../sim/institution';
+import type { Resident } from '../sim/state';
 import { act, resetGame } from '../store';
 
 const open = signal(false);
+
+/** Run a change on the resident in the selected bed, if there is one. */
+const onSelected = (fn: (r: Resident) => void) =>
+  act((g) => {
+    const r = g.beds[g.selected];
+    if (r) fn(r);
+  });
 
 // Toggle with the backtick key.
 export function DebugPanel() {
@@ -37,16 +45,16 @@ export function DebugPanel() {
             <button onClick={() => act((g) => (g.budget += 1000))}>+1000 kr</button>
             <button
               onClick={() =>
-                act((g) => {
-                  g.resident.overskudd = 60;
-                  g.lastProposalTick = -1e9;
+                onSelected((r) => {
+                  r.overskudd = 60;
+                  r.lastProposalTick = -1e9;
                 })
               }
             >
               Proposal now
             </button>
             <button
-              onClick={() => act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))}
+              onClick={() => onSelected((r) => NEED_ORDER.forEach((n) => (r.needs[n] = 100)))}
             >
               Fill needs
             </button>
@@ -54,9 +62,9 @@ export function DebugPanel() {
           <div class="row">
             <button
               onClick={() =>
-                act((g) => {
-                  for (const a of ACTIVITIES) g.resident.skill[a.id] = MAX_SKILL;
-                  g.resident.unlockedRung = ACTIVITIES.length;
+                onSelected((r) => {
+                  for (const a of ACTIVITIES) r.skill[a.id] = MAX_SKILL;
+                  r.unlockedRung = ACTIVITIES.length;
                 })
               }
             >
@@ -64,8 +72,7 @@ export function DebugPanel() {
             </button>
             <button
               onClick={() =>
-                act((g) => {
-                  const r = g.resident;
+                onSelected((r) => {
                   const m = MILESTONES.find((x) => !r.milestones.includes(x.id));
                   if (m) r.milestones.push(m.id);
                 })

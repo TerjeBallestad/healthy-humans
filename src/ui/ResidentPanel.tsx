@@ -3,11 +3,18 @@ import { MILESTONE_BY_ID } from '../content/milestones';
 import { NEED_THRESHOLD, OVERSKUDD_CAP } from '../content/tuning';
 import { bestTier, nextTier, openDischarge } from '../sim/discharge';
 import { activeNeeds, statusLine } from '../sim/selectors';
+import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
 
 export function ResidentPanel() {
   const s = useGame();
-  const r = s.resident;
+  const r = selectedResident(s);
+  if (!r)
+    return (
+      <section class="panel resident">
+        <h2>Empty bed</h2>
+      </section>
+    );
   const best = bestTier(r);
   const better = nextTier(r);
   const needs = activeNeeds(r);
@@ -60,7 +67,7 @@ export function ResidentPanel() {
 
       <div class="discharge">
         {best && (
-          <button class="buy" onClick={() => act(openDischarge)}>
+          <button class="buy" onClick={() => act((g) => openDischarge(g, g.selected))}>
             <span>Discharge: {best.label.toLowerCase()}</span>
             <span class="price">+{best.taxPerWeek} kr/week</span>
           </button>

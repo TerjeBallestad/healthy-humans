@@ -91,7 +91,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 - When a tier is open, a "Discharge" button appears with the tier name.
 - Discharge shows a dry vedtak (tier, axes, monthly tax), then a two-line glimpse of the person's life outside.
 - Tax per week by tier (placeholder): 10 / 30 / 100 kr, for the rest of the game.
-- A new resident arrives in the empty bed.
+- The bed stands empty until the player admits someone from the waiting list ("Legg inn").
 
 ### Budget and staff
 
@@ -100,7 +100,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 ### Residents
 
-- One bed in Act 1.
+- Beds: one at the start. More beds are bought with kroner (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. A strip of bed cards sits above the selected resident.
 - Three hand-written archetypes. Each has a name, a short intro, decay rates per need, a starting rung, and 2 to 3 events.
   - The man who has not left his flat in a year.
   - The young woman who sleeps all day.
@@ -109,7 +109,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 ## Out of scope for Act 1
 
-Relapse, Acts 2 and 3, the clock speed-up, more than one bed, procedural personalities, hidden traits, mentors and local businesses, visual apartment, offline progress, sound.
+Relapse, Acts 2 and 3, the clock speed-up, procedural personalities, hidden traits, mentors and local businesses, visual apartment, offline progress, sound.
 
 ## Tech
 
@@ -154,6 +154,8 @@ Each step ends with something playable and one question to answer by playing.
    7b: calendar in weeks and activities in real seconds. Learning window 6.
    7c: **active skills.** Training with overskudd replaces practice XP and try-alone proposals.
    _Question: is choosing what to train a real decision?_
+   7d: **more beds.** Buy beds with kroner, admit with "Legg inn", one omsorg pool and one staff team for all. Third archetype: Rolf.
+   _Question: does choosing which person to help make the game more tactical?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 
