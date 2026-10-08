@@ -448,7 +448,7 @@ button:disabled {
 .card {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 52px 1fr;
   gap: 12px;
   align-items: start;
   padding: 12px;
@@ -463,14 +463,29 @@ button:disabled {
 .card:active:not(:disabled) {
   transform: scale(0.98);
 }
+.card .left {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
 .card .icon {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.card .effort {
+  width: 52px;
+  height: 8px;
+  border-radius: 4px;
+}
+.card .nudge-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .card .body {
   display: grid;
@@ -479,24 +494,14 @@ button:disabled {
 }
 .card .title {
   font-weight: 600;
+  padding-right: 24px;
 }
-.card .effort {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+.card .progress {
+  height: 14px;
+  border-radius: 7px;
 }
-.card .effort .meter {
-  flex: 1;
-  height: 10px;
-  border-radius: 5px;
-}
-.card .count {
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  min-width: 3.5em;
-  text-align: right;
+.card .progress .fill {
+  transition: none;
 }
 .card .xp {
   height: 3px;

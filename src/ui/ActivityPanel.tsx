@@ -34,6 +34,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const auto = size === 0;
   const filled = r.bars[a.id];
   const doing = r.current?.id === a.id;
+  const progress = doing && r.current ? 1 - r.current.remaining / a.duration : 0;
   const hold = useHold(() => act((g) => nudge(g, a.id)));
   const need = NEEDS[a.trigger].label.toLowerCase();
 
@@ -57,8 +58,22 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
       onClick={(e) => e.detail === 0 && act((g) => nudge(g, a.id))}
     >
       {priority > 0 && <span class="priority">#{priority}</span>}
-      <span class="icon" aria-hidden="true">
-        {a.icon}
+      <span class="left">
+        <span class="icon" aria-hidden="true">
+          {a.icon}
+        </span>
+        {auto ? (
+          <span class="nudge-label">alone</span>
+        ) : (
+          <>
+            <span class="meter effort" title="Effort: nudges until ready">
+              <span class="fill" style={{ width: `${(filled / size) * 100}%` }} />
+            </span>
+            <span class="nudge-label">
+              {filled}/{size}
+            </span>
+          </>
+        )}
       </span>
       <span class="body">
         <span class="title">
@@ -67,25 +82,16 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
             {Array.from({ length: MAX_SKILL }, (_, i) => (i < skill ? '●' : '○')).join('')}
           </span>
         </span>
-        {auto ? (
-          <span class="effort muted">Handles alone</span>
-        ) : (
-          <>
-            <span class="effort">
-              <span class="meter">
-                <span class="fill" style={{ width: `${(filled / size) * 100}%` }} />
-              </span>
-              <span class="count">
-                {filled}/{size}
-              </span>
-            </span>
-            <span class="xp meter" title="Practice toward the next skill level">
-              <span
-                class="fill"
-                style={{ width: `${(r.xp[a.id] / COMPLETIONS_PER_LEVEL) * 100}%` }}
-              />
-            </span>
-          </>
+        <span class="meter progress" title="The activity in progress">
+          <span class="fill" style={{ width: `${progress * 100}%` }} />
+        </span>
+        {!auto && (
+          <span class="xp meter" title="Practice toward the next skill level">
+            <span
+              class="fill"
+              style={{ width: `${(r.xp[a.id] / COMPLETIONS_PER_LEVEL) * 100}%` }}
+            />
+          </span>
         )}
         <span class="note">{note}</span>
       </span>
