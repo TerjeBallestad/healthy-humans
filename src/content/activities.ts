@@ -8,6 +8,8 @@ export interface ActivityDef {
   /** Position on the ladder, starting at 1. */
   rung: number;
   label: string;
+  /** Placeholder icon until there is art. */
+  icon: string;
   /** Short noun for the "handles alone" list. */
   noun: string;
   /** Game minutes the activity takes. */
@@ -37,6 +39,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'eat',
     rung: 1,
     label: 'Eat',
+    icon: '🍞',
     noun: 'eating',
     duration: 30,
     refills: { food: 45 },
@@ -53,6 +56,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'shower',
     rung: 2,
     label: 'Shower',
+    icon: '🚿',
     noun: 'showering',
     duration: 20,
     refills: { hygiene: 70 },
@@ -69,6 +73,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'sleep',
     rung: 3,
     label: 'Sleep',
+    icon: '🛏️',
     noun: 'sleeping',
     duration: 8 * 60,
     refills: { energy: 90 },
@@ -85,6 +90,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'dishes',
     rung: 4,
     label: 'Do the dishes',
+    icon: '🍽️',
     noun: 'dishes',
     duration: 40,
     refills: { home: 35 },
@@ -101,6 +107,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'laundry',
     rung: 5,
     label: 'Laundry',
+    icon: '🧺',
     noun: 'laundry',
     duration: 90,
     refills: { home: 20, hygiene: 25 },
@@ -117,6 +124,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'tidy',
     rung: 6,
     label: 'Tidy the room',
+    icon: '🧹',
     noun: 'tidying',
     duration: 60,
     refills: { home: 50 },
@@ -133,6 +141,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'groceries',
     rung: 7,
     label: 'Buy groceries',
+    icon: '🛒',
     noun: 'groceries',
     duration: 60,
     refills: { food: 60 },
@@ -149,6 +158,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'walk',
     rung: 8,
     label: 'Go for a walk',
+    icon: '🚶',
     noun: 'walks',
     duration: 45,
     refills: { social: 20, energy: 10 },
@@ -165,6 +175,7 @@ export const ACTIVITIES: ActivityDef[] = [
     id: 'call',
     rung: 9,
     label: 'Call someone',
+    icon: '📞',
     noun: 'phone calls',
     duration: 20,
     refills: { social: 40 },

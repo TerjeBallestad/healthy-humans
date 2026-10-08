@@ -16,7 +16,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 export interface CurrentActivity {
   id: ActivityId;

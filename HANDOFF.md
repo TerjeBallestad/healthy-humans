@@ -7,13 +7,13 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 5 are done.** Step 6a (discharge) and 6b (waiting list) are live. Waiting for Terje to play 6b.
+- **Steps 1 to 6b are done.** Step 7a (ready queue and landscape layout) is live. Waiting for Terje to play 7a.
 
 ## What the game does now
 
 1. Arvid moves in. He learns three rungs at a time, starting with eat, shower and sleep.
-2. You spend **omsorg** (3 per nudge) to fill nudge bars. A full bar makes him do the activity.
-3. Completions raise skill. Bars shrink from 4 to 2 to 1 nudge, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
+2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. Press and hold to keep nudging. A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
+3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per day) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
 5. **Overskudd** builds while every need is green. When there is enough, a **proposal** pauses the game:
    - **Try-alone:** success gives one skill level.
@@ -37,6 +37,9 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 | Double tap zooms on iOS                             | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                     |
 | Frantic and stressful, should be tactical           | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first." |
 | Proposals not hitting right, reward unclear         | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                 |
+| Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.      |
+| Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                              |
+| Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                          |
 
 ## Open issues
 
@@ -50,7 +53,13 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 - **Activity lines are shared** by all archetypes and are written gender-neutral. Lines for one archetype only go in `src/content/archetypes.ts`.
 - **Archetypes are grey-boxes.** Terje plans a procedural personality system. Keep archetype data loose and easy to change. The `colours` field is there for that and is unused.
 
-## Next: rest of step 6, after Terje plays
+## Ideas from Terje for after 7a (not built)
+
+- Effort depends on the resident and the activity. Some residents start with skills. A job application could be 32 nudges with no skill.
+- Many activities, several for each need (brødskive and dinner for food).
+- Skill categories (cooking, household) that raise a family of activities. Overskudd spent to train them. This could replace try-alone proposals.
+
+## Earlier: rest of step 6
 
 - **Play feedback on 6a:** "discharge now or wait" was not an interesting decision. Waiting cost nothing, so waiting always won. Terje thinks it may need several beds and a waiting list.
 - **6b, the cheap test (live):** one bed, plus a waiting list with a cost. Does a waiting cost alone make the decision interesting?
@@ -67,7 +76,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 34 tests
+npm test           # vitest, 38 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --days=120
 npm run build      # type check and build
 ```

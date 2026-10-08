@@ -47,6 +47,17 @@ describe('staff', () => {
   });
 });
 
+test('staff cannot make a rested resident sleep again', () => {
+  const s = newGame();
+  s.staff = ['Kari', 'Per', 'Lise'];
+  s.resident.skill.sleep = 2;
+  s.resident.needs.energy = 95;
+  for (let i = 0; i < 4 * 60; i++) {
+    tickMinute(s);
+    expect(s.resident.current?.id).not.toBe('sleep');
+  }
+});
+
 describe('upgrades', () => {
   test('an upgrade costs budget and raises the cap once', () => {
     const s = newGame();

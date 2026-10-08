@@ -18,9 +18,9 @@ export const NEED_THRESHOLD = 30;
 export const SPIRAL_PER_EMPTY_NEED = 0.25;
 
 /** Omsorg one nudge costs. */
-export const OMSORG_PER_NUDGE = 3;
-/** Nudges to fill a bar, by skill level. 0 means automatic. */
-export const BAR_SIZE_BY_SKILL = [4, 2, 1, 0] as const;
+export const OMSORG_PER_NUDGE = 1;
+/** Effort: nudges to fill a bar, by skill level. 0 means automatic. */
+export const BAR_SIZE_BY_SKILL = [12, 6, 3, 0] as const;
 
 export function barSize(skill: number): number {
   return BAR_SIZE_BY_SKILL[Math.min(skill, BAR_SIZE_BY_SKILL.length - 1)] ?? 0;
@@ -29,8 +29,8 @@ export function barSize(skill: number): number {
 /** Completions needed to gain one skill level. */
 export const COMPLETIONS_PER_LEVEL = 5;
 export const MAX_SKILL = BAR_SIZE_BY_SKILL.length - 1;
-/** An automatic activity starts when its trigger need drops below this. */
-export const AUTO_BELOW = 50;
+/** A ready activity (full bar or automatic) starts when its trigger need drops below this. */
+export const READY_BELOW = 50;
 
 /** How many rungs the resident is learning at the same time. */
 export const LEARNING_WINDOW = 3;
@@ -43,7 +43,7 @@ export const HIRE_COST_BASE = 400;
 export const HIRE_COST_GROWTH = 1.5;
 export const STAFF_WAGE_PER_DAY = 40;
 /** Free nudges each staff member gives per game hour. */
-export const STAFF_NUDGES_PER_HOUR = 0.25;
+export const STAFF_NUDGES_PER_HOUR = 0.75;
 
 /** Overskudd gained per game hour while every active need is at or above the threshold. */
 export const OVERSKUDD_PER_HOUR = 1;

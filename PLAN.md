@@ -69,8 +69,11 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 ### Nudges and skill
 
-- One nudge costs 3 omsorg. Bars need L0 = 4 nudges, L1 = 2, L2 = 1, L3 = 0 (automatic). Few, heavy taps: the game is tactical, not a tapping race.
-- Each completed activity gives skill XP for that activity: 5 completions per level. Nudging is allowed when the need is full, so omsorg sets the pace.
+- One nudge costs 1 omsorg. The bar size is the **effort**: L0 = 12 nudges, L1 = 6, L2 = 3, L3 = 0 (automatic). Press and hold a card to keep nudging.
+- A full bar means the effort is gone: the activity is **ready**. It holds one charge. A ready activity starts only when its need drops below 50, the same rule as an automatic activity. So you can stockpile ready activities, but only as far as your omsorg goes.
+- The resident does ready activities lowest need first. On the same need, a nudged activity goes before an automatic one. Cards show the order as #1, #2, and so on.
+- Each completed activity gives skill XP for that activity: 5 completions per level. The need sets the pace of completions.
+- Later (ideas from play, not built): effort that depends on the resident and the activity (a job application could be 32 nudges), several activities for each need, skill categories (cooking, household) that cover many activities, and overskudd spent on training.
 
 ### Omsorg
 
@@ -146,7 +149,9 @@ Each step ends with something playable and one question to answer by playing.
    _Question: are proposals interesting choices or noise?_
 6. **Discharge and the next resident.** First half done: tiers, vedtak, tax, glimpse, and two grey-box archetypes (Arvid, Maja) that cycle. Budget, staff and upgrades carry over. Days slowed to 24 s. Play showed "now or wait" was not a decision, because waiting cost nothing. 6b adds a waiting list with a cost: the longer the next person waits, the worse they arrive. The top bar shows Helped and Waiting. Next: the third archetype, and maybe two beds.
    _Question: is "discharge now or wait" a real decision?_
-7. **Balance pass.** Tune with `npm run sim`.
+7. **Ready queue and landscape layout.** 7a: a full bar makes an activity ready, and the need decides when it starts. 1 omsorg per nudge, bars 12/6/3. Three-column landscape layout with the venteliste on screen. Fixes staff queueing sleep many times.
+   _Question: does "I make it possible, they choose when" feel better than "I click, they do it"?_
+8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 
 ## Open questions to answer in play

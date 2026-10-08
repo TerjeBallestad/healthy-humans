@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
-  AUTO_BELOW,
+  READY_BELOW,
   COMPLETIONS_PER_LEVEL,
   LEARNING_WINDOW,
   MAX_SKILL,
@@ -69,9 +69,10 @@ describe('nudges', () => {
     expect(canNudge(s, 'eat')).toBe(false);
   });
 
-  test('a full bar starts the activity, which refills its need', () => {
+  test('a full bar starts the activity when its need is low, and refills it', () => {
     const s = newGame();
     s.omsorg = OMSORG_CAP;
+    s.resident.needs.food = READY_BELOW - 5;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
     expect(canNudge(s, 'eat')).toBe(false);
     tickMinute(s);
@@ -84,9 +85,40 @@ describe('nudges', () => {
     expect(s.log[0]?.text).toBe('Ate.');
   });
 
+  test('a full bar waits while the need is fine', () => {
+    const s = newGame();
+    s.omsorg = OMSORG_CAP;
+    s.resident.needs.food = 90;
+    for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
+    tickMinute(s);
+    expect(s.resident.current).toBeNull();
+    expect(s.resident.bars.eat).toBe(barSize(0));
+  });
+
+  test('a full bar holds one charge only', () => {
+    const s = newGame();
+    s.omsorg = OMSORG_CAP;
+    s.resident.needs.energy = 95;
+    for (let i = 0; i < barSize(0); i++) nudge(s, 'sleep');
+    expect(nudge(s, 'sleep')).toBe(false);
+  });
+
+  test('the lowest need goes first', () => {
+    const s = newGame();
+    s.omsorg = OMSORG_CAP;
+    s.resident.needs.food = 40;
+    s.resident.needs.hygiene = 20;
+    for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
+    for (let i = 0; i < barSize(0); i++) nudge(s, 'shower');
+    tickMinute(s);
+    expect(s.resident.current?.id).toBe('shower');
+  });
+
   test('a full bar waits while the resident is busy', () => {
     const s = newGame();
     s.omsorg = OMSORG_CAP;
+    s.resident.needs.food = 20;
+    s.resident.needs.hygiene = 30;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
     tickMinute(s);
     for (let i = 0; i < barSize(0); i++) nudge(s, 'shower');
@@ -101,6 +133,7 @@ describe('nudges', () => {
 /** Nudge an activity until it starts, then run until it is done. */
 const complete = (s: ReturnType<typeof newGame>, id: 'eat' | 'shower') => {
   s.omsorg = OMSORG_CAP;
+  s.resident.needs[id === 'eat' ? 'food' : 'hygiene'] = 10;
   while (nudge(s, id));
   tickMinute(s);
   while (s.resident.current) tickMinute(s);
@@ -126,7 +159,7 @@ describe('skill and the ladder', () => {
   test('an automatic activity starts when its need drops low', () => {
     const s = newGame();
     s.resident.skill.eat = MAX_SKILL;
-    s.resident.needs.food = AUTO_BELOW - 1;
+    s.resident.needs.food = READY_BELOW - 1;
     tickMinute(s);
     expect(s.resident.current?.id).toBe('eat');
   });

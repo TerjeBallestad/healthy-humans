@@ -2,7 +2,7 @@ import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activit
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
 import {
-  AUTO_BELOW,
+  READY_BELOW,
   COMPLETIONS_PER_LEVEL,
   LEARNING_WINDOW,
   MAX_SKILL,
@@ -17,7 +17,7 @@ import {
 } from '../content/tuning';
 import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
 import { maybePropose } from './proposals';
-import { activeNeeds, unlockedActivities } from './selectors';
+import { activeNeeds, readyQueue, unlockedActivities } from './selectors';
 import type { GameState, Resident } from './state';
 
 const LOG_LIMIT = 30;
@@ -141,20 +141,9 @@ export function fillLearningWindow(r: Resident): ActivityDef[] {
 }
 
 function startNextActivity(r: Resident) {
-  const open = unlockedActivities(r);
-  // Nudged activities first, in ladder order.
-  const nudged = open.find((a) => {
-    const size = barSize(r.skill[a.id]);
-    return size > 0 && r.bars[a.id] >= size;
-  });
-  if (nudged) {
-    r.bars[nudged.id] = 0;
-    r.current = { id: nudged.id, remaining: nudged.duration };
-    return;
-  }
-  // Then automatic activities, for the lowest need under the trigger line.
-  const auto = open
-    .filter((a) => barSize(r.skill[a.id]) === 0 && r.needs[a.trigger] < AUTO_BELOW)
-    .sort((x, y) => r.needs[x.trigger] - r.needs[y.trigger])[0];
-  if (auto) r.current = { id: auto.id, remaining: auto.duration };
+  const next = readyQueue(r).find((a) => r.needs[a.trigger] < READY_BELOW);
+  if (!next) return;
+  // A nudged activity uses up its bar. An automatic one has no bar.
+  r.bars[next.id] = 0;
+  r.current = { id: next.id, remaining: next.duration };
 }

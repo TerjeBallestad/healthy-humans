@@ -10,7 +10,7 @@ export function InstitutionPanel() {
   const s = useGame();
   const shop = UPGRADES.filter((u) => !s.upgrades.includes(u.id));
   return (
-    <section class="institution">
+    <section class="panel institution">
       {s.discharged.length > 0 && (
         <>
           <h3>Discharged</h3>
