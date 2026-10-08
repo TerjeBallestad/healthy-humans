@@ -612,12 +612,12 @@ button:disabled {
 }
 /* An up arrow with the price inside. */
 .train {
-  width: 34px;
-  height: 38px;
+  width: 48px;
+  height: 40px;
   padding: 12px 0 0;
   border: none;
   border-radius: 0;
-  clip-path: polygon(50% 0, 100% 42%, 72% 42%, 72% 100%, 28% 100%, 28% 42%, 0 42%);
+  clip-path: polygon(50% 0, 100% 42%, 78% 42%, 78% 100%, 22% 100%, 22% 42%, 0 42%);
   background: var(--gold);
   color: var(--bg);
   font-size: 0.75rem;
