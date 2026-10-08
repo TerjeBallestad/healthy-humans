@@ -1,6 +1,5 @@
 import type { ActivityDef } from '../content/activities';
-import { NEEDS } from '../content/needs';
-import { MAX_SKILL, READY_BELOW, barSize, trainCost } from '../content/tuning';
+import { MAX_SKILL, barSize, trainCost } from '../content/tuning';
 import { canNudge, canTrain, nudge, train } from '../sim/actions';
 import { readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
@@ -32,15 +31,6 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const doing = r.current?.id === a.id;
   const progress =
     doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
-  const need = NEEDS[a.trigger].label;
-
-  let note: string;
-  if (doing) note = 'Doing it now';
-  else if (priority > 0 && r.needs[a.trigger] < READY_BELOW) note = 'Up next';
-  // The dashed outline already says it waits. The note says for what.
-  else if (priority > 0) note = `${need} above ${READY_BELOW}`;
-  else note = `${filled}/${size}`;
-
   const classes = ['card', doing && 'doing', priority > 0 && 'ready', auto && 'auto']
     .filter(Boolean)
     .join(' ');
@@ -83,10 +73,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
         <span class="meter progress" title="The activity in progress">
           <span class="fill" style={{ width: `${progress * 100}%` }} />
         </span>
-        <span class="foot">
-          <span class="note">{note}</span>
-          {!auto && <TrainButton activity={a} />}
-        </span>
+        <span class="foot">{!auto && <TrainButton activity={a} />}</span>
       </span>
     </div>
   );

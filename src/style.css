@@ -511,11 +511,6 @@ button:disabled {
 .card .progress .fill {
   transition: none;
 }
-.card .note {
-  font-size: 0.8rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
 .card.ready {
   border-style: dashed;
   border-color: var(--accent);
@@ -524,10 +519,6 @@ button:disabled {
   border-style: solid;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
-}
-.card.doing .note {
-  color: var(--accent);
-  font-weight: 600;
 }
 .card.auto:not(.doing) {
   border-style: solid;
@@ -597,7 +588,7 @@ button:disabled {
 
 .card .foot {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 8px;
 }
