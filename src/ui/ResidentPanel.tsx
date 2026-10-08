@@ -17,7 +17,7 @@ export function ResidentPanel() {
       <p class="muted intro">{r.intro}</p>
       {r.strain > 0.005 && (
         <p class="strain">
-          Waited {r.waitedDays} days for a place. Needs drop {Math.round(r.strain * 100)}% faster
+          Waited {r.waitedWeeks} weeks for a place. Needs drop {Math.round(r.strain * 100)}% faster
           for now.
         </p>
       )}
@@ -58,12 +58,12 @@ export function ResidentPanel() {
         {best && (
           <button class="buy" onClick={() => act(openDischarge)}>
             <span>Discharge: {best.label.toLowerCase()}</span>
-            <span class="price">+{best.taxPerDay} kr/day</span>
+            <span class="price">+{best.taxPerWeek} kr/week</span>
           </button>
         )}
         {better && (
           <p class="muted hint">
-            {better.label} (+{better.taxPerDay} kr/day) needs {better.needs}.
+            {better.label} (+{better.taxPerWeek} kr/week) needs {better.needs}.
           </p>
         )}
       </div>

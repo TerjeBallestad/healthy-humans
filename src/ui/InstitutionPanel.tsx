@@ -1,8 +1,8 @@
-import { STAFF_WAGE_PER_DAY } from '../content/tuning';
+import { STAFF_WAGE_PER_WEEK } from '../content/tuning';
 import { TIER_BY_ID } from '../content/tiers';
 import { UPGRADES } from '../content/upgrades';
 import { buyUpgrade, hire } from '../sim/actions';
-import { taxPerDay } from '../sim/discharge';
+import { taxPerWeek } from '../sim/discharge';
 import { canAffordWage, canBuy, canHire, hireCost } from '../sim/institution';
 import { act, useGame } from '../store';
 
@@ -18,7 +18,7 @@ export function InstitutionPanel() {
             {s.discharged
               .map((d) => `${d.name} (${TIER_BY_ID[d.tier].label.toLowerCase()})`)
               .join(', ')}
-            <span class="muted"> · +{taxPerDay(s)} kr/day in tax</span>
+            <span class="muted"> · +{taxPerWeek(s)} kr/week in tax</span>
           </p>
         </>
       )}
@@ -32,7 +32,7 @@ export function InstitutionPanel() {
         <span>Hire a miljøarbeider</span>
         <span class="price">
           {canAffordWage(s)
-            ? `${hireCost(s)} kr · ${STAFF_WAGE_PER_DAY} kr/day`
+            ? `${hireCost(s)} kr · ${STAFF_WAGE_PER_WEEK} kr/week`
             : 'no room in the budget'}
         </span>
       </button>

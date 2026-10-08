@@ -3,7 +3,7 @@ import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
 import {
   MAX_CHANCE,
   MAX_SKILL,
-  PROPOSAL_COOLDOWN_DAYS,
+  PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
   PROPOSAL_COST_SKILL,
   SUPPORT_STEPS,
@@ -15,6 +15,7 @@ import { random } from './rng';
 import { unlockedActivities } from './selectors';
 import type { GameState, ProposalSubject, Resident } from './state';
 import { levelUp, log } from './tick';
+import { TICKS_PER_WEEK } from './time';
 
 export function proposalCost(subject: ProposalSubject): number {
   return subject.kind === 'milestone' ? PROPOSAL_COST_MILESTONE : PROPOSAL_COST_SKILL;
@@ -60,14 +61,14 @@ export function eligibleSubjects(r: Resident): ProposalSubject[] {
 /** Open a proposal when the cooldown is over and the resident has the overskudd. */
 export function maybePropose(state: GameState) {
   if (state.proposal || state.discharge) return;
-  if (state.minute - state.lastProposalMinute < PROPOSAL_COOLDOWN_DAYS * 1440) return;
+  if (state.tick - state.lastProposalTick < PROPOSAL_COOLDOWN_WEEKS * TICKS_PER_WEEK) return;
   const r = state.resident;
   const options = eligibleSubjects(r).filter((sub) => r.overskudd >= proposalCost(sub));
   if (options.length === 0) return;
   const milestone = options.find((o) => o.kind === 'milestone');
   const subject = milestone ?? options[Math.floor(random(state) * options.length)]!;
   state.proposal = { subject };
-  state.lastProposalMinute = state.minute;
+  state.lastProposalTick = state.tick;
   state.resumeSpeed = state.speed || state.resumeSpeed;
   state.speed = 0;
 }

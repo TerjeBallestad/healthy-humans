@@ -3,8 +3,8 @@ export type NeedId = 'food' | 'hygiene' | 'energy' | 'home' | 'social';
 export interface NeedDef {
   id: NeedId;
   label: string;
-  /** Points lost per game hour at base rate. */
-  decayPerHour: number;
+  /** Points lost per real second at 1x, at base rate. */
+  decayPerSecond: number;
   /** Shown when the need is below the threshold. Behaviour, never a diagnosis. */
   lowState: string;
   /** Log line when the need drops low. {name} is the resident's name. */
@@ -17,7 +17,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
   food: {
     id: 'food',
     label: 'Food',
-    decayPerHour: 5,
+    decayPerSecond: 5,
     lowState: 'skipping meals',
     lowLog: '{name} is skipping meals.',
     idleLine: 'Opens the fridge. Closes it again.',
@@ -25,7 +25,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
   hygiene: {
     id: 'hygiene',
     label: 'Hygiene',
-    decayPerHour: 3,
+    decayPerSecond: 3,
     lowState: "hasn't showered",
     lowLog: "{name} hasn't showered in days.",
     idleLine: 'Wearing the same hoodie as yesterday.',
@@ -33,7 +33,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
   energy: {
     id: 'energy',
     label: 'Energy',
-    decayPerHour: 6,
+    decayPerSecond: 6,
     lowState: 'exhausted',
     lowLog: '{name} is exhausted.',
     idleLine: 'Lying on the sofa, staring at the ceiling.',
@@ -41,7 +41,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
   home: {
     id: 'home',
     label: 'Home',
-    decayPerHour: 3,
+    decayPerSecond: 3,
     lowState: 'dishes piling up',
     lowLog: 'The dishes are piling up.',
     idleLine: 'Steps over a pile of clothes.',
@@ -49,7 +49,7 @@ export const NEEDS: Record<NeedId, NeedDef> = {
   social: {
     id: 'social',
     label: 'Social',
-    decayPerHour: 2.5,
+    decayPerSecond: 2.5,
     lowState: 'phone off',
     lowLog: '{name} turned the phone off.',
     idleLine: 'The phone lights up. Face down it goes.',

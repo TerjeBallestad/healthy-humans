@@ -1,29 +1,32 @@
 import {
-  GRANT_PER_DAY,
+  GRANT_PER_WEEK,
   HIRE_COST_BASE,
   HIRE_COST_GROWTH,
   OMSORG_CAP,
-  OMSORG_PER_HOUR,
-  STAFF_WAGE_PER_DAY,
+  OMSORG_PER_SECOND,
+  STAFF_WAGE_PER_WEEK,
 } from '../content/tuning';
 import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
-import { taxPerDay } from './discharge';
+import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
 
 export function omsorgCap(s: GameState): number {
   return s.upgrades.reduce((cap, id) => cap + (UPGRADE_BY_ID[id].capAdd ?? 0), OMSORG_CAP);
 }
 
-export function omsorgPerHour(s: GameState): number {
-  return s.upgrades.reduce((rate, id) => rate * (UPGRADE_BY_ID[id].rateMult ?? 1), OMSORG_PER_HOUR);
+export function omsorgPerSecond(s: GameState): number {
+  return s.upgrades.reduce(
+    (rate, id) => rate * (UPGRADE_BY_ID[id].rateMult ?? 1),
+    OMSORG_PER_SECOND,
+  );
 }
 
-export function wagesPerDay(s: GameState): number {
-  return s.staff.length * STAFF_WAGE_PER_DAY;
+export function wagesPerWeek(s: GameState): number {
+  return s.staff.length * STAFF_WAGE_PER_WEEK;
 }
 
-export function netIncomePerDay(s: GameState): number {
-  return GRANT_PER_DAY + taxPerDay(s) - wagesPerDay(s);
+export function netIncomePerWeek(s: GameState): number {
+  return GRANT_PER_WEEK + taxPerWeek(s) - wagesPerWeek(s);
 }
 
 export function hireCost(s: GameState): number {
@@ -32,7 +35,7 @@ export function hireCost(s: GameState): number {
 
 /** Wages may never eat the whole grant. */
 export function canAffordWage(s: GameState): boolean {
-  return netIncomePerDay(s) - STAFF_WAGE_PER_DAY >= 0;
+  return netIncomePerWeek(s) - STAFF_WAGE_PER_WEEK >= 0;
 }
 
 export function canHire(s: GameState): boolean {

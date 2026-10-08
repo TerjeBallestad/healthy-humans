@@ -39,7 +39,7 @@ export function DebugPanel() {
               onClick={() =>
                 act((g) => {
                   g.resident.overskudd = 60;
-                  g.lastProposalMinute = -1e9;
+                  g.lastProposalTick = -1e9;
                 })
               }
             >

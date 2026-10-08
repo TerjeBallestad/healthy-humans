@@ -4,11 +4,10 @@ import {
   BUDGET_START,
   LEARNING_WINDOW,
   OMSORG_START,
-  START_MINUTE_OF_DAY,
   WAIT_NEED_FLOOR,
-  WAIT_NEED_LOSS_PER_DAY,
+  WAIT_NEED_LOSS_PER_WEEK,
   WAIT_STRAIN_CAP,
-  WAIT_STRAIN_PER_DAY,
+  WAIT_STRAIN_PER_WEEK,
   WAITLIST_START,
 } from '../content/tuning';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
@@ -16,11 +15,11 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 export interface CurrentActivity {
   id: ActivityId;
-  /** Game minutes left. */
+  /** Game ticks left. */
   remaining: number;
 }
 
@@ -40,7 +39,7 @@ export interface Resident {
   overskudd: number;
   milestones: MilestoneId[];
   /** Days on the waiting list before moving in. */
-  waitedDays: number;
+  waitedWeeks: number;
   /** Extra need decay from the wait, as a fraction. Fades over time. */
   strain: number;
 }
@@ -61,7 +60,7 @@ export interface Proposal {
 export interface Discharged {
   name: string;
   tier: TierId;
-  minute: number;
+  tick: number;
 }
 
 /** Open discharge dialog. The game is paused while it is set. */
@@ -72,35 +71,35 @@ export interface Discharge {
 }
 
 export interface LogEntry {
-  minute: number;
+  tick: number;
   text: string;
 }
 
 export interface GameState {
   version: number;
-  /** Game minutes since the start of day 1. */
-  minute: number;
+  /** Game ticks since the start. See time.ts. */
+  tick: number;
   speed: number;
   omsorg: number;
   /** Kroner. */
   budget: number;
   /** Names of hired staff. */
   staff: string[];
-  /** Staff taps not yet spent, carried between minutes. */
+  /** Staff taps not yet spent, carried between ticks. */
   staffCarry: number;
   upgrades: UpgradeId[];
   resident: Resident;
   /** Everyone discharged so far. Each one pays tax for the rest of the game. */
   discharged: Discharged[];
   discharge: Discharge | null;
-  /** The minute each person on the waiting list joined. First in line first. */
+  /** The tick each person on the waiting list joined. First in line first. */
   waiting: number[];
   log: LogEntry[];
   /** Open proposal. The game is paused while it is set. */
   proposal: Proposal | null;
   /** Speed to return to when a dialog closes. */
   resumeSpeed: number;
-  lastProposalMinute: number;
+  lastProposalTick: number;
   seed: number;
 }
 
@@ -108,9 +107,9 @@ const perActivity = (value: number) =>
   Object.fromEntries(ACTIVITIES.map((a) => [a.id, value])) as Record<ActivityId, number>;
 
 /** A resident who waited longer arrives with lower needs and a strain on decay. */
-export function newResident(id: ArchetypeId = 'arvid', waitedDays = 0): Resident {
+export function newResident(id: ArchetypeId = 'arvid', waitedWeeks = 0): Resident {
   const a = ARCHETYPE_BY_ID[id];
-  const loss = waitedDays * WAIT_NEED_LOSS_PER_DAY;
+  const loss = waitedWeeks * WAIT_NEED_LOSS_PER_WEEK;
   const needs = Object.fromEntries(
     Object.entries(a.startNeeds).map(([n, v]) => [n, Math.max(WAIT_NEED_FLOOR, v - loss)]),
   ) as Record<NeedId, number>;
@@ -126,15 +125,15 @@ export function newResident(id: ArchetypeId = 'arvid', waitedDays = 0): Resident
     current: null,
     overskudd: 0,
     milestones: [],
-    waitedDays,
-    strain: Math.min(WAIT_STRAIN_CAP, waitedDays * WAIT_STRAIN_PER_DAY),
+    waitedWeeks,
+    strain: Math.min(WAIT_STRAIN_CAP, waitedWeeks * WAIT_STRAIN_PER_WEEK),
   };
 }
 
 export function newGame(): GameState {
   return {
     version: SAVE_VERSION,
-    minute: START_MINUTE_OF_DAY,
+    tick: 0,
     speed: 1,
     omsorg: OMSORG_START,
     budget: BUDGET_START,
@@ -144,11 +143,11 @@ export function newGame(): GameState {
     resident: newResident(ARCHETYPES[0]!.id),
     discharged: [],
     discharge: null,
-    waiting: Array.from({ length: WAITLIST_START }, () => START_MINUTE_OF_DAY),
-    log: [{ minute: START_MINUTE_OF_DAY, text: ARCHETYPES[0]!.arrives }],
+    waiting: Array.from({ length: WAITLIST_START }, () => 0),
+    log: [{ tick: 0, text: ARCHETYPES[0]!.arrives }],
     proposal: null,
     resumeSpeed: 1,
-    lastProposalMinute: START_MINUTE_OF_DAY,
+    lastProposalTick: 0,
     seed: (Math.random() * 2 ** 32) | 0,
   };
 }

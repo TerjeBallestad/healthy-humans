@@ -8,35 +8,40 @@ import {
   MAX_SKILL,
   NEED_THRESHOLD,
   OVERSKUDD_CAP,
-  OVERSKUDD_PER_HOUR,
+  OVERSKUDD_PER_SECOND,
   SPIRAL_PER_EMPTY_NEED,
-  STAFF_NUDGES_PER_HOUR,
-  WAIT_STRAIN_FADE_PER_DAY,
-  WAITLIST_DAYS_PER_PERSON,
+  STAFF_NUDGES_PER_SECOND,
+  WAIT_STRAIN_FADE_PER_WEEK,
+  WAITLIST_WEEKS_PER_PERSON,
   barSize,
 } from '../content/tuning';
-import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
+import { netIncomePerWeek, omsorgCap, omsorgPerSecond } from './institution';
 import { maybePropose } from './proposals';
 import { activeNeeds, readyQueue, unlockedActivities } from './selectors';
 import type { GameState, Resident } from './state';
+import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
 
 const LOG_LIMIT = 30;
 
 export function log(state: GameState, text: string) {
-  state.log.unshift({ minute: state.minute, text });
+  state.log.unshift({ tick: state.tick, text });
   if (state.log.length > LOG_LIMIT) state.log.length = LOG_LIMIT;
 }
 
-/** Advance the sim by one game minute. */
-export function tickMinute(state: GameState) {
-  state.minute += 1;
-  state.omsorg = Math.min(omsorgCap(state), state.omsorg + omsorgPerHour(state) / 60);
-  state.budget += netIncomePerDay(state) / 1440;
+/** Advance the sim by one tick: 1/60 of a real second at 1x. */
+export function tick(state: GameState) {
+  state.tick += 1;
+  state.omsorg = Math.min(
+    omsorgCap(state),
+    state.omsorg + omsorgPerSecond(state) / TICKS_PER_SECOND,
+  );
+  state.budget += netIncomePerWeek(state) / TICKS_PER_WEEK;
 
-  if (state.minute % (WAITLIST_DAYS_PER_PERSON * 1440) === 0) state.waiting.push(state.minute);
+  if (state.tick % (WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK) === 0)
+    state.waiting.push(state.tick);
 
   const r = state.resident;
-  r.strain = Math.max(0, r.strain - WAIT_STRAIN_FADE_PER_DAY / 1440);
+  r.strain = Math.max(0, r.strain - WAIT_STRAIN_FADE_PER_WEEK / TICKS_PER_WEEK);
   staffWork(state, r);
   decayNeeds(state, r);
   progressActivity(state, r);
@@ -48,13 +53,13 @@ export function tickMinute(state: GameState) {
 /** Overskudd builds only while every active need is above the threshold. */
 function gainOverskudd(r: Resident) {
   if (activeNeeds(r).some((n) => r.needs[n] < NEED_THRESHOLD)) return;
-  r.overskudd = Math.min(OVERSKUDD_CAP, r.overskudd + OVERSKUDD_PER_HOUR / 60);
+  r.overskudd = Math.min(OVERSKUDD_CAP, r.overskudd + OVERSKUDD_PER_SECOND / TICKS_PER_SECOND);
 }
 
 /** Staff put free nudges into the learning bar whose need is lowest. */
 function staffWork(state: GameState, r: Resident) {
   if (state.staff.length === 0) return;
-  state.staffCarry += (state.staff.length * STAFF_NUDGES_PER_HOUR) / 60;
+  state.staffCarry += (state.staff.length * STAFF_NUDGES_PER_SECOND) / TICKS_PER_SECOND;
   while (state.staffCarry >= 1) {
     const target = unlockedActivities(r)
       .filter((a) => {
@@ -80,7 +85,7 @@ function decayNeeds(state: GameState, r: Resident) {
   for (const id of needs) {
     if (current?.refills[id] !== undefined) continue;
     const empty = needs.filter((n) => n !== id && r.needs[n] <= 0).length;
-    const base = (NEEDS[id].decayPerHour * (personal[id] ?? 1)) / 60;
+    const base = (NEEDS[id].decayPerSecond * (personal[id] ?? 1)) / TICKS_PER_SECOND;
     const rate = base * (1 + r.strain) * (1 + empty * SPIRAL_PER_EMPTY_NEED);
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);
@@ -96,7 +101,7 @@ function progressActivity(state: GameState, r: Resident) {
   // Refills arrive spread over the duration.
   for (const [id, amount] of Object.entries(a.refills)) {
     const need = id as keyof typeof r.needs;
-    r.needs[need] = Math.min(100, r.needs[need] + amount / a.duration);
+    r.needs[need] = Math.min(100, r.needs[need] + amount / (a.duration * TICKS_PER_SECOND));
   }
   r.current.remaining -= 1;
   if (r.current.remaining > 0) return;
@@ -145,5 +150,5 @@ function startNextActivity(r: Resident) {
   if (!next) return;
   // A nudged activity uses up its bar. An automatic one has no bar.
   r.bars[next.id] = 0;
-  r.current = { id: next.id, remaining: next.duration };
+  r.current = { id: next.id, remaining: next.duration * TICKS_PER_SECOND };
 }

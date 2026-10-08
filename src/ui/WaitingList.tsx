@@ -1,11 +1,12 @@
-import { WAIT_NEED_FLOOR, WAITLIST_DAYS_PER_PERSON } from '../content/tuning';
+import { WAIT_NEED_FLOOR, WAITLIST_WEEKS_PER_PERSON } from '../content/tuning';
 import { nextArchetype, waitCost } from '../sim/discharge';
 import { useGame } from '../store';
+import { TICKS_PER_WEEK } from '../sim/time';
 
 export function WaitingList() {
   const s = useGame();
-  const period = WAITLIST_DAYS_PER_PERSON * 1440;
-  const nextIn = (period - (s.minute % period)) / 1440;
+  const period = WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK;
+  const nextIn = (period - (s.tick % period)) / TICKS_PER_WEEK;
   return (
     <section class="panel waitlist">
       <h3>
@@ -14,8 +15,8 @@ export function WaitingList() {
       {s.waiting.length === 0 && <p class="muted">Nobody is waiting.</p>}
       <ol>
         {s.waiting.map((joined, i) => {
-          const days = Math.floor((s.minute - joined) / 1440);
-          const cost = waitCost(days);
+          const weeks = Math.floor((s.tick - joined) / TICKS_PER_WEEK);
+          const cost = waitCost(weeks);
           const left = 1 - cost.needLoss / (100 - WAIT_NEED_FLOOR);
           const level = cost.strainPct >= 20 ? 'bad' : cost.strainPct > 0 ? 'worse' : '';
           return (
@@ -24,7 +25,7 @@ export function WaitingList() {
                 {i === 0 ? nextArchetype(s).name : 'Referral'}
                 <span class="muted">
                   {' '}
-                  · {days} {days === 1 ? 'day' : 'days'}
+                  · {weeks} {weeks === 1 ? 'week' : 'weeks'}
                 </span>
                 {i === 0 && <span class="tag">next</span>}
               </span>
@@ -32,7 +33,7 @@ export function WaitingList() {
                 <span class="fill" style={{ width: `${left * 100}%` }} />
               </span>
               <span class="cost">
-                {days === 0
+                {weeks === 0
                   ? 'Just referred'
                   : `Arrives −${cost.needLoss} on needs, decays +${cost.strainPct}%`}
               </span>
@@ -40,7 +41,7 @@ export function WaitingList() {
           );
         })}
       </ol>
-      <p class="muted hint">New referral in {nextIn.toFixed(1)} days.</p>
+      <p class="muted hint">New referral in {nextIn.toFixed(1)} weeks.</p>
     </section>
   );
 }

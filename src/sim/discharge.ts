@@ -4,12 +4,13 @@ import { TIERS, TIER_BY_ID, type TierDef, type TierId } from '../content/tiers';
 import {
   MAX_SKILL,
   WAIT_NEED_FLOOR,
-  WAIT_NEED_LOSS_PER_DAY,
+  WAIT_NEED_LOSS_PER_WEEK,
   WAIT_STRAIN_CAP,
-  WAIT_STRAIN_PER_DAY,
+  WAIT_STRAIN_PER_WEEK,
 } from '../content/tuning';
 import { newResident, type GameState, type Resident } from './state';
 import { log } from './tick';
+import { TICKS_PER_WEEK } from './time';
 
 const automatic = (r: Resident, upToRung: number) =>
   ACTIVITIES.filter((a) => a.rung <= upToRung).every((a) => r.skill[a.id] >= MAX_SKILL);
@@ -41,8 +42,8 @@ export function nextTier(r: Resident): TierDef | null {
   return TIERS[i] ?? null;
 }
 
-export function taxPerDay(s: GameState): number {
-  return s.discharged.reduce((sum, d) => sum + TIER_BY_ID[d.tier].taxPerDay, 0);
+export function taxPerWeek(s: GameState): number {
+  return s.discharged.reduce((sum, d) => sum + TIER_BY_ID[d.tier].taxPerWeek, 0);
 }
 
 /** Open the vedtak for the best tier. Pauses the game. */
@@ -66,7 +67,7 @@ export function signDischarge(s: GameState): boolean {
   const d = s.discharge;
   if (!d || d.signed) return false;
   const r = s.resident;
-  s.discharged.push({ name: r.name, tier: d.tier, minute: s.minute });
+  s.discharged.push({ name: r.name, tier: d.tier, tick: s.tick });
   d.signed = true;
   log(s, `${r.name} is discharged: ${TIER_BY_ID[d.tier].label.toLowerCase()}.`);
   return true;
@@ -78,30 +79,30 @@ export function nextArchetype(s: GameState) {
   return ARCHETYPES[(i + 1) % ARCHETYPES.length]!;
 }
 
-/** Whole days the first person in line has waited. */
-export function nextWaitDays(s: GameState): number {
+/** Whole weeks the first person in line has waited. */
+export function nextWaitWeeks(s: GameState): number {
   const joined = s.waiting[0];
-  return joined === undefined ? 0 : Math.floor((s.minute - joined) / 1440);
+  return joined === undefined ? 0 : Math.floor((s.tick - joined) / TICKS_PER_WEEK);
 }
 
 /** Close the dialog and move the first person in line into the empty bed. */
 export function admitNext(s: GameState) {
   if (!s.discharge?.signed) return;
   const a = nextArchetype(s);
-  const waited = nextWaitDays(s);
+  const waited = nextWaitWeeks(s);
   s.waiting.shift();
   s.resident = newResident(a.id, waited);
   s.discharge = null;
-  s.lastProposalMinute = s.minute;
+  s.lastProposalTick = s.tick;
   log(s, a.arrives);
-  if (waited > 0) log(s, `${a.name} waited ${waited} days for a place.`);
+  if (waited > 0) log(s, `${a.name} waited ${waited} weeks for a place.`);
   s.speed = s.resumeSpeed;
 }
 
 /** What the wait has cost the next person so far, for the vedtak. */
-export function waitCost(days: number) {
+export function waitCost(weeks: number) {
   return {
-    needLoss: Math.min(100 - WAIT_NEED_FLOOR, days * WAIT_NEED_LOSS_PER_DAY),
-    strainPct: Math.round(Math.min(WAIT_STRAIN_CAP, days * WAIT_STRAIN_PER_DAY) * 100),
+    needLoss: Math.min(100 - WAIT_NEED_FLOOR, weeks * WAIT_NEED_LOSS_PER_WEEK),
+    strainPct: Math.round(Math.min(WAIT_STRAIN_CAP, weeks * WAIT_STRAIN_PER_WEEK) * 100),
   };
 }

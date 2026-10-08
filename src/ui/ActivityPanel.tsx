@@ -4,6 +4,7 @@ import { NEEDS } from '../content/needs';
 import { COMPLETIONS_PER_LEVEL, MAX_SKILL, READY_BELOW, barSize } from '../content/tuning';
 import { canNudge, nudge } from '../sim/actions';
 import { readyQueue, unlockedActivities } from '../sim/selectors';
+import { TICKS_PER_SECOND } from '../sim/time';
 import { act, useGame } from '../store';
 
 /** Hold a card this long before nudges repeat. */
@@ -34,7 +35,8 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const auto = size === 0;
   const filled = r.bars[a.id];
   const doing = r.current?.id === a.id;
-  const progress = doing && r.current ? 1 - r.current.remaining / a.duration : 0;
+  const progress =
+    doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
   const hold = useHold(() => act((g) => nudge(g, a.id)));
   const need = NEEDS[a.trigger].label.toLowerCase();
 

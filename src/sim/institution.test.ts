@@ -1,19 +1,20 @@
 import { describe, expect, test } from 'vitest';
-import { GRANT_PER_DAY, HIRE_COST_BASE, OMSORG_CAP, STAFF_WAGE_PER_DAY } from '../content/tuning';
+import { GRANT_PER_WEEK, HIRE_COST_BASE, OMSORG_CAP, STAFF_WAGE_PER_WEEK } from '../content/tuning';
 import { buyUpgrade, hire } from './actions';
-import { canHire, hireCost, netIncomePerDay, omsorgCap } from './institution';
+import { canHire, hireCost, netIncomePerWeek, omsorgCap } from './institution';
 import { newGame } from './state';
-import { tickMinute } from './tick';
+import { tick } from './tick';
+import { TICKS_PER_WEEK } from './time';
 
-const run = (s: ReturnType<typeof newGame>, minutes: number) => {
-  for (let i = 0; i < minutes; i++) tickMinute(s);
+const run = (s: ReturnType<typeof newGame>, ticks: number) => {
+  for (let i = 0; i < ticks; i++) tick(s);
 };
 
 describe('budget', () => {
   test('the grant arrives over the day', () => {
     const s = newGame();
-    run(s, 1440);
-    expect(s.budget).toBeCloseTo(GRANT_PER_DAY, 5);
+    run(s, TICKS_PER_WEEK);
+    expect(s.budget).toBeCloseTo(GRANT_PER_WEEK, 5);
   });
 });
 
@@ -23,7 +24,7 @@ describe('staff', () => {
     s.budget = HIRE_COST_BASE;
     expect(hire(s)).toBe(true);
     expect(s.budget).toBe(0);
-    expect(netIncomePerDay(s)).toBe(GRANT_PER_DAY - STAFF_WAGE_PER_DAY);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - STAFF_WAGE_PER_WEEK);
     expect(hireCost(s)).toBeGreaterThan(HIRE_COST_BASE);
   });
 
@@ -31,7 +32,7 @@ describe('staff', () => {
     const s = newGame();
     s.budget = 1e6;
     while (hire(s));
-    expect(netIncomePerDay(s)).toBeGreaterThanOrEqual(0);
+    expect(netIncomePerWeek(s)).toBeGreaterThanOrEqual(0);
     expect(canHire(s)).toBe(false);
   });
 
@@ -53,7 +54,7 @@ test('staff cannot make a rested resident sleep again', () => {
   s.resident.skill.sleep = 2;
   s.resident.needs.energy = 95;
   for (let i = 0; i < 4 * 60; i++) {
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current?.id).not.toBe('sleep');
   }
 });

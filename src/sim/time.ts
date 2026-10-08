@@ -1,17 +1,21 @@
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+import { SECONDS_PER_WEEK } from '../content/tuning';
 
-export function dayIndex(minute: number): number {
-  return Math.floor(minute / 1440);
+// Two clocks, as in Game Dev Story. Activities run in real seconds. The calendar runs in
+// weeks, far faster than life. The sim counts ticks: 60 per real second at 1x.
+export const TICKS_PER_SECOND = 60;
+export const TICKS_PER_WEEK = SECONDS_PER_WEEK * TICKS_PER_SECOND;
+const WEEKS_PER_MONTH = 4;
+const MONTHS_PER_YEAR = 12;
+
+/** Whole weeks since the start. */
+export function weekIndex(tick: number): number {
+  return Math.floor(tick / TICKS_PER_WEEK);
 }
 
-export function formatClock(minute: number): string {
-  const m = Math.floor(minute) % 1440;
-  const hh = String(Math.floor(m / 60)).padStart(2, '0');
-  const mm = String(m % 60).padStart(2, '0');
-  return `${hh}:${mm}`;
-}
-
-export function formatDate(minute: number): string {
-  const day = dayIndex(minute);
-  return `Week ${Math.floor(day / 7) + 1}, ${DAYS[day % 7]}`;
+/** "Y1 M4 W2". */
+export function formatDate(tick: number): string {
+  const w = weekIndex(tick);
+  const year = Math.floor(w / (WEEKS_PER_MONTH * MONTHS_PER_YEAR)) + 1;
+  const month = (Math.floor(w / WEEKS_PER_MONTH) % MONTHS_PER_YEAR) + 1;
+  return `Y${year} M${month} W${(w % WEEKS_PER_MONTH) + 1}`;
 }

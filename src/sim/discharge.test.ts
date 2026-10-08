@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import { ACTIVITIES } from '../content/activities';
-import { GRANT_PER_DAY, MAX_SKILL } from '../content/tuning';
+import { GRANT_PER_WEEK, MAX_SKILL } from '../content/tuning';
 import { admitNext, bestTier, cancelDischarge, openDischarge, signDischarge } from './discharge';
-import { netIncomePerDay } from './institution';
+import { netIncomePerWeek } from './institution';
 import { maybePropose } from './proposals';
 import { newGame, type Resident } from './state';
-import { tickMinute } from './tick';
+import { tick } from './tick';
+import { TICKS_PER_WEEK } from './time';
 
 const automatic = (r: Resident, upToRung: number) => {
   for (const a of ACTIVITIES) if (a.rung <= upToRung) r.skill[a.id] = MAX_SKILL;
@@ -53,10 +54,10 @@ describe('discharge', () => {
     s.budget = 500;
     s.upgrades = ['coffee'];
     automatic(s.resident, 6);
-    const before = netIncomePerDay(s);
+    const before = netIncomePerWeek(s);
     openDischarge(s);
     signDischarge(s);
-    expect(netIncomePerDay(s)).toBe(before + 10);
+    expect(netIncomePerWeek(s)).toBe(before + 10);
     admitNext(s);
     expect(s.discharge).toBeNull();
     expect(s.resident.name).toBe('Maja');
@@ -65,14 +66,14 @@ describe('discharge', () => {
     expect(s.staff).toEqual(['Kari']);
     expect(s.budget).toBe(500);
     expect(s.upgrades).toHaveLength(1);
-    expect(netIncomePerDay(s)).toBe(GRANT_PER_DAY - 40 + 10);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - 40 + 10);
   });
 
   test('no proposal opens while the vedtak is open', () => {
     const s = newGame();
     automatic(s.resident, 6);
     s.resident.overskudd = 60;
-    s.lastProposalMinute = -1e9;
+    s.lastProposalTick = -1e9;
     openDischarge(s);
     maybePropose(s);
     expect(s.proposal).toBeNull();
@@ -83,24 +84,24 @@ describe('waiting list', () => {
   test('grows over time', () => {
     const s = newGame();
     const before = s.waiting.length;
-    for (let i = 0; i < 3 * 1440; i++) tickMinute(s);
+    for (let i = 0; i < 3 * TICKS_PER_WEEK; i++) tick(s);
     expect(s.waiting.length).toBe(before + 1);
   });
 
   test('a long wait means a worse start, and the strain fades', () => {
     const s = newGame();
     automatic(s.resident, 6);
-    s.minute += 10 * 1440;
+    s.tick += 10 * TICKS_PER_WEEK;
     openDischarge(s);
     signDischarge(s);
     const before = s.waiting.length;
     admitNext(s);
     const r = s.resident;
     expect(s.waiting.length).toBe(before - 1);
-    expect(r.waitedDays).toBe(10);
+    expect(r.waitedWeeks).toBe(10);
     expect(r.needs.food).toBe(60 - 20);
     expect(r.strain).toBeCloseTo(0.2);
-    for (let i = 0; i < 1440; i++) tickMinute(s);
+    for (let i = 0; i < TICKS_PER_WEEK; i++) tick(s);
     expect(r.strain).toBeCloseTo(0.15);
   });
 

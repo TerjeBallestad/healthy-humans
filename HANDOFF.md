@@ -14,7 +14,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 1. Arvid moves in. He learns three rungs at a time, starting with eat, shower and sleep.
 2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. Press and hold to keep nudging. A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
 3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
-4. **Budget** (120 kr per day) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
+4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
 5. **Overskudd** builds while every need is green. When there is enough, a **proposal** pauses the game:
    - **Try-alone:** success gives one skill level.
    - **Milestone:** NAV meeting, then job application, then work trial.
@@ -22,10 +22,10 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
    Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
 
 6. **Discharge:** when a tier opens, a button shows it. The vedtak shows the tax, what waiting gives, and who comes next. Signing shows a two-line glimpse, then the next resident moves in.
-   - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/day), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
+   - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
    - Residents cycle: Arvid, then Maja (23, sleeps all day). Both are grey-boxes in `src/content/archetypes.ts`.
-7. Days are 24 s at 1x (was 18).
+7. **Two clocks, as in Game Dev Story.** The calendar shows `Y1 M4 W2`, and one week is 24 s at 1x. Activities last real seconds (eat 2 s, sleep 4 s) and are not tied to the calendar. Everything that was per day is now per week, with the same numbers. The sim counts ticks: 60 per real second (`src/sim/time.ts`).
 
 ## Feedback from playtests, in order
 
@@ -40,6 +40,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 | Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.      |
 | Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                              |
 | Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                          |
+| Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.  |
 
 ## Open issues
 
@@ -63,8 +64,8 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 - **Play feedback on 6a:** "discharge now or wait" was not an interesting decision. Waiting cost nothing, so waiting always won. Terje thinks it may need several beds and a waiting list.
 - **6b, the cheap test (live):** one bed, plus a waiting list with a cost. Does a waiting cost alone make the decision interesting?
-  - One person joins the list every 3 days. One person waits at the start.
-  - The first in line moves in next. Each day waited takes 2 points from every start need (floor 15) and adds 2% decay (cap 50%). The strain fades by 5% per day.
+  - One person joins the list every 3 weeks. One person waits at the start.
+  - The first in line moves in next. Each week waited takes 2 points from every start need (floor 15) and adds 2% decay (cap 50%). The strain fades by 5% per week.
   - The top bar shows "Helped" and "Waiting". The vedtak shows what the wait has cost so far.
   - With one bed, the list always grows. That pressure is part of the test.
   - Tuning is at the end of `src/content/tuning.ts`.
@@ -77,7 +78,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 ```
 npm run dev        # local dev server
 npm test           # vitest, 38 tests
-npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --days=120
+npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120
 npm run build      # type check and build
 ```
 

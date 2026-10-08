@@ -5,7 +5,7 @@ import {
   cancelDischarge,
   nextArchetype,
   nextTier,
-  nextWaitDays,
+  nextWaitWeeks,
   signDischarge,
   waitCost,
 } from '../sim/discharge';
@@ -19,7 +19,7 @@ export function DischargeDialog() {
   const tier = TIER_BY_ID[d.tier];
   const better = nextTier(r);
   const next = nextArchetype(s);
-  const waited = nextWaitDays(s);
+  const waited = nextWaitWeeks(s);
   const cost = waitCost(waited);
 
   return (
@@ -34,12 +34,12 @@ export function DischargeDialog() {
               <dt>Assessed as</dt>
               <dd>{tier.label.toLowerCase()}</dd>
               <dt>Tax</dt>
-              <dd class="win">+{tier.taxPerDay} kr per day, for the rest of the game</dd>
+              <dd class="win">+{tier.taxPerWeek} kr per week, for the rest of the game</dd>
               {better && (
                 <>
                   <dt>If you wait</dt>
                   <dd>
-                    {better.label.toLowerCase()} pays +{better.taxPerDay} kr per day. Needs{' '}
+                    {better.label.toLowerCase()} pays +{better.taxPerWeek} kr per week. Needs{' '}
                     {better.needs}.
                   </dd>
                 </>
@@ -50,11 +50,11 @@ export function DischargeDialog() {
               </dd>
               <dt>Waited</dt>
               <dd class="warn">
-                {waited} days.{' '}
+                {waited} weeks.{' '}
                 {waited > 0
                   ? `Arrives with needs −${cost.needLoss} and decay +${cost.strainPct}% for a while. `
                   : ''}
-                Every day you wait makes it worse.
+                Every week you wait makes it worse.
               </dd>
             </dl>
             <div class="choices">
@@ -76,7 +76,7 @@ export function DischargeDialog() {
                 <span class="glimpse">{line}</span>
               ))}
             </blockquote>
-            <p class="gain">+{tier.taxPerDay} kr per day</p>
+            <p class="gain">+{tier.taxPerWeek} kr per week</p>
             <button class="choice" onClick={() => act(admitNext)}>
               {next.name} is at the door
             </button>

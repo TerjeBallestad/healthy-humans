@@ -12,7 +12,7 @@ export interface ActivityDef {
   icon: string;
   /** Short noun for the "handles alone" list. */
   noun: string;
-  /** Game minutes the activity takes. */
+  /** Real seconds the activity takes at 1x. Not tied to the calendar. */
   duration: number;
   /** Total points added to each need over the duration. */
   refills: Partial<Record<NeedId, number>>;
@@ -41,7 +41,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Eat',
     icon: '🍞',
     noun: 'eating',
-    duration: 30,
+    duration: 2,
     refills: { food: 45 },
     trigger: 'food',
     doing: 'Eating something from the freezer.',
@@ -58,7 +58,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Shower',
     icon: '🚿',
     noun: 'showering',
-    duration: 20,
+    duration: 2,
     refills: { hygiene: 70 },
     trigger: 'hygiene',
     doing: 'In the shower.',
@@ -75,7 +75,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Sleep',
     icon: '🛏️',
     noun: 'sleeping',
-    duration: 8 * 60,
+    duration: 4,
     refills: { energy: 90 },
     trigger: 'energy',
     doing: 'Asleep.',
@@ -92,7 +92,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Do the dishes',
     icon: '🍽️',
     noun: 'dishes',
-    duration: 40,
+    duration: 3,
     refills: { home: 35 },
     trigger: 'home',
     doing: 'At the sink, sleeves rolled up.',
@@ -109,7 +109,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Laundry',
     icon: '🧺',
     noun: 'laundry',
-    duration: 90,
+    duration: 4,
     refills: { home: 20, hygiene: 25 },
     trigger: 'hygiene',
     doing: 'Waiting for the washing machine.',
@@ -126,7 +126,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Tidy the room',
     icon: '🧹',
     noun: 'tidying',
-    duration: 60,
+    duration: 3,
     refills: { home: 50 },
     trigger: 'home',
     doing: 'Picking things up off the floor.',
@@ -143,7 +143,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Buy groceries',
     icon: '🛒',
     noun: 'groceries',
-    duration: 60,
+    duration: 4,
     refills: { food: 60 },
     trigger: 'food',
     doing: 'At the shop. Holding the list.',
@@ -160,7 +160,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Go for a walk',
     icon: '🚶',
     noun: 'walks',
-    duration: 45,
+    duration: 3,
     refills: { social: 20, energy: 10 },
     trigger: 'social',
     doing: 'Walking around the block.',
@@ -177,7 +177,7 @@ export const ACTIVITIES: ActivityDef[] = [
     label: 'Call someone',
     icon: '📞',
     noun: 'phone calls',
-    duration: 20,
+    duration: 2,
     refills: { social: 40 },
     trigger: 'social',
     doing: 'On the phone with family.',

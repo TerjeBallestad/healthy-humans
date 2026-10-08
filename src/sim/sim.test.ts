@@ -11,10 +11,14 @@ import {
 import { canNudge, nudge } from './actions';
 import { activeNeeds } from './selectors';
 import { newGame } from './state';
-import { tickMinute } from './tick';
+import { tick } from './tick';
+import { TICKS_PER_SECOND } from './time';
+import { ACTIVITY_BY_ID } from '../content/activities';
 
-const run = (s: ReturnType<typeof newGame>, minutes: number) => {
-  for (let i = 0; i < minutes; i++) tickMinute(s);
+const EAT_TICKS = ACTIVITY_BY_ID.eat.duration * TICKS_PER_SECOND;
+
+const run = (s: ReturnType<typeof newGame>, ticks: number) => {
+  for (let i = 0; i < ticks; i++) tick(s);
 };
 
 describe('needs', () => {
@@ -75,11 +79,11 @@ describe('nudges', () => {
     s.resident.needs.food = READY_BELOW - 5;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
     expect(canNudge(s, 'eat')).toBe(false);
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current?.id).toBe('eat');
     expect(s.resident.bars.eat).toBe(0);
     const food = s.resident.needs.food;
-    run(s, 30);
+    run(s, EAT_TICKS);
     expect(s.resident.current).toBeNull();
     expect(s.resident.needs.food).toBeGreaterThan(food + 30);
     expect(s.log[0]?.text).toBe('Ate.');
@@ -90,7 +94,7 @@ describe('nudges', () => {
     s.omsorg = OMSORG_CAP;
     s.resident.needs.food = 90;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current).toBeNull();
     expect(s.resident.bars.eat).toBe(barSize(0));
   });
@@ -110,7 +114,7 @@ describe('nudges', () => {
     s.resident.needs.hygiene = 20;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
     for (let i = 0; i < barSize(0); i++) nudge(s, 'shower');
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current?.id).toBe('shower');
   });
 
@@ -120,12 +124,12 @@ describe('nudges', () => {
     s.resident.needs.food = 20;
     s.resident.needs.hygiene = 30;
     for (let i = 0; i < barSize(0); i++) nudge(s, 'eat');
-    tickMinute(s);
+    tick(s);
     for (let i = 0; i < barSize(0); i++) nudge(s, 'shower');
-    run(s, 10);
+    run(s, EAT_TICKS / 2);
     expect(s.resident.current?.id).toBe('eat');
     expect(s.resident.bars.shower).toBe(barSize(0));
-    run(s, 25);
+    run(s, EAT_TICKS / 2 + 1);
     expect(s.resident.current?.id).toBe('shower');
   });
 });
@@ -135,8 +139,8 @@ const complete = (s: ReturnType<typeof newGame>, id: 'eat' | 'shower') => {
   s.omsorg = OMSORG_CAP;
   s.resident.needs[id === 'eat' ? 'food' : 'hygiene'] = 10;
   while (nudge(s, id));
-  tickMinute(s);
-  while (s.resident.current) tickMinute(s);
+  tick(s);
+  while (s.resident.current) tick(s);
 };
 
 describe('skill and the ladder', () => {
@@ -160,7 +164,7 @@ describe('skill and the ladder', () => {
     const s = newGame();
     s.resident.skill.eat = MAX_SKILL;
     s.resident.needs.food = READY_BELOW - 1;
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current?.id).toBe('eat');
   });
 
@@ -168,7 +172,7 @@ describe('skill and the ladder', () => {
     const s = newGame();
     s.resident.skill.eat = MAX_SKILL;
     s.resident.needs.food = 90;
-    tickMinute(s);
+    tick(s);
     expect(s.resident.current).toBeNull();
   });
 });

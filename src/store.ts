@@ -1,10 +1,10 @@
 import { signal } from '@preact/signals';
-import { REAL_SECONDS_PER_DAY } from './content/tuning';
 import { clearSave, loadGame, saveGame } from './sim/save';
 import { newGame, type GameState } from './sim/state';
-import { tickMinute } from './sim/tick';
+import { tick } from './sim/tick';
+import { TICKS_PER_SECOND } from './sim/time';
 
-const GAME_MINUTES_PER_REAL_MS = 1440 / (REAL_SECONDS_PER_DAY * 1000);
+const TICKS_PER_REAL_MS = TICKS_PER_SECOND / 1000;
 /** Longest real frame we simulate. Longer gaps (tab hidden) are dropped. */
 const MAX_FRAME_MS = 250;
 const SAVE_EVERY_MS = 5000;
@@ -38,10 +38,10 @@ let lastSave = last;
 function frame(now: number) {
   const dt = Math.min(now - last, MAX_FRAME_MS);
   last = now;
-  carry += dt * state.speed * GAME_MINUTES_PER_REAL_MS;
+  carry += dt * state.speed * TICKS_PER_REAL_MS;
   let ticks = 0;
   while (carry >= 1) {
-    tickMinute(state);
+    tick(state);
     carry -= 1;
     ticks++;
   }

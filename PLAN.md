@@ -34,7 +34,7 @@ One word, one meaning.
 ### Time
 
 - Game time runs only while the game is open. No offline progress.
-- The calendar shows days and weeks. Speed controls: pause, 1x, 2x, 4x.
+- Two clocks, as in Game Dev Story. The calendar shows year, month and week (`Y1 M4 W2`), one week per 24 s at 1x. Activities last a few real seconds and are not tied to the calendar. All economy rates are per week. Speed controls: pause, 1x, 2x, 4x.
 - 1 game day = 24 real seconds at 1x. Tried 12 (frantic) and 18 (better, "could be even slower").
 
 ### Needs
@@ -90,7 +90,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 - When a tier is open, a "Discharge" button appears with the tier name.
 - Discharge shows a dry vedtak (tier, axes, monthly tax), then a two-line glimpse of the person's life outside.
-- Tax per day by tier (placeholder): 10 / 30 / 100 kr, for the rest of the game.
+- Tax per week by tier (placeholder): 10 / 30 / 100 kr, for the rest of the game.
 - A new resident arrives in the empty bed.
 
 ### Budget and staff

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   MAX_SKILL,
-  PROPOSAL_COOLDOWN_DAYS,
+  PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_SKILL,
   SUPPORT_STEPS,
 } from '../content/tuning';
@@ -14,12 +14,13 @@ import {
   maybePropose,
 } from './proposals';
 import { newGame } from './state';
-import { tickMinute } from './tick';
+import { tick } from './tick';
+import { TICKS_PER_WEEK } from './time';
 
 const ready = () => {
   const s = newGame();
   s.resident.overskudd = 30;
-  s.lastProposalMinute = -1e9;
+  s.lastProposalTick = -1e9;
   return s;
 };
 
@@ -27,11 +28,11 @@ describe('overskudd', () => {
   test('grows only while every need is above the threshold', () => {
     const s = newGame();
     s.resident.needs = { food: 90, hygiene: 90, energy: 90, home: 90, social: 90 };
-    tickMinute(s);
+    tick(s);
     expect(s.resident.overskudd).toBeGreaterThan(0);
     const low = newGame();
     low.resident.needs.food = 10;
-    tickMinute(low);
+    tick(low);
     expect(low.resident.overskudd).toBe(0);
   });
 });
@@ -47,7 +48,7 @@ describe('proposals', () => {
 
   test('no proposal during the cooldown', () => {
     const s = ready();
-    s.lastProposalMinute = s.minute - (PROPOSAL_COOLDOWN_DAYS * 1440 - 10);
+    s.lastProposalTick = s.tick - (PROPOSAL_COOLDOWN_WEEKS * TICKS_PER_WEEK - 10);
     maybePropose(s);
     expect(s.proposal).toBeNull();
   });

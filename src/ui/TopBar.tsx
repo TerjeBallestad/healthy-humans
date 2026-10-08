@@ -1,6 +1,6 @@
 import { OMSORG_PER_NUDGE, SPEEDS } from '../content/tuning';
-import { netIncomePerDay, omsorgCap } from '../sim/institution';
-import { formatClock, formatDate } from '../sim/time';
+import { netIncomePerWeek, omsorgCap } from '../sim/institution';
+import { formatDate } from '../sim/time';
 import { act, useGame } from '../store';
 
 const SPEED_LABEL: Record<number, string> = { 0: '❚❚', 1: '▶', 2: '▶▶', 4: '▶▶▶' };
@@ -10,10 +10,7 @@ export function TopBar() {
   const cap = omsorgCap(s);
   return (
     <header class="topbar">
-      <div class="clock">
-        <span class="muted">{formatDate(s.minute)}</span>
-        <strong>{formatClock(s.minute)}</strong>
-      </div>
+      <div class="date chip">{formatDate(s.tick)}</div>
       <div class="speeds">
         {SPEEDS.map((sp) => (
           <button
@@ -38,7 +35,7 @@ export function TopBar() {
       <div class="budget">
         <span class="muted">Budget</span>
         <strong>
-          {Math.floor(s.budget)} kr <span class="muted">+{netIncomePerDay(s)}/day</span>
+          {Math.floor(s.budget)} kr <span class="muted">+{netIncomePerWeek(s)}/week</span>
         </strong>
       </div>
       <div class="helped">
