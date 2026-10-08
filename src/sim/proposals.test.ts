@@ -1,6 +1,18 @@
 import { describe, expect, test } from 'vitest';
-import { MAX_SKILL, PROPOSAL_COOLDOWN_DAYS, PROPOSAL_COST_SKILL, SUPPORT_STEPS } from '../content/tuning';
-import { accept, chance, closeProposal, decline, eligibleSubjects, maybePropose } from './proposals';
+import {
+  MAX_SKILL,
+  PROPOSAL_COOLDOWN_DAYS,
+  PROPOSAL_COST_SKILL,
+  SUPPORT_STEPS,
+} from '../content/tuning';
+import {
+  accept,
+  chance,
+  closeProposal,
+  decline,
+  eligibleSubjects,
+  maybePropose,
+} from './proposals';
 import { newGame } from './state';
 import { tickMinute } from './tick';
 
@@ -95,7 +107,10 @@ describe('proposals', () => {
     expect(first).toEqual({ kind: 'milestone', milestone: 'nav' });
     s.resident.milestones.push('nav');
     s.resident.unlockedRung = 9;
-    expect(eligibleSubjects(s.resident)[0]).toEqual({ kind: 'milestone', milestone: 'application' });
+    expect(eligibleSubjects(s.resident)[0]).toEqual({
+      kind: 'milestone',
+      milestone: 'application',
+    });
     s.resident.milestones.push('application');
     expect(eligibleSubjects(s.resident).some((x) => x.kind === 'milestone')).toBe(false);
     for (const id of Object.keys(s.resident.skill) as (keyof typeof s.resident.skill)[]) {

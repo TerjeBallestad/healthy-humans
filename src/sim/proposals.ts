@@ -76,7 +76,8 @@ export function canSupport(state: GameState, step: number): boolean {
   return state.budget >= (SUPPORT_STEPS[step]?.kr ?? Infinity);
 }
 
-const pips = (n: number) => Array.from({ length: MAX_SKILL }, (_, i) => (i < n ? '●' : '○')).join('');
+const pips = (n: number) =>
+  Array.from({ length: MAX_SKILL }, (_, i) => (i < n ? '●' : '○')).join('');
 
 /** What the player gets if it works, in one line. */
 export function rewardText(r: Resident, subject: ProposalSubject): string {

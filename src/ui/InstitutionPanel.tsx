@@ -15,7 +15,9 @@ export function InstitutionPanel() {
         <>
           <h3>Discharged</h3>
           <p>
-            {s.discharged.map((d) => `${d.name} (${TIER_BY_ID[d.tier].label.toLowerCase()})`).join(', ')}
+            {s.discharged
+              .map((d) => `${d.name} (${TIER_BY_ID[d.tier].label.toLowerCase()})`)
+              .join(', ')}
             <span class="muted"> · +{taxPerDay(s)} kr/day in tax</span>
           </p>
         </>
@@ -39,7 +41,11 @@ export function InstitutionPanel() {
         <>
           <h3>Requests</h3>
           {shop.map((u) => (
-            <button class="buy" disabled={!canBuy(s, u.id)} onClick={() => act((g) => buyUpgrade(g, u.id))}>
+            <button
+              class="buy"
+              disabled={!canBuy(s, u.id)}
+              onClick={() => act((g) => buyUpgrade(g, u.id))}
+            >
               <span>
                 {u.label}
                 <span class="effect">

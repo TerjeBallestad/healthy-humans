@@ -21,4 +21,7 @@ export const TIERS: TierDef[] = [
   { id: 'healthy', label: 'Healthy human', taxPerDay: 100, needs: 'work trial' },
 ];
 
-export const TIER_BY_ID = Object.fromEntries(TIERS.map((t) => [t.id, t])) as Record<TierId, TierDef>;
+export const TIER_BY_ID = Object.fromEntries(TIERS.map((t) => [t.id, t])) as Record<
+  TierId,
+  TierDef
+>;

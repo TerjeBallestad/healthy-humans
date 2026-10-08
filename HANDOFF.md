@@ -20,6 +20,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
    - **Milestone:** NAV meeting, then job application, then work trial.
 
    Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
+
 6. **Discharge:** when a tier opens, a button shows it. The vedtak shows the tax, what waiting gives, and who comes next. Signing shows a two-line glimpse, then the next resident moves in.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/day), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
@@ -28,14 +29,14 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ## Feedback from playtests, in order
 
-| Feedback | What we did |
-|---|---|
-| Step 2 felt like "a grind that doesn't go anywhere" | Expected at that stage. Step 3 added skill and the ladder. |
-| Too easy, too slow at 1x, wanted more at once | Three rungs at once, a faster clock, omsorg as the limit. |
-| "Hard to keep him afloat at the start, but good" | Kept. Staff and the shop moved before proposals. |
-| Double tap zooms on iOS | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.** |
-| Frantic and stressful, should be tactical | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first." |
-| Proposals not hitting right, reward unclear | Support moved to kroner, and the stakes are shown in the dialog. "A little better." |
+| Feedback                                            | What we did                                                                                         |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Step 2 felt like "a grind that doesn't go anywhere" | Expected at that stage. Step 3 added skill and the ladder.                                          |
+| Too easy, too slow at 1x, wanted more at once       | Three rungs at once, a faster clock, omsorg as the limit.                                           |
+| "Hard to keep him afloat at the start, but good"    | Kept. Staff and the shop moved before proposals.                                                    |
+| Double tap zooms on iOS                             | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                     |
+| Frantic and stressful, should be tactical           | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first." |
+| Proposals not hitting right, reward unclear         | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                 |
 
 ## Open issues
 

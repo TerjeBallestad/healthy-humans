@@ -49,7 +49,10 @@ while (s.minute - start < MAX_DAYS * 1440) {
     if (s.proposal.outcome === 'success') kind === 'try' ? trySuccess++ : milestoneSuccess++;
     else kind === 'try' ? tryFail++ : milestoneFail++;
     if (kind === 'milestone' && s.proposal.outcome === 'success') {
-      purchases.push({ what: `milestone ${s.resident.milestones.at(-1)}`, minute: s.minute - start });
+      purchases.push({
+        what: `milestone ${s.resident.milestones.at(-1)}`,
+        minute: s.minute - start,
+      });
     }
     closeProposal(s);
   }
@@ -103,14 +106,24 @@ const day = (minutes: number) => `day ${(minutes / 1440 + 1).toFixed(1)}`;
 
 console.log(`Bot taps up to ${TAPS_PER_SECOND}/s, shop ${SHOP ? 'on' : 'off'}. Real time at 1x.\n`);
 for (const u of unlockedAt) {
-  console.log(`  rung ${String(u.rung).padStart(2)} ${u.label.padEnd(16)} ${real(u.minute).padStart(8)}  (${day(u.minute)})`);
+  console.log(
+    `  rung ${String(u.rung).padStart(2)} ${u.label.padEnd(16)} ${real(u.minute).padStart(8)}  (${day(u.minute)})`,
+  );
 }
 if (purchases.length) console.log('');
 for (const p of purchases) console.log(`  buy  ${p.what.padEnd(36)} ${real(p.minute).padStart(8)}`);
 const done = r.milestones.length === MILESTONES.length;
-console.log(`\n  ${done ? 'Work trial done' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`);
-console.log(`  Proposals: try ${trySuccess} ok / ${tryFail} failed, milestones ${milestoneSuccess} ok / ${milestoneFail} failed`);
-console.log(`  Any need below ${NEED_THRESHOLD}: ${((minutesLow / elapsed) * 100).toFixed(0)}% of the time`);
+console.log(
+  `\n  ${done ? 'Work trial done' : 'Not finished'} at ${real(elapsed)} (${day(elapsed)})`,
+);
+console.log(
+  `  Proposals: try ${trySuccess} ok / ${tryFail} failed, milestones ${milestoneSuccess} ok / ${milestoneFail} failed`,
+);
+console.log(
+  `  Any need below ${NEED_THRESHOLD}: ${((minutesLow / elapsed) * 100).toFixed(0)}% of the time`,
+);
 console.log(`  Any need at 0:     ${((minutesEmpty / elapsed) * 100).toFixed(0)}% of the time`);
-console.log(`  Taps: ${taps} (${(taps / (elapsed * REAL_SEC_PER_MINUTE)).toFixed(2)} per real second)`);
+console.log(
+  `  Taps: ${taps} (${(taps / (elapsed * REAL_SEC_PER_MINUTE)).toFixed(2)} per real second)`,
+);
 console.log(`  Omsorg at cap:     ${s.omsorg.toFixed(0)} now`);

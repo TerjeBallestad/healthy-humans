@@ -37,8 +37,7 @@ export interface Resident {
 }
 
 export type ProposalSubject =
-  | { kind: 'try'; activity: ActivityId }
-  | { kind: 'milestone'; milestone: MilestoneId };
+  { kind: 'try'; activity: ActivityId } | { kind: 'milestone'; milestone: MilestoneId };
 
 export interface Proposal {
   subject: ProposalSubject;

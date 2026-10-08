@@ -1,15 +1,7 @@
 import type { NeedId } from './needs';
 
 export type ActivityId =
-  | 'eat'
-  | 'shower'
-  | 'sleep'
-  | 'dishes'
-  | 'laundry'
-  | 'tidy'
-  | 'groceries'
-  | 'walk'
-  | 'call';
+  'eat' | 'shower' | 'sleep' | 'dishes' | 'laundry' | 'tidy' | 'groceries' | 'walk' | 'call';
 
 export interface ActivityDef {
   id: ActivityId;

@@ -6,7 +6,7 @@
 
 ## Pitch
 
-You run a social housing unit. Residents arrive unable to keep up with the basics of daily life. By clicking, hiring staff and improving the environment you keep their needs afloat, until they build enough *overskudd* to learn the skills they need to manage on their own. When you decide a resident is ready, they move out, get scored, and return to society as a tax-paying healthy human who funds the next round of help.
+You run a social housing unit. Residents arrive unable to keep up with the basics of daily life. By clicking, hiring staff and improving the environment you keep their needs afloat, until they build enough _overskudd_ to learn the skills they need to manage on their own. When you decide a resident is ready, they move out, get scored, and return to society as a tax-paying healthy human who funds the next round of help.
 
 ## Aesthetics (MDA)
 
@@ -24,13 +24,13 @@ You run a social housing unit. Residents arrive unable to keep up with the basic
 
 ## Layers
 
-| Layer | Resource | Role |
-|---|---|---|
-| Needs | Hunger, hygiene, sleep, social, energy | Upkeep. Decay over time. |
-| Personal | Overskudd | Earned only while needs are met. Buys skills. |
-| Institution | Budget, staff hours, beds | Automates upkeep. Shared across residents. |
-| Meta | Healthy humans | Accumulate permanently. Pay tax into the budget. Their quality sets the yield. |
-| Scale | Institutions | Bought with tax income. Each one produces more healthy humans. |
+| Layer       | Resource                               | Role                                                                           |
+| ----------- | -------------------------------------- | ------------------------------------------------------------------------------ |
+| Needs       | Hunger, hygiene, sleep, social, energy | Upkeep. Decay over time.                                                       |
+| Personal    | Overskudd                              | Earned only while needs are met. Buys skills.                                  |
+| Institution | Budget, staff hours, beds              | Automates upkeep. Shared across residents.                                     |
+| Meta        | Healthy humans                         | Accumulate permanently. Pay tax into the budget. Their quality sets the yield. |
+| Scale       | Institutions                           | Bought with tax income. Each one produces more healthy humans.                 |
 
 ## Systems
 
@@ -86,6 +86,6 @@ One resident, one apartment, four needs, overskudd, three skills, one staff hire
 
 - Godot (reuse existing sim) or web stack (faster UI iteration)?
 - How many residents at once before juggling turns into chores?
-- What does the player actually spend clicks *on* beyond needs: events, visits, outings?
+- What does the player actually spend clicks _on_ beyond needs: events, visits, outings?
 - Does the waiting list pressure feel meaningful, or just stressful?
 - How does the UI handle the zoom from one apartment to a network of institutions?

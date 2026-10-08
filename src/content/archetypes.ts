@@ -53,10 +53,7 @@ export const ARCHETYPES: ArchetypeDef[] = [
     startNeeds: { food: 60, hygiene: 70, energy: 40, home: 50, social: 65 },
     decay: { energy: 1.3, food: 0.8, social: 1.2 },
     glimpse: {
-      alone: [
-        'Maja shares a flat with two students.',
-        'She is up before noon. Most days.',
-      ],
+      alone: ['Maja shares a flat with two students.', 'She is up before noon. Most days.'],
       work: [
         'Maja works mornings at a café by the station.',
         'She learned to make the foam leaf on the second week.',

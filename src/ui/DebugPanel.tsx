@@ -46,9 +46,7 @@ export function DebugPanel() {
               Proposal now
             </button>
             <button
-              onClick={() =>
-                act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))
-              }
+              onClick={() => act((g) => NEED_ORDER.forEach((n) => (g.resident.needs[n] = 100)))}
             >
               Fill needs
             </button>

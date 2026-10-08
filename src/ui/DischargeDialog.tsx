@@ -1,6 +1,12 @@
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { TIER_BY_ID } from '../content/tiers';
-import { admitNext, cancelDischarge, nextArchetype, nextTier, signDischarge } from '../sim/discharge';
+import {
+  admitNext,
+  cancelDischarge,
+  nextArchetype,
+  nextTier,
+  signDischarge,
+} from '../sim/discharge';
 import { act, useGame } from '../store';
 
 export function DischargeDialog() {
@@ -29,7 +35,8 @@ export function DischargeDialog() {
                 <>
                   <dt>If you wait</dt>
                   <dd>
-                    {better.label.toLowerCase()} pays +{better.taxPerDay} kr per day. Needs {better.needs}.
+                    {better.label.toLowerCase()} pays +{better.taxPerDay} kr per day. Needs{' '}
+                    {better.needs}.
                   </dd>
                 </>
               )}
