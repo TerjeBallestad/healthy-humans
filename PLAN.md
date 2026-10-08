@@ -144,7 +144,7 @@ Each step ends with something playable and one question to answer by playing.
    _Question: does hiring the first staff member feel like relief?_
 5. **Overskudd and proposals.** Done. Overskudd builds while all needs are green. Proposals pause the game: try-alone (success = one skill level) or a milestone (NAV, job application, work trial). Support costs 0, 150 or 350 kr (moved from omsorg after play). The dialog shows what you win and lose before you choose. Odds as words.
    _Question: are proposals interesting choices or noise?_
-6. **Discharge and the next resident.** First half done: tiers, vedtak, tax, glimpse, and two grey-box archetypes (Arvid, Maja) that cycle. Budget, staff and upgrades carry over. Days slowed to 24 s. Still to do after play: the waiting list number and the third archetype.
+6. **Discharge and the next resident.** First half done: tiers, vedtak, tax, glimpse, and two grey-box archetypes (Arvid, Maja) that cycle. Budget, staff and upgrades carry over. Days slowed to 24 s. Play showed "now or wait" was not a decision, because waiting cost nothing. 6b adds a waiting list with a cost: the longer the next person waits, the worse they arrive. The top bar shows Helped and Waiting. Next: the third archetype, and maybe two beds.
    _Question: is "discharge now or wait" a real decision?_
 7. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._

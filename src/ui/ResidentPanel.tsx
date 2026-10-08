@@ -19,6 +19,12 @@ export function ResidentPanel() {
     <section class="resident">
       <h2>{r.name}</h2>
       <p class="muted intro">{r.intro}</p>
+      {r.strain > 0.005 && (
+        <p class="strain">
+          Waited {r.waitedDays} days for a place. Needs drop {Math.round(r.strain * 100)}% faster
+          for now.
+        </p>
+      )}
       <p class="status">{statusLine(r)}</p>
 
       <ul class="needs">

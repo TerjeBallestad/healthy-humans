@@ -1,7 +1,13 @@
 import { ACTIVITIES } from '../content/activities';
 import { ARCHETYPES } from '../content/archetypes';
 import { TIERS, TIER_BY_ID, type TierDef, type TierId } from '../content/tiers';
-import { MAX_SKILL } from '../content/tuning';
+import {
+  MAX_SKILL,
+  WAIT_NEED_FLOOR,
+  WAIT_NEED_LOSS_PER_DAY,
+  WAIT_STRAIN_CAP,
+  WAIT_STRAIN_PER_DAY,
+} from '../content/tuning';
 import { newResident, type GameState, type Resident } from './state';
 import { log } from './tick';
 
@@ -72,13 +78,30 @@ export function nextArchetype(s: GameState) {
   return ARCHETYPES[(i + 1) % ARCHETYPES.length]!;
 }
 
-/** Close the dialog and move the next resident into the empty bed. */
+/** Whole days the first person in line has waited. */
+export function nextWaitDays(s: GameState): number {
+  const joined = s.waiting[0];
+  return joined === undefined ? 0 : Math.floor((s.minute - joined) / 1440);
+}
+
+/** Close the dialog and move the first person in line into the empty bed. */
 export function admitNext(s: GameState) {
   if (!s.discharge?.signed) return;
   const a = nextArchetype(s);
-  s.resident = newResident(a.id);
+  const waited = nextWaitDays(s);
+  s.waiting.shift();
+  s.resident = newResident(a.id, waited);
   s.discharge = null;
   s.lastProposalMinute = s.minute;
   log(s, a.arrives);
+  if (waited > 0) log(s, `${a.name} waited ${waited} days for a place.`);
   s.speed = s.resumeSpeed;
+}
+
+/** What the wait has cost the next person so far, for the vedtak. */
+export function waitCost(days: number) {
+  return {
+    needLoss: Math.min(100 - WAIT_NEED_FLOOR, days * WAIT_NEED_LOSS_PER_DAY),
+    strainPct: Math.round(Math.min(WAIT_STRAIN_CAP, days * WAIT_STRAIN_PER_DAY) * 100),
+  };
 }

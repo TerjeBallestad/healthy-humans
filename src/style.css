@@ -424,3 +424,21 @@ button:disabled {
 .glimpse {
   display: block;
 }
+
+.queue {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+.queue strong {
+  font-variant-numeric: tabular-nums;
+}
+.strain {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--warn);
+}
+.stakes .warn {
+  color: var(--warn);
+}

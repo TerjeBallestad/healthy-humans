@@ -1,4 +1,5 @@
 import { OMSORG_PER_NUDGE, SPEEDS } from '../content/tuning';
+import { nextWaitDays } from '../sim/discharge';
 import { netIncomePerDay, omsorgCap } from '../sim/institution';
 import { formatClock, formatDate } from '../sim/time';
 import { act, useGame } from '../store';
@@ -40,6 +41,17 @@ export function TopBar() {
         <strong>
           {Math.floor(s.budget)} kr <span class="muted">+{netIncomePerDay(s)}/day</span>
         </strong>
+      </div>
+      <div class="queue">
+        <span>
+          <span class="muted">Helped</span> <strong>{s.discharged.length}</strong>
+        </span>
+        <span>
+          <span class="muted">Waiting</span> <strong>{s.waiting.length}</strong>
+          {s.waiting.length > 0 && (
+            <span class="muted"> · first in line {nextWaitDays(s)} days</span>
+          )}
+        </span>
       </div>
     </header>
   );

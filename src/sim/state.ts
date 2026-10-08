@@ -5,13 +5,18 @@ import {
   LEARNING_WINDOW,
   OMSORG_START,
   START_MINUTE_OF_DAY,
+  WAIT_NEED_FLOOR,
+  WAIT_NEED_LOSS_PER_DAY,
+  WAIT_STRAIN_CAP,
+  WAIT_STRAIN_PER_DAY,
+  WAITLIST_START,
 } from '../content/tuning';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -34,6 +39,10 @@ export interface Resident {
   current: CurrentActivity | null;
   overskudd: number;
   milestones: MilestoneId[];
+  /** Days on the waiting list before moving in. */
+  waitedDays: number;
+  /** Extra need decay from the wait, as a fraction. Fades over time. */
+  strain: number;
 }
 
 export type ProposalSubject =
@@ -84,6 +93,8 @@ export interface GameState {
   /** Everyone discharged so far. Each one pays tax for the rest of the game. */
   discharged: Discharged[];
   discharge: Discharge | null;
+  /** The minute each person on the waiting list joined. First in line first. */
+  waiting: number[];
   log: LogEntry[];
   /** Open proposal. The game is paused while it is set. */
   proposal: Proposal | null;
@@ -96,13 +107,18 @@ export interface GameState {
 const perActivity = (value: number) =>
   Object.fromEntries(ACTIVITIES.map((a) => [a.id, value])) as Record<ActivityId, number>;
 
-export function newResident(id: ArchetypeId = 'arvid'): Resident {
+/** A resident who waited longer arrives with lower needs and a strain on decay. */
+export function newResident(id: ArchetypeId = 'arvid', waitedDays = 0): Resident {
   const a = ARCHETYPE_BY_ID[id];
+  const loss = waitedDays * WAIT_NEED_LOSS_PER_DAY;
+  const needs = Object.fromEntries(
+    Object.entries(a.startNeeds).map(([n, v]) => [n, Math.max(WAIT_NEED_FLOOR, v - loss)]),
+  ) as Record<NeedId, number>;
   return {
     archetype: id,
     name: a.name,
     intro: a.intro,
-    needs: { ...a.startNeeds },
+    needs,
     bars: perActivity(0),
     skill: perActivity(0),
     xp: perActivity(0),
@@ -110,6 +126,8 @@ export function newResident(id: ArchetypeId = 'arvid'): Resident {
     current: null,
     overskudd: 0,
     milestones: [],
+    waitedDays,
+    strain: Math.min(WAIT_STRAIN_CAP, waitedDays * WAIT_STRAIN_PER_DAY),
   };
 }
 
@@ -126,6 +144,7 @@ export function newGame(): GameState {
     resident: newResident(ARCHETYPES[0]!.id),
     discharged: [],
     discharge: null,
+    waiting: Array.from({ length: WAITLIST_START }, () => START_MINUTE_OF_DAY),
     log: [{ minute: START_MINUTE_OF_DAY, text: ARCHETYPES[0]!.arrives }],
     proposal: null,
     resumeSpeed: 1,

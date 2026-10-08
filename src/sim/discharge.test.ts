@@ -5,6 +5,7 @@ import { admitNext, bestTier, cancelDischarge, openDischarge, signDischarge } fr
 import { netIncomePerDay } from './institution';
 import { maybePropose } from './proposals';
 import { newGame, type Resident } from './state';
+import { tickMinute } from './tick';
 
 const automatic = (r: Resident, upToRung: number) => {
   for (const a of ACTIVITIES) if (a.rung <= upToRung) r.skill[a.id] = MAX_SKILL;
@@ -75,5 +76,35 @@ describe('discharge', () => {
     openDischarge(s);
     maybePropose(s);
     expect(s.proposal).toBeNull();
+  });
+});
+
+describe('waiting list', () => {
+  test('grows over time', () => {
+    const s = newGame();
+    const before = s.waiting.length;
+    for (let i = 0; i < 3 * 1440; i++) tickMinute(s);
+    expect(s.waiting.length).toBe(before + 1);
+  });
+
+  test('a long wait means a worse start, and the strain fades', () => {
+    const s = newGame();
+    automatic(s.resident, 6);
+    s.minute += 10 * 1440;
+    openDischarge(s);
+    signDischarge(s);
+    const before = s.waiting.length;
+    admitNext(s);
+    const r = s.resident;
+    expect(s.waiting.length).toBe(before - 1);
+    expect(r.waitedDays).toBe(10);
+    expect(r.needs.food).toBe(60 - 20);
+    expect(r.strain).toBeCloseTo(0.2);
+    for (let i = 0; i < 1440; i++) tickMinute(s);
+    expect(r.strain).toBeCloseTo(0.15);
+  });
+
+  test('no wait means no strain', () => {
+    expect(newGame().resident.strain).toBe(0);
   });
 });

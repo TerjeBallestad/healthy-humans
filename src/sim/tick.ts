@@ -11,6 +11,8 @@ import {
   OVERSKUDD_PER_HOUR,
   SPIRAL_PER_EMPTY_NEED,
   STAFF_NUDGES_PER_HOUR,
+  WAIT_STRAIN_FADE_PER_DAY,
+  WAITLIST_DAYS_PER_PERSON,
   barSize,
 } from '../content/tuning';
 import { netIncomePerDay, omsorgCap, omsorgPerHour } from './institution';
@@ -31,7 +33,10 @@ export function tickMinute(state: GameState) {
   state.omsorg = Math.min(omsorgCap(state), state.omsorg + omsorgPerHour(state) / 60);
   state.budget += netIncomePerDay(state) / 1440;
 
+  if (state.minute % (WAITLIST_DAYS_PER_PERSON * 1440) === 0) state.waiting.push(state.minute);
+
   const r = state.resident;
+  r.strain = Math.max(0, r.strain - WAIT_STRAIN_FADE_PER_DAY / 1440);
   staffWork(state, r);
   decayNeeds(state, r);
   progressActivity(state, r);
@@ -76,7 +81,7 @@ function decayNeeds(state: GameState, r: Resident) {
     if (current?.refills[id] !== undefined) continue;
     const empty = needs.filter((n) => n !== id && r.needs[n] <= 0).length;
     const base = (NEEDS[id].decayPerHour * (personal[id] ?? 1)) / 60;
-    const rate = base * (1 + empty * SPIRAL_PER_EMPTY_NEED);
+    const rate = base * (1 + r.strain) * (1 + empty * SPIRAL_PER_EMPTY_NEED);
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);
     if (before >= NEED_THRESHOLD && r.needs[id] < NEED_THRESHOLD) {

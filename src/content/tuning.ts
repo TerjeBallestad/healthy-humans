@@ -63,3 +63,16 @@ export const SUPPORT_STEPS = [
   { kr: 350, bonus: 0.35 },
 ] as const;
 export const MAX_CHANCE = 0.95;
+
+/** A new person joins the waiting list this often. */
+export const WAITLIST_DAYS_PER_PERSON = 3;
+/** People on the list on day 1. */
+export const WAITLIST_START = 1;
+/** Start needs lost per day the next resident waited. */
+export const WAIT_NEED_LOSS_PER_DAY = 2;
+/** No start need drops below this. */
+export const WAIT_NEED_FLOOR = 15;
+/** Extra decay per day waited, as a fraction. Fades after arrival. */
+export const WAIT_STRAIN_PER_DAY = 0.02;
+export const WAIT_STRAIN_CAP = 0.5;
+export const WAIT_STRAIN_FADE_PER_DAY = 0.05;

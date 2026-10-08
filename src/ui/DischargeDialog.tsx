@@ -5,7 +5,9 @@ import {
   cancelDischarge,
   nextArchetype,
   nextTier,
+  nextWaitDays,
   signDischarge,
+  waitCost,
 } from '../sim/discharge';
 import { act, useGame } from '../store';
 
@@ -17,6 +19,8 @@ export function DischargeDialog() {
   const tier = TIER_BY_ID[d.tier];
   const better = nextTier(r);
   const next = nextArchetype(s);
+  const waited = nextWaitDays(s);
+  const cost = waitCost(waited);
 
   return (
     <div class="overlay">
@@ -43,6 +47,14 @@ export function DischargeDialog() {
               <dt>Next in the bed</dt>
               <dd>
                 {next.name}. {next.intro}
+              </dd>
+              <dt>Waited</dt>
+              <dd class="warn">
+                {waited} days.{' '}
+                {waited > 0
+                  ? `Arrives with needs −${cost.needLoss} and decay +${cost.strainPct}% for a while. `
+                  : ''}
+                Every day you wait makes it worse.
               </dd>
             </dl>
             <div class="choices">

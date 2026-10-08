@@ -7,7 +7,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 5 are done.** The first half of step 6 (discharge) is live. Waiting for Terje to play it.
+- **Steps 1 to 5 are done.** Step 6a (discharge) and 6b (waiting list) are live. Waiting for Terje to play 6b.
 
 ## What the game does now
 
@@ -52,8 +52,14 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ## Next: rest of step 6, after Terje plays
 
-- **Question for play:** is "discharge now or wait" a real decision?
-- **Waiting list:** a number that grows over time and shows as pressure. No mechanic yet.
+- **Play feedback on 6a:** "discharge now or wait" was not an interesting decision. Waiting cost nothing, so waiting always won. Terje thinks it may need several beds and a waiting list.
+- **6b, the cheap test (live):** one bed, plus a waiting list with a cost. Does a waiting cost alone make the decision interesting?
+  - One person joins the list every 3 days. One person waits at the start.
+  - The first in line moves in next. Each day waited takes 2 points from every start need (floor 15) and adds 2% decay (cap 50%). The strain fades by 5% per day.
+  - The top bar shows "Helped" and "Waiting". The vedtak shows what the wait has cost so far.
+  - With one bed, the list always grows. That pressure is part of the test.
+  - Tuning is at the end of `src/content/tuning.ts`.
+- **If the test fails:** two beds that share omsorg and staff. `PLAN.md` puts more than one bed out of scope for Act 1, so that changes the plan. UI idea: tabs, or two compact cards.
 - **Third archetype:** the retired man who drinks a little too much. Add an entry to `ARCHETYPES`.
 - **Small issue:** the "needs" text for the next tier lists all parts, also the parts that are done.
 
@@ -61,7 +67,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 31 tests
+npm test           # vitest, 34 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --days=120
 npm run build      # type check and build
 ```
