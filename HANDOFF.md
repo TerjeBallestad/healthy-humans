@@ -11,7 +11,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ## What the game does now
 
-1. Arvid moves in. He learns three rungs at a time, starting with eat, shower and sleep.
+1. Arvid moves in. He learns six rungs at a time (`LEARNING_WINDOW`, was 3), so food, hygiene, energy and home are active from the start.
 2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. Press and hold to keep nudging. A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
 3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
@@ -40,6 +40,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 | Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.      |
 | Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                              |
 | Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                          |
+| Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.     |
 | Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.  |
 
 ## Open issues

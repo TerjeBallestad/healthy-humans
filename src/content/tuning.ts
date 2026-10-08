@@ -30,7 +30,7 @@ export const MAX_SKILL = BAR_SIZE_BY_SKILL.length - 1;
 export const READY_BELOW = 50;
 
 /** How many rungs the resident is learning at the same time. */
-export const LEARNING_WINDOW = 3;
+export const LEARNING_WINDOW = 6;
 
 /** Kommune grant in kr per week. */
 export const GRANT_PER_WEEK = 120;

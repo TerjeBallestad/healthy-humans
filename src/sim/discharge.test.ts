@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ACTIVITIES } from '../content/activities';
-import { GRANT_PER_WEEK, MAX_SKILL } from '../content/tuning';
+import { GRANT_PER_WEEK, LEARNING_WINDOW, MAX_SKILL } from '../content/tuning';
 import { admitNext, bestTier, cancelDischarge, openDischarge, signDischarge } from './discharge';
 import { netIncomePerWeek } from './institution';
 import { maybePropose } from './proposals';
@@ -61,7 +61,7 @@ describe('discharge', () => {
     admitNext(s);
     expect(s.discharge).toBeNull();
     expect(s.resident.name).toBe('Maja');
-    expect(s.resident.unlockedRung).toBe(3);
+    expect(s.resident.unlockedRung).toBe(LEARNING_WINDOW);
     expect(Object.values(s.resident.skill).every((v) => v === 0)).toBe(true);
     expect(s.staff).toEqual(['Kari']);
     expect(s.budget).toBe(500);

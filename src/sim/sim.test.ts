@@ -24,6 +24,7 @@ const run = (s: ReturnType<typeof newGame>, ticks: number) => {
 describe('needs', () => {
   test('only needs with an unlocked activity are active', () => {
     const s = newGame();
+    s.resident.unlockedRung = 3;
     expect(activeNeeds(s.resident)).toEqual(['food', 'hygiene', 'energy']);
     s.resident.unlockedRung = 1;
     expect(activeNeeds(s.resident)).toEqual(['food']);
@@ -31,6 +32,7 @@ describe('needs', () => {
 
   test('active needs decay, inactive needs stay', () => {
     const s = newGame();
+    s.resident.unlockedRung = 3;
     const before = { ...s.resident.needs };
     run(s, 60);
     expect(s.resident.needs.food).toBeLessThan(before.food);
