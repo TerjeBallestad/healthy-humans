@@ -1,9 +1,10 @@
 import type { ActivityId } from '../content/activities';
-import { OMSORG_PER_NUDGE, barSize } from '../content/tuning';
+import { ACTIVITY_BY_ID } from '../content/activities';
+import { MAX_SKILL, OMSORG_PER_NUDGE, barSize, trainCost } from '../content/tuning';
 import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
 import { canBuy, canHire, hireCost } from './institution';
 import type { GameState } from './state';
-import { log } from './tick';
+import { levelUp, log } from './tick';
 
 export function canNudge(state: GameState, id: ActivityId): boolean {
   const r = state.resident;
@@ -16,6 +17,23 @@ export function nudge(state: GameState, id: ActivityId): boolean {
   if (!canNudge(state, id)) return false;
   state.omsorg -= OMSORG_PER_NUDGE;
   state.resident.bars[id] += 1;
+  return true;
+}
+
+export function canTrain(state: GameState, id: ActivityId): boolean {
+  const r = state.resident;
+  const unlocked = ACTIVITY_BY_ID[id].rung <= r.unlockedRung;
+  return unlocked && r.skill[id] < MAX_SKILL && r.overskudd >= trainCost(r.skill[id]);
+}
+
+/** Spend overskudd to raise an activity one skill level. */
+export function train(state: GameState, id: ActivityId): boolean {
+  if (!canTrain(state, id)) return false;
+  const r = state.resident;
+  const a = ACTIVITY_BY_ID[id];
+  r.overskudd -= trainCost(r.skill[id]);
+  log(state, a.trained);
+  levelUp(state, r, a);
   return true;
 }
 

@@ -1,11 +1,17 @@
 // Plays the game with a simple bot and prints the pace.
 // Usage: npm run sim [-- --taps-per-second=1 --shop=0]
 import { ACTIVITIES } from '../src/content/activities';
-import { NEED_THRESHOLD, SECONDS_PER_WEEK, barSize } from '../src/content/tuning';
+import {
+  MAX_SKILL,
+  NEED_THRESHOLD,
+  SECONDS_PER_WEEK,
+  barSize,
+  trainCost,
+} from '../src/content/tuning';
 import { UPGRADES } from '../src/content/upgrades';
-import { buyUpgrade, hire, nudge } from '../src/sim/actions';
+import { buyUpgrade, hire, nudge, train } from '../src/sim/actions';
 import { canBuy, canHire } from '../src/sim/institution';
-import { accept, canSupport, closeProposal } from '../src/sim/proposals';
+import { accept, canSupport, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
 import { newGame } from '../src/sim/state';
@@ -22,6 +28,8 @@ const TAPS_PER_SECOND = arg('taps-per-second', 1);
 const MAX_WEEKS = arg('weeks', 120);
 /** 1 = the bot hires staff and buys upgrades. */
 const SHOP = arg('shop', 1);
+/** 1 = train the most-trained activity first (finish one), 0 = the cheapest first (spread). */
+const DEEP = arg('deep', 0);
 const purchases: { what: string; tick: number }[] = [];
 const REAL_SEC_PER_TICK = SECONDS_PER_WEEK / TICKS_PER_WEEK;
 
@@ -32,8 +40,7 @@ let ticksLow = 0;
 let ticksEmpty = 0;
 let ticksBusy = 0;
 let taps = 0;
-let trySuccess = 0;
-let tryFail = 0;
+let trained = 0;
 let milestoneSuccess = 0;
 let milestoneFail = 0;
 const unlockedAt: { rung: number; label: string; tick: number }[] = [];
@@ -46,11 +53,10 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
   // Proposals: accept with some help when it can afford it.
   if (s.proposal) {
     const step = [1, 0].find((i) => canSupport(s, i))!;
-    const kind = s.proposal.subject.kind;
     accept(s, step);
-    if (s.proposal.outcome === 'success') kind === 'try' ? trySuccess++ : milestoneSuccess++;
-    else kind === 'try' ? tryFail++ : milestoneFail++;
-    if (kind === 'milestone' && s.proposal.outcome === 'success') {
+    if (s.proposal.outcome === 'success') milestoneSuccess++;
+    else milestoneFail++;
+    if (s.proposal.outcome === 'success') {
       purchases.push({
         what: `milestone ${s.resident.milestones.at(-1)}`,
         tick: s.tick - start,
@@ -71,6 +77,20 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
       purchases.push({ what: u.label, tick: s.tick - start });
     }
   }
+  // Overskudd: save for an open milestone, else train.
+  if (eligibleSubjects(r).length === 0) {
+    const cheapest = unlockedActivities(r)
+      .filter((a) => r.skill[a.id] < MAX_SKILL)
+      .sort(
+        (a, b) =>
+          (DEEP ? r.skill[b.id] - r.skill[a.id] : 0) ||
+          trainCost(r.skill[a.id]) - trainCost(r.skill[b.id]) ||
+          a.rung - b.rung,
+      )[0];
+    // Deep play waits for the next level of its chosen activity.
+    if (cheapest && train(s, cheapest.id)) trained++;
+  }
+
   tapBudget += TAPS_PER_SECOND * REAL_SEC_PER_TICK;
 
   // Greedy bot: tap the learning activity whose need is lowest.
@@ -120,7 +140,7 @@ console.log(
   `\n  ${done ? 'Work trial done' : 'Not finished'} at ${real(elapsed)} (${week(elapsed)})`,
 );
 console.log(
-  `  Proposals: try ${trySuccess} ok / ${tryFail} failed, milestones ${milestoneSuccess} ok / ${milestoneFail} failed`,
+  `  Trained ${trained} levels. Milestones ${milestoneSuccess} ok / ${milestoneFail} failed`,
 );
 console.log(
   `  Any need below ${NEED_THRESHOLD}: ${((ticksLow / elapsed) * 100).toFixed(0)}% of the time`,

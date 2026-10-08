@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import {
   READY_BELOW,
-  COMPLETIONS_PER_LEVEL,
   LEARNING_WINDOW,
   MAX_SKILL,
   OMSORG_CAP,
   OMSORG_PER_NUDGE,
   barSize,
+  trainCost,
 } from '../content/tuning';
-import { canNudge, nudge } from './actions';
+import { canNudge, canTrain, nudge, train } from './actions';
 import { activeNeeds } from './selectors';
 import { newGame } from './state';
 import { tick } from './tick';
@@ -136,30 +136,41 @@ describe('nudges', () => {
   });
 });
 
-/** Nudge an activity until it starts, then run until it is done. */
-const complete = (s: ReturnType<typeof newGame>, id: 'eat' | 'shower') => {
-  s.omsorg = OMSORG_CAP;
-  s.resident.needs[id === 'eat' ? 'food' : 'hygiene'] = 10;
-  while (nudge(s, id));
-  tick(s);
-  while (s.resident.current) tick(s);
-};
-
 describe('skill and the ladder', () => {
-  test('enough completions raise the skill and shrink the bar', () => {
+  test('completing an activity gives no skill', () => {
     const s = newGame();
-    for (let i = 0; i < COMPLETIONS_PER_LEVEL; i++) complete(s, 'eat');
+    s.omsorg = OMSORG_CAP;
+    s.resident.needs.food = 10;
+    while (nudge(s, 'eat'));
+    run(s, EAT_TICKS + 1);
+    expect(s.log.some((e) => e.text === 'Ate.')).toBe(true);
+    expect(s.resident.skill.eat).toBe(0);
+  });
+
+  test('training spends overskudd and shrinks the bar', () => {
+    const s = newGame();
+    s.resident.overskudd = trainCost(0);
+    expect(train(s, 'eat')).toBe(true);
+    expect(s.resident.overskudd).toBe(0);
     expect(s.resident.skill.eat).toBe(1);
-    expect(barSize(s.resident.skill.eat)).toBeLessThan(barSize(0));
+    expect(barSize(1)).toBeLessThan(barSize(0));
+    expect(train(s, 'eat')).toBe(false);
+  });
+
+  test('a locked activity cannot be trained', () => {
+    const s = newGame();
+    s.resident.overskudd = 999;
+    expect(train(s, 'call')).toBe(false);
   });
 
   test('max skill makes the activity automatic and opens the next rung', () => {
     const s = newGame();
-    for (let i = 0; i < COMPLETIONS_PER_LEVEL * MAX_SKILL; i++) complete(s, 'eat');
+    s.resident.overskudd = 999;
+    for (let i = 0; i < MAX_SKILL; i++) train(s, 'eat');
     expect(s.resident.skill.eat).toBe(MAX_SKILL);
     expect(canNudge(s, 'eat')).toBe(false);
+    expect(canTrain(s, 'eat')).toBe(false);
     expect(s.resident.unlockedRung).toBe(LEARNING_WINDOW + 1);
-    expect(activeNeeds(s.resident)).toContain('home');
   });
 
   test('an automatic activity starts when its need drops low', () => {

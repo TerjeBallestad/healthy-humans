@@ -7,7 +7,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 6b are done.** Step 7a (ready queue and landscape layout) is live. Waiting for Terje to play 7a.
+- **Steps 1 to 7c are done.** 7c (training with overskudd) is live. Waiting for Terje to play it.
 
 ## What the game does now
 
@@ -15,8 +15,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. Press and hold to keep nudging. A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
 3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
-5. **Overskudd** builds while every need is green. When there is enough, a **proposal** pauses the game:
-   - **Try-alone:** success gives one skill level.
+5. **Overskudd** builds with the share of needs that are green. You spend it in the **Training** panel: 8, 15 or 25 overskudd raises one activity one level. Completions give no skill. When a milestone is open and there is enough overskudd, a **proposal** pauses the game:
    - **Milestone:** NAV meeting, then job application, then work trial.
 
    Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
@@ -29,19 +28,20 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ## Feedback from playtests, in order
 
-| Feedback                                            | What we did                                                                                         |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Step 2 felt like "a grind that doesn't go anywhere" | Expected at that stage. Step 3 added skill and the ladder.                                          |
-| Too easy, too slow at 1x, wanted more at once       | Three rungs at once, a faster clock, omsorg as the limit.                                           |
-| "Hard to keep him afloat at the start, but good"    | Kept. Staff and the shop moved before proposals.                                                    |
-| Double tap zooms on iOS                             | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                     |
-| Frantic and stressful, should be tactical           | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first." |
-| Proposals not hitting right, reward unclear         | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                 |
-| Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.      |
-| Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                              |
-| Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                          |
-| Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.     |
-| Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.  |
+| Feedback                                            | What we did                                                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Step 2 felt like "a grind that doesn't go anywhere" | Expected at that stage. Step 3 added skill and the ladder.                                           |
+| Too easy, too slow at 1x, wanted more at once       | Three rungs at once, a faster clock, omsorg as the limit.                                            |
+| "Hard to keep him afloat at the start, but good"    | Kept. Staff and the shop moved before proposals.                                                     |
+| Double tap zooms on iOS                             | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                      |
+| Frantic and stressful, should be tactical           | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first."  |
+| Proposals not hitting right, reward unclear         | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                  |
+| Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.       |
+| Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                               |
+| Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                           |
+| Skill should be active, bought with overskudd       | 7c: Training panel. No practice XP, no try-alone. Overskudd now grows with the green share of needs. |
+| Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.      |
+| Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.   |
 
 ## Open issues
 
@@ -59,7 +59,7 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 - Effort depends on the resident and the activity. Some residents start with skills. A job application could be 32 nudges with no skill.
 - Many activities, several for each need (brødskive and dinner for food).
-- Skill categories (cooking, household) that raise a family of activities. Overskudd spent to train them. This could replace try-alone proposals.
+- ~~Overskudd spent on training.~~ Built in 7c, with one skill for each activity (Terje chose this over categories).
 
 ## Earlier: rest of step 6
 
@@ -78,8 +78,8 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 38 tests
-npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120
+npm test           # vitest, 40 tests
+npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1
 npm run build      # type check and build
 ```
 

@@ -23,9 +23,13 @@ export function barSize(skill: number): number {
   return BAR_SIZE_BY_SKILL[Math.min(skill, BAR_SIZE_BY_SKILL.length - 1)] ?? 0;
 }
 
-/** Completions needed to gain one skill level. */
-export const COMPLETIONS_PER_LEVEL = 5;
 export const MAX_SKILL = BAR_SIZE_BY_SKILL.length - 1;
+/** Overskudd to train an activity one level up, by current level. Skill only grows this way. */
+export const TRAIN_COST_BY_LEVEL = [8, 15, 25] as const;
+
+export function trainCost(skill: number): number {
+  return TRAIN_COST_BY_LEVEL[skill] ?? Infinity;
+}
 /** A ready activity (full bar or automatic) starts when its trigger need drops below this. */
 export const READY_BELOW = 50;
 
@@ -42,17 +46,13 @@ export const STAFF_WAGE_PER_WEEK = 40;
 /** Free nudges each staff member gives per real second at 1x. */
 export const STAFF_NUDGES_PER_SECOND = 0.75;
 
-/** Overskudd gained per real second at 1x while every active need is at or above the threshold. */
+/** Overskudd per real second at 1x with every active need green. Scales with the green share. */
 export const OVERSKUDD_PER_SECOND = 1;
 export const OVERSKUDD_CAP = 60;
-/** Overskudd a proposal needs and uses up. */
-export const PROPOSAL_COST_SKILL = 12;
+/** Overskudd a milestone proposal needs and uses up. */
 export const PROPOSAL_COST_MILESTONE = 20;
 /** Shortest gap between two proposals. */
 export const PROPOSAL_COOLDOWN_WEEKS = 3;
-/** Try-alone odds: base plus a bonus per skill level the resident has. */
-export const TRY_ALONE_BASE = 0.35;
-export const TRY_ALONE_PER_SKILL = 0.15;
 /** Kroner the player can spend on a proposal, and the odds each step adds. */
 export const SUPPORT_STEPS = [
   { kr: 0, bonus: 0 },

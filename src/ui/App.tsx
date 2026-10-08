@@ -6,6 +6,7 @@ import { Log } from './Log';
 import { ProposalDialog } from './ProposalDialog';
 import { ResidentPanel } from './ResidentPanel';
 import { TopBar } from './TopBar';
+import { TrainingPanel } from './TrainingPanel';
 import { WaitingList } from './WaitingList';
 
 export function App() {
@@ -18,6 +19,7 @@ export function App() {
       </div>
       <div class="col mid">
         <ResidentPanel />
+        <TrainingPanel />
       </div>
       <div class="col right">
         <ActivityPanel />

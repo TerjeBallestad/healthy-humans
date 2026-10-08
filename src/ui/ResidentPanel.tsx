@@ -10,7 +10,8 @@ export function ResidentPanel() {
   const r = s.resident;
   const best = bestTier(r);
   const better = nextTier(r);
-  const growing = activeNeeds(r).every((n) => r.needs[n] >= NEED_THRESHOLD);
+  const needs = activeNeeds(r);
+  const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
   return (
     <section class="panel resident">
       <h2>{r.name}</h2>
@@ -44,7 +45,10 @@ export function ResidentPanel() {
         <div class="meter">
           <div class="fill" style={{ width: `${(r.overskudd / OVERSKUDD_CAP) * 100}%` }} />
         </div>
-        <span class="state">{growing ? '' : 'not growing while a need is low'}</span>
+        <span class="state">
+          {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
+          {green < 1 && ` · growing at ${Math.round(green * 100)}% while a need is low`}
+        </span>
       </div>
 
       {r.milestones.length > 0 && (

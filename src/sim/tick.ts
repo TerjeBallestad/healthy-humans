@@ -3,7 +3,6 @@ import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
 import {
   READY_BELOW,
-  COMPLETIONS_PER_LEVEL,
   LEARNING_WINDOW,
   MAX_SKILL,
   NEED_THRESHOLD,
@@ -50,10 +49,14 @@ export function tick(state: GameState) {
   maybePropose(state);
 }
 
-/** Overskudd builds only while every active need is above the threshold. */
+/** Overskudd builds in proportion to the share of active needs above the threshold. */
 function gainOverskudd(r: Resident) {
-  if (activeNeeds(r).some((n) => r.needs[n] < NEED_THRESHOLD)) return;
-  r.overskudd = Math.min(OVERSKUDD_CAP, r.overskudd + OVERSKUDD_PER_SECOND / TICKS_PER_SECOND);
+  const needs = activeNeeds(r);
+  const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
+  r.overskudd = Math.min(
+    OVERSKUDD_CAP,
+    r.overskudd + (green * OVERSKUDD_PER_SECOND) / TICKS_PER_SECOND,
+  );
 }
 
 /** Staff put free nudges into the learning bar whose need is lowest. */
@@ -107,20 +110,11 @@ function progressActivity(state: GameState, r: Resident) {
   if (r.current.remaining > 0) return;
   r.current = null;
   log(state, a.done);
-  gainSkill(state, r, a);
-}
-
-function gainSkill(state: GameState, r: Resident, a: ActivityDef) {
-  if (r.skill[a.id] >= MAX_SKILL) return;
-  r.xp[a.id] += 1;
-  if (r.xp[a.id] < COMPLETIONS_PER_LEVEL) return;
-  levelUp(state, r, a);
 }
 
 /** Raise one skill level. Opens new rungs when the activity becomes automatic. */
 export function levelUp(state: GameState, r: Resident, a: ActivityDef) {
   if (r.skill[a.id] >= MAX_SKILL) return;
-  r.xp[a.id] = 0;
   r.skill[a.id] += 1;
   // Clicks already in the bar carry over, capped at the new size.
   r.bars[a.id] = Math.min(r.bars[a.id], barSize(r.skill[a.id]));

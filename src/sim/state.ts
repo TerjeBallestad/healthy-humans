@@ -15,7 +15,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -31,8 +31,6 @@ export interface Resident {
   /** Clicks put into each nudge bar. */
   bars: Record<ActivityId, number>;
   skill: Record<ActivityId, number>;
-  /** Completions toward the next skill level. */
-  xp: Record<ActivityId, number>;
   /** Highest rung that is visible. */
   unlockedRung: number;
   current: CurrentActivity | null;
@@ -44,8 +42,7 @@ export interface Resident {
   strain: number;
 }
 
-export type ProposalSubject =
-  { kind: 'try'; activity: ActivityId } | { kind: 'milestone'; milestone: MilestoneId };
+export type ProposalSubject = { kind: 'milestone'; milestone: MilestoneId };
 
 export interface Proposal {
   subject: ProposalSubject;
@@ -120,7 +117,6 @@ export function newResident(id: ArchetypeId = 'arvid', waitedWeeks = 0): Residen
     needs,
     bars: perActivity(0),
     skill: perActivity(0),
-    xp: perActivity(0),
     unlockedRung: LEARNING_WINDOW,
     current: null,
     overskudd: 0,

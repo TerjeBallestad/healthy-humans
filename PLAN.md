@@ -14,20 +14,20 @@ You are the welfare state, a benevolent guardian that sees everything. Residents
 
 One word, one meaning.
 
-| Term               | Meaning                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| **Omsorg**         | The player's resource. Builds up over game time to a cap. Spent on nudges and proposals.                 |
-| **Budget**         | Money. From a monthly kommune grant plus tax from discharged residents. Pays for staff.                  |
-| **Need**           | A resident value that decays over time: hunger, hygiene, energy, home, social.                           |
-| **Overskudd**      | The resident's resource. Builds up only while all needs are above their threshold. Fuels proposals.      |
-| **Activity**       | Something a resident does. Each activity is one rung.                                                    |
-| **Rung**           | One step on the ladder. The current rung is the lowest activity that is not yet automatic.               |
-| **Nudge**          | One click on an activity. Puts omsorg into its nudge bar. A full bar makes the resident do the activity. |
-| **Skill level**    | Per activity, 0 to 3. Each level makes the nudge bar smaller. Level 3 means automatic.                   |
-| **Proposal**       | An event where the resident suggests something. Accept or decline. Add omsorg to raise the odds.         |
-| **Discharge tier** | Fit to live alone, fit for work, healthy human. Sets tax yield.                                          |
-| **Waiting list**   | A number that grows over time. Shown as pressure. No mechanic in Act 1.                                  |
-| **Staff**          | Bought with budget. Autoclicks nudges on routine activities.                                             |
+| Term               | Meaning                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| **Omsorg**         | The player's resource. Builds up over game time to a cap. Spent on nudges and proposals.                         |
+| **Budget**         | Money. From a monthly kommune grant plus tax from discharged residents. Pays for staff.                          |
+| **Need**           | A resident value that decays over time: hunger, hygiene, energy, home, social.                                   |
+| **Overskudd**      | The resident's resource. Builds up with the share of needs above their threshold. Buys training and milestones.  |
+| **Activity**       | Something a resident does. Each activity is one rung.                                                            |
+| **Rung**           | One step on the ladder. The current rung is the lowest activity that is not yet automatic.                       |
+| **Nudge**          | One click on an activity. Puts omsorg into its nudge bar. A full bar makes the resident do the activity.         |
+| **Skill level**    | Per activity, 0 to 3. Each level makes the nudge bar smaller. Level 3 means automatic.                           |
+| **Proposal**       | A milestone the resident suggests (NAV, application, work trial). Accept or decline. Pay kroner for better odds. |
+| **Discharge tier** | Fit to live alone, fit for work, healthy human. Sets tax yield.                                                  |
+| **Waiting list**   | A number that grows over time. Shown as pressure. No mechanic in Act 1.                                          |
+| **Staff**          | Bought with budget. Autoclicks nudges on routine activities.                                                     |
 
 ## Mechanics (Act 1)
 
@@ -40,7 +40,7 @@ One word, one meaning.
 ### Needs
 
 - Five needs, 0 to 100, each with its own decay rate per archetype.
-- Below a threshold (placeholder 30), the need shows a plain-language state, such as "dishes piling up". No overskudd while any need is below its threshold.
+- Below a threshold (placeholder 30), the need shows a plain-language state, such as "dishes piling up". Overskudd grows in proportion to the share of needs above the threshold (changed in step 7c: the all-or-nothing rule stalled the game with four or more needs).
 - A need at 0 makes the other needs decay faster. This is a light spiral.
 
 ### The ladder
@@ -72,8 +72,8 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 - One nudge costs 1 omsorg. The bar size is the **effort**: L0 = 12 nudges, L1 = 6, L2 = 3, L3 = 0 (automatic). Press and hold a card to keep nudging.
 - A full bar means the effort is gone: the activity is **ready**. It holds one charge. A ready activity starts only when its need drops below 50, the same rule as an automatic activity. So you can stockpile ready activities, but only as far as your omsorg goes.
 - The resident does ready activities lowest need first. On the same need, a nudged activity goes before an automatic one. Cards show the order as #1, #2, and so on.
-- Each completed activity gives skill XP for that activity: 5 completions per level. The need sets the pace of completions.
-- Later (ideas from play, not built): effort that depends on the resident and the activity (a job application could be 32 nudges), several activities for each need, skill categories (cooking, household) that cover many activities, and overskudd spent on training.
+- **Skill is active.** Completions give no skill. The player trains an activity in the Training panel with overskudd: 8, 15 and 25 for the three levels. Level 3 makes it automatic and opens the next rung.
+- Later (ideas from play, not built): effort that depends on the resident and the activity (a job application could be 32 nudges), and several activities for each need.
 
 ### Omsorg
 
@@ -83,7 +83,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 - The resident suggests something, such as "I think I could go to the shop alone today."
 - The player accepts or declines. On accept, the player can add omsorg to raise the odds. Odds show as words: "a stretch", "maybe", "likely".
-- Success: skill XP or a milestone completed. Failure: the omsorg spent is lost.
+- Proposals are milestones only. Try-alone was removed when training came in. Success: the milestone is done. Failure: the overskudd and kroner are spent.
 - Each archetype has 2 to 3 personal proposals or events, plus shared ones.
 
 ### Discharge
@@ -151,6 +151,9 @@ Each step ends with something playable and one question to answer by playing.
    _Question: is "discharge now or wait" a real decision?_
 7. **Ready queue and landscape layout.** 7a: a full bar makes an activity ready, and the need decides when it starts. 1 omsorg per nudge, bars 12/6/3. Three-column landscape layout with the venteliste on screen. Fixes staff queueing sleep many times.
    _Question: does "I make it possible, they choose when" feel better than "I click, they do it"?_
+   7b: calendar in weeks and activities in real seconds. Learning window 6.
+   7c: **active skills.** Training with overskudd replaces practice XP and try-alone proposals.
+   _Question: is choosing what to train a real decision?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 

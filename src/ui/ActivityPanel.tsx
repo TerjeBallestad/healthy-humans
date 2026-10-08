@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import type { ActivityDef } from '../content/activities';
 import { NEEDS } from '../content/needs';
-import { COMPLETIONS_PER_LEVEL, MAX_SKILL, READY_BELOW, barSize } from '../content/tuning';
+import { MAX_SKILL, READY_BELOW, barSize } from '../content/tuning';
 import { canNudge, nudge } from '../sim/actions';
 import { readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
@@ -87,14 +87,6 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
         <span class="meter progress" title="The activity in progress">
           <span class="fill" style={{ width: `${progress * 100}%` }} />
         </span>
-        {!auto && (
-          <span class="xp meter" title="Practice toward the next skill level">
-            <span
-              class="fill"
-              style={{ width: `${(r.xp[a.id] / COMPLETIONS_PER_LEVEL) * 100}%` }}
-            />
-          </span>
-        )}
         <span class="note">{note}</span>
       </span>
     </button>
