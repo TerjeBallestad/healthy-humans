@@ -5,6 +5,8 @@ import {
   closeDischarge,
   nextTier,
   signDischarge,
+  tierMissing,
+  tierTax,
   waitCost,
   waitedWeeks,
 } from '../sim/discharge';
@@ -33,13 +35,13 @@ export function DischargeDialog() {
               <dt>Assessed as</dt>
               <dd>{tier.label.toLowerCase()}</dd>
               <dt>Tax</dt>
-              <dd class="win">+{tier.taxPerWeek} kr per week, for the rest of the game</dd>
+              <dd class="win">+{tierTax(r, tier.id)} kr per week, for the rest of the game</dd>
               {better && (
                 <>
                   <dt>If you wait</dt>
                   <dd>
-                    {better.label.toLowerCase()} pays +{better.taxPerWeek} kr per week. Needs{' '}
-                    {better.needs}.
+                    {better.label.toLowerCase()} pays +{tierTax(r, better.id)} kr per week. Needs{' '}
+                    {tierMissing(r, better.id).join(', ')}.
                   </dd>
                 </>
               )}
@@ -74,7 +76,7 @@ export function DischargeDialog() {
                 <span class="glimpse">{line}</span>
               ))}
             </blockquote>
-            <p class="gain">+{tier.taxPerWeek} kr per week</p>
+            <p class="gain">+{tierTax(r, tier.id)} kr per week</p>
             <button class="choice" onClick={() => act(closeDischarge)}>
               The bed is free
             </button>

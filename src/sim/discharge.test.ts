@@ -8,6 +8,8 @@ import {
   closeDischarge,
   openDischarge,
   signDischarge,
+  taxPerWeek,
+  tierMissing,
 } from './discharge';
 import { netIncomePerWeek } from './institution';
 import { maybePropose } from './proposals';
@@ -157,5 +159,45 @@ describe('waiting list', () => {
 
   test('no wait means no strain', () => {
     expect(newGame().beds[0]!.strain).toBe(0);
+  });
+
+  test('people leave the list when their patience runs out', () => {
+    const s = newGame();
+    s.waiting[0]!.leaves = s.tick + 5;
+    for (let i = 0; i < 5; i++) tick(s);
+    expect(s.waiting.length).toBe(0);
+    expect(s.lost).toBe(1);
+  });
+
+  test('a trait comes with the person into the bed', () => {
+    const s = newGame();
+    s.budget = 10_000;
+    buyBed(s);
+    s.waiting[0]!.trait = 'cooks';
+    admit(s, 0);
+    const r = s.beds[1]!;
+    expect(r.trait).toBe('cooks');
+    expect(r.skill.eat).toBe(2);
+    expect(r.skill.dishes).toBe(2);
+    expect(r.skill.shower).toBe(0);
+  });
+
+  test('a trade doubles the tax', () => {
+    const s = newGame();
+    const r = s.beds[0]!;
+    r.trait = 'trade';
+    automatic(r, 6);
+    openDischarge(s, 0);
+    signDischarge(s);
+    expect(taxPerWeek(s)).toBe(20);
+  });
+});
+
+describe('tier text', () => {
+  test('lists only the parts that are not done', () => {
+    const r = newGame().beds[0]!;
+    automatic(r, ACTIVITIES.length);
+    r.milestones.push('nav');
+    expect(tierMissing(r, 'work')).toEqual(['Job application']);
   });
 });

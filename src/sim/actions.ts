@@ -62,7 +62,7 @@ export function admit(state: GameState, index: number): boolean {
   const a = ARCHETYPE_BY_ID[person.archetype];
   const waited = Math.floor((state.tick - person.joined) / TICKS_PER_WEEK);
   state.waiting.splice(index, 1);
-  state.beds[bed] = newResident(a.id, waited, state.tick);
+  state.beds[bed] = newResident(a.id, waited, state.tick, person.trait);
   state.selected = bed;
   log(state, a.arrives);
   if (waited > 0) log(state, `Waited ${waited} weeks for a place.`, a.name);

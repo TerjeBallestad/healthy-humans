@@ -42,6 +42,10 @@ export function TopBar() {
         <span class="muted">Helped</span>
         <strong>{s.discharged.length}</strong>
       </div>
+      <div class="helped">
+        <span class="muted">Lost</span>
+        <strong>{s.lost}</strong>
+      </div>
     </header>
   );
 }

@@ -1,7 +1,7 @@
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
-import { WAIT_NEED_FLOOR, WAITLIST_WEEKS_PER_PERSON } from '../content/tuning';
+import { TRAIT_BY_ID } from '../content/traits';
+import { WAIT_URGENT_WEEKS, WAITLIST_WEEKS_PER_PERSON } from '../content/tuning';
 import { admit, freeBed } from '../sim/actions';
-import { waitCost, waitedWeeks } from '../sim/discharge';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 
@@ -18,26 +18,25 @@ export function WaitingList() {
       {s.waiting.length === 0 && <p class="muted">Nobody is waiting.</p>}
       <ol>
         {s.waiting.map((p, i) => {
-          const weeks = waitedWeeks(s, p.joined);
-          const cost = waitCost(weeks);
-          const left = 1 - cost.needLoss / (100 - WAIT_NEED_FLOOR);
-          const level = cost.strainPct >= 20 ? 'bad' : cost.strainPct > 0 ? 'worse' : '';
+          const trait = TRAIT_BY_ID[p.trait];
+          const weeksLeft = Math.ceil((p.leaves - s.tick) / TICKS_PER_WEEK);
+          const left = (p.leaves - s.tick) / (p.leaves - p.joined);
+          const level = weeksLeft <= WAIT_URGENT_WEEKS ? 'bad' : left < 0.5 ? 'worse' : '';
           return (
             <li class={level}>
               <span class="who">
                 {ARCHETYPE_BY_ID[p.archetype].name}
+                <span class="tag">{trait.label}</span>
                 <span class="muted">
                   {' '}
-                  · {weeks} {weeks === 1 ? 'week' : 'weeks'}
+                  · {weeksLeft} {weeksLeft === 1 ? 'week' : 'weeks'} left
                 </span>
               </span>
               <span class="meter">
                 <span class="fill" style={{ width: `${left * 100}%` }} />
               </span>
               <span class="row">
-                <span class="cost">
-                  {weeks > 0 && `−${cost.needLoss} on needs, +${cost.strainPct}% decay`}
-                </span>
+                <span class="cost">{trait.effect}</span>
                 {bedFree && (
                   <button class="admit" onClick={() => act((g) => admit(g, i))}>
                     Legg inn →

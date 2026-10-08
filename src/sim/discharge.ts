@@ -1,5 +1,7 @@
 import { ACTIVITIES } from '../content/activities';
+import { MILESTONE_BY_ID } from '../content/milestones';
 import { TIERS, TIER_BY_ID, type TierDef, type TierId } from '../content/tiers';
+import { TRAIT_BY_ID } from '../content/traits';
 import {
   MAX_SKILL,
   WAIT_NEED_FLOOR,
@@ -29,6 +31,29 @@ export function tierOpen(r: Resident, id: TierId): boolean {
   }
 }
 
+/** The parts of a tier the resident has not done yet, for the UI. */
+export function tierMissing(r: Resident, id: TierId): string[] {
+  const milestone = (m: 'nav' | 'application' | 'worktrial') =>
+    r.milestones.includes(m) ? [] : [MILESTONE_BY_ID[m].label];
+  switch (id) {
+    case 'alone':
+      return automatic(r, 6) ? [] : ['rungs 1 to 6 automatic'];
+    case 'work':
+      return [
+        ...milestone('nav'),
+        ...milestone('application'),
+        ...(automatic(r, ACTIVITIES.length) ? [] : ['all routines automatic']),
+      ];
+    case 'healthy':
+      return milestone('worktrial');
+  }
+}
+
+/** Kroner per week this resident pays after discharge at a tier. */
+export function tierTax(r: Resident, id: TierId): number {
+  return TIER_BY_ID[id].taxPerWeek * ((r.trait && TRAIT_BY_ID[r.trait].tax) ?? 1);
+}
+
 /** The best tier the resident can be discharged at now, if any. */
 export function bestTier(r: Resident): TierDef | null {
   return [...TIERS].reverse().find((t) => tierOpen(r, t.id)) ?? null;
@@ -42,7 +67,7 @@ export function nextTier(r: Resident): TierDef | null {
 }
 
 export function taxPerWeek(s: GameState): number {
-  return s.discharged.reduce((sum, d) => sum + TIER_BY_ID[d.tier].taxPerWeek, 0);
+  return s.discharged.reduce((sum, d) => sum + d.tax, 0);
 }
 
 /** Open the vedtak for the resident in a bed, at their best tier. Pauses the game. */
@@ -67,7 +92,7 @@ export function signDischarge(s: GameState): boolean {
   const d = s.discharge;
   const r = d && s.beds[d.bed];
   if (!d || d.signed || !r) return false;
-  s.discharged.push({ name: r.name, tier: d.tier, tick: s.tick });
+  s.discharged.push({ name: r.name, tier: d.tier, tax: tierTax(r, d.tier), tick: s.tick });
   d.signed = true;
   log(s, `Discharged: ${TIER_BY_ID[d.tier].label.toLowerCase()}.`, r.name);
   return true;

@@ -77,3 +77,8 @@ export const WAIT_NEED_FLOOR = 15;
 export const WAIT_STRAIN_PER_WEEK = 0.02;
 export const WAIT_STRAIN_CAP = 0.5;
 export const WAIT_STRAIN_FADE_PER_WEEK = 0.05;
+/** Weeks a person waits before they give up and leave the list. Rolled in this range. */
+export const WAIT_PATIENCE_MIN = 10;
+export const WAIT_PATIENCE_MAX = 30;
+/** The list shows a person as urgent when this many weeks are left. */
+export const WAIT_URGENT_WEEKS = 4;

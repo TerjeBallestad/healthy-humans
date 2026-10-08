@@ -164,3 +164,4 @@ console.log(
   `  Taps: ${taps} (${(taps / (elapsed * REAL_SEC_PER_TICK)).toFixed(2)} per real second)`,
 );
 console.log(`  Omsorg at cap:     ${s.omsorg.toFixed(0)} now`);
+console.log(`  Waiting list:      ${s.waiting.length} now, ${s.lost} lost`);

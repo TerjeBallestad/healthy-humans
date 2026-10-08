@@ -1,6 +1,7 @@
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
 import { ARCHETYPES, ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
+import { TRAIT_BY_ID } from '../content/traits';
 import {
   READY_BELOW,
   LEARNING_WINDOW,
@@ -17,7 +18,7 @@ import {
 import { netIncomePerWeek, omsorgCap, omsorgPerSecond } from './institution';
 import { maybePropose } from './proposals';
 import { activeNeeds, readyQueue, unlockedActivities } from './selectors';
-import { occupied, type GameState, type Resident } from './state';
+import { newReferral, occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
 
 const LOG_LIMIT = 30;
@@ -39,9 +40,10 @@ export function tick(state: GameState) {
 
   if (state.tick % (WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK) === 0) {
     const a = ARCHETYPES[state.nextArchetype % ARCHETYPES.length]!;
-    state.waiting.push({ archetype: a.id, joined: state.tick });
+    state.waiting.push(newReferral(state, a.id));
     state.nextArchetype += 1;
   }
+  giveUp(state);
 
   staffWork(state);
   for (const [, r] of occupied(state)) {
@@ -54,13 +56,32 @@ export function tick(state: GameState) {
   maybePropose(state);
 }
 
+const GIVE_UP_LINES = [
+  'could not wait any longer. Moved back home.',
+  'was taken in by the emergency ward.',
+  'stopped answering the phone. Taken off the list.',
+];
+
+/** People whose patience has run out leave the waiting list. */
+function giveUp(state: GameState) {
+  for (let i = state.waiting.length - 1; i >= 0; i--) {
+    const p = state.waiting[i]!;
+    if (state.tick < p.leaves) continue;
+    state.waiting.splice(i, 1);
+    state.lost += 1;
+    const line = GIVE_UP_LINES[state.lost % GIVE_UP_LINES.length]!;
+    log(state, `${ARCHETYPE_BY_ID[p.archetype].name} ${line}`);
+  }
+}
+
 /** Overskudd builds in proportion to the share of active needs above the threshold. */
 function gainOverskudd(r: Resident) {
   const needs = activeNeeds(r);
   const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
+  const boost = (r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1;
   r.overskudd = Math.min(
     OVERSKUDD_CAP,
-    r.overskudd + (green * OVERSKUDD_PER_SECOND) / TICKS_PER_SECOND,
+    r.overskudd + (green * boost * OVERSKUDD_PER_SECOND) / TICKS_PER_SECOND,
   );
 }
 
@@ -93,11 +114,13 @@ function decayNeeds(state: GameState, r: Resident) {
   const needs = activeNeeds(r);
   const current = r.current ? ACTIVITY_BY_ID[r.current.id] : null;
   const personal = ARCHETYPE_BY_ID[r.archetype].decay;
+  const trait = (r.trait && TRAIT_BY_ID[r.trait].decay) ?? {};
   // Each empty need speeds up the others.
   for (const id of needs) {
     if (current?.refills[id] !== undefined) continue;
     const empty = needs.filter((n) => n !== id && r.needs[n] <= 0).length;
-    const base = (NEEDS[id].decayPerSecond * (personal[id] ?? 1)) / TICKS_PER_SECOND;
+    const base =
+      (NEEDS[id].decayPerSecond * (personal[id] ?? 1) * (trait[id] ?? 1)) / TICKS_PER_SECOND;
     const rate = base * (1 + r.strain) * (1 + empty * SPIRAL_PER_EMPTY_NEED);
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);

@@ -1,7 +1,8 @@
 import { NEEDS } from '../content/needs';
 import { MILESTONE_BY_ID } from '../content/milestones';
+import { TRAIT_BY_ID } from '../content/traits';
 import { NEED_THRESHOLD, OVERSKUDD_CAP } from '../content/tuning';
-import { bestTier, nextTier, openDischarge } from '../sim/discharge';
+import { bestTier, nextTier, openDischarge, tierMissing, tierTax } from '../sim/discharge';
 import { activeNeeds, statusLine } from '../sim/selectors';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
@@ -21,7 +22,10 @@ export function ResidentPanel() {
   const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
   return (
     <section class="panel resident">
-      <h2>{r.name}</h2>
+      <h2>
+        {r.name}
+        {r.trait && <span class="tag">{TRAIT_BY_ID[r.trait].label}</span>}
+      </h2>
       <p class="muted intro">{r.intro}</p>
       {r.strain > 0.005 && (
         <p class="strain">
@@ -69,12 +73,13 @@ export function ResidentPanel() {
         {best && (
           <button class="buy" onClick={() => act((g) => openDischarge(g, g.selected))}>
             <span>Discharge: {best.label.toLowerCase()}</span>
-            <span class="price">+{best.taxPerWeek} kr/week</span>
+            <span class="price">+{tierTax(r, best.id)} kr/week</span>
           </button>
         )}
         {better && (
           <p class="muted hint">
-            {better.label} (+{better.taxPerWeek} kr/week) needs {better.needs}.
+            {better.label} (+{tierTax(r, better.id)} kr/week) needs{' '}
+            {tierMissing(r, better.id).join(', ')}.
           </p>
         )}
       </div>

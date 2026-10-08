@@ -580,6 +580,7 @@ button:disabled {
 .waitlist .who .muted {
   font-weight: 400;
 }
+.resident h2 .tag,
 .waitlist .tag {
   margin-left: 6px;
   font-size: 0.7rem;

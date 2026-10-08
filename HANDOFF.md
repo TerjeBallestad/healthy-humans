@@ -1,13 +1,14 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-08. Read this first, then `PLAN.md`.
+Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7d are done.** 7d (more beds) is live. Waiting for Terje to play it.
+- **Steps 1 to 7e are done.** 7e (traits and people who leave the list) is live. Waiting for Terje to play it.
+- **Next: 7f, the proposal scene card.** See "Proposals" under open issues.
 
 ## What the game does now
 
@@ -25,6 +26,8 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
    - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
+   - **Traits (7e):** each referral rolls one trait (`src/content/traits.ts`): Cooks (eat and dishes start at lvl 2), Tidy (home decays at half rate), Family visits (overskudd +50%), Has a trade (double tax). The trait shows on the list and on the resident.
+   - **Patience (7e):** each referral leaves after 10 to 30 weeks. The list row shows the weeks left and a bar that drains. The top bar counts "Lost". The referral tempo stays at one each 3 weeks. Terje wants to catch up with it in the long run and watch the list shrink.
    - The waiting list cycles archetypes: Arvid, Maja (23, sleeps all day), Rolf (67, retired, drinks a little). All are grey-boxes in `src/content/archetypes.ts`. With three archetypes, names can repeat across beds and the list.
 7. **Two clocks, as in Game Dev Story.** The calendar shows `Y1 M4 W2`, and one week is 24 s at 1x. Activities last real seconds (eat 2 s, sleep 4 s) and are not tied to the calendar. Everything that was per day is now per week, with the same numbers. The sim counts ticks: 60 per real second (`src/sim/time.ts`).
 
@@ -46,16 +49,20 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
 | Training panel not needed. Hold-to-nudge unwanted   | Training moved to an arrow on each card. One click is one nudge. Terje trains the cheap levels first, then finishes one activity at a time. |
 | Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.                                             |
 | Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.                                          |
+| 7d: picks the top patient, all the same, list grows | 7e: a trait for each referral, and people leave after 10 to 30 weeks. The wait cost had capped, so every row read "−85, +50%".              |
+| 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
 ## Open issues
 
-- **Proposals still feel weak.** Milestones point to discharge, which does not exist yet. Step 6 should fix most of this. If they still feel weak after that, some ideas:
-  - Support options written for each proposal (for example "Pay for a taxi to NAV").
-  - Fewer proposals with bigger stakes.
-  - Failure that teaches a little: +10% odds on the next try.
-- **Tempo:** Terje wants it slower in the end. Try 24 s days in the balance pass.
+- **Proposals still feel weak (plan for 7f).** Terje: too much text, "read something NAV, click money if I have a lot". The overskudd cost does not register. Agreed plan:
+  - A scene card instead of the text dialog: resident sprite, a place icon (NAV office), one short line.
+  - Terje sets the wager: a kr amount with diminishing returns on the odds, and a price that guarantees success.
+  - An animation of the overskudd bar going down when the proposal comes.
+  - A short result animation, then the milestone ticks.
+- **Strategic layer:** Terje wants to go above the tactical play. Nothing planned yet.
+- **Tempo:** fine at 24 s weeks (Terje, after 3.5 game years, about 48 min at 1x).
 - **Bot stress numbers:** a need is at 0 about 20 to 30% of the time. The bot plays without strategy, so watch for this in real play. The levers are `SPIRAL_PER_EMPTY_NEED` and the decay rates in `src/content/needs.ts`.
-- **The shop is below the fold on a phone.** Add a small sign when something is affordable, if Terje misses it.
+- **The shop is below the fold on a phone.** Terje plays on a wide screen. Drop this unless phone play comes back.
 - **Activity lines are shared** by all archetypes and are written gender-neutral. Lines for one archetype only go in `src/content/archetypes.ts`.
 - **Archetypes are grey-boxes.** Terje plans a procedural personality system. Keep archetype data loose and easy to change. The `colours` field is there for that and is unused.
 
@@ -76,13 +83,12 @@ Last session: 2026-10-08. Read this first, then `PLAN.md`.
   - Tuning is at the end of `src/content/tuning.ts`.
 - **If the test fails:** two beds that share omsorg and staff. `PLAN.md` puts more than one bed out of scope for Act 1, so that changes the plan. UI idea: tabs, or two compact cards.
 - ~~Third archetype~~: Rolf, added in 7d.
-- **Small issue:** the "needs" text for the next tier lists all parts, also the parts that are done.
 
 ## How to work on it
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 44 tests
+npm test           # vitest, 48 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```
