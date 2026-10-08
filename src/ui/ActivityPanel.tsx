@@ -1,15 +1,10 @@
-import { useEffect, useRef } from 'preact/hooks';
 import type { ActivityDef } from '../content/activities';
 import { NEEDS } from '../content/needs';
-import { MAX_SKILL, READY_BELOW, barSize } from '../content/tuning';
-import { canNudge, nudge } from '../sim/actions';
+import { MAX_SKILL, READY_BELOW, barSize, trainCost } from '../content/tuning';
+import { canNudge, canTrain, nudge, train } from '../sim/actions';
 import { readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
 import { act, useGame } from '../store';
-
-/** Hold a card this long before nudges repeat. */
-const HOLD_DELAY_MS = 300;
-const REPEAT_MS = 90;
 
 export function ActivityPanel() {
   const s = useGame();
@@ -37,7 +32,6 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const doing = r.current?.id === a.id;
   const progress =
     doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
-  const hold = useHold(() => act((g) => nudge(g, a.id)));
   const need = NEEDS[a.trigger].label.toLowerCase();
 
   let note: string;
@@ -50,14 +44,20 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
     .filter(Boolean)
     .join(' ');
 
+  const nudgeable = canNudge(s, a.id);
+  // A div, not a button: the train button sits inside the card.
   return (
-    <button
+    <div
       class={classes}
-      disabled={!canNudge(s, a.id)}
-      onPointerDown={hold.start}
-      onPointerLeave={hold.stop}
-      // Keyboard only. Pointer presses nudge in onPointerDown.
-      onClick={(e) => e.detail === 0 && act((g) => nudge(g, a.id))}
+      role="button"
+      tabIndex={auto ? -1 : 0}
+      aria-disabled={!nudgeable}
+      onClick={() => act((g) => nudge(g, a.id))}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        act((g) => nudge(g, a.id));
+      }}
     >
       {priority > 0 && <span class="priority">#{priority}</span>}
       <span class="left">
@@ -78,40 +78,42 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
         )}
       </span>
       <span class="body">
-        <span class="title">
-          {a.label}
-          <span class="pips" aria-label={`Skill ${skill} of ${MAX_SKILL}`}>
-            {Array.from({ length: MAX_SKILL }, (_, i) => (i < skill ? '●' : '○')).join('')}
-          </span>
-        </span>
+        <span class="title">{a.label}</span>
         <span class="meter progress" title="The activity in progress">
           <span class="fill" style={{ width: `${progress * 100}%` }} />
         </span>
-        <span class="note">{note}</span>
+        <span class="foot">
+          <span class="note">{note}</span>
+          {!auto && <TrainButton activity={a} />}
+        </span>
       </span>
-    </button>
+    </div>
   );
 }
 
-/** Calls fn on press, then again and again while the press lasts. */
-function useHold(fn: () => void) {
-  const timer = useRef<number | undefined>(undefined);
-  const stop = () => {
-    clearTimeout(timer.current);
-    clearInterval(timer.current);
-    timer.current = undefined;
-  };
-  const start = (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    stop();
-    // A button that turns disabled gets no pointerup, so listen on the window.
-    window.addEventListener('pointerup', stop, { once: true });
-    window.addEventListener('pointercancel', stop, { once: true });
-    fn();
-    timer.current = window.setTimeout(() => {
-      timer.current = window.setInterval(fn, REPEAT_MS);
-    }, HOLD_DELAY_MS);
-  };
-  useEffect(() => stop, []);
-  return { start, stop };
+/** Level label and an arrow that spends overskudd on the next level. */
+function TrainButton({ activity: a }: { activity: ActivityDef }) {
+  const s = useGame();
+  const skill = s.resident.skill[a.id];
+  const next = skill + 1;
+  const effect =
+    next >= MAX_SKILL ? 'becomes automatic' : `${barSize(skill)} → ${barSize(next)} nudges`;
+  return (
+    <span class="level">
+      <span class="lvl">lvl {next}</span>
+      <button
+        class="train"
+        disabled={!canTrain(s, a.id)}
+        title={`Train for ${trainCost(skill)} overskudd: ${effect}`}
+        aria-label={`Train ${a.label} for ${trainCost(skill)} overskudd: ${effect}`}
+        onClick={(e) => {
+          // Keep the click from nudging the card.
+          e.stopPropagation();
+          act((g) => train(g, a.id));
+        }}
+      >
+        {trainCost(skill)}
+      </button>
+    </span>
+  );
 }

@@ -23,7 +23,7 @@ export function TopBar() {
       </div>
       <div class="omsorg">
         <span class="muted">
-          Omsorg <span class="hint">· {OMSORG_PER_NUDGE} per nudge, hold to keep going</span>
+          Omsorg <span class="hint">· {OMSORG_PER_NUDGE} per nudge</span>
         </span>
         <strong>
           {Math.floor(s.omsorg)} <span class="muted">/ {cap}</span>

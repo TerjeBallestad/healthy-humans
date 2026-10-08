@@ -69,10 +69,10 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 
 ### Nudges and skill
 
-- One nudge costs 1 omsorg. The bar size is the **effort**: L0 = 12 nudges, L1 = 6, L2 = 3, L3 = 0 (automatic). Press and hold a card to keep nudging.
+- One nudge costs 1 omsorg. The bar size is the **effort**: L0 = 12 nudges, L1 = 6, L2 = 3, L3 = 0 (automatic). One click is one nudge. Press-and-hold was tried and removed.
 - A full bar means the effort is gone: the activity is **ready**. It holds one charge. A ready activity starts only when its need drops below 50, the same rule as an automatic activity. So you can stockpile ready activities, but only as far as your omsorg goes.
 - The resident does ready activities lowest need first. On the same need, a nudged activity goes before an automatic one. Cards show the order as #1, #2, and so on.
-- **Skill is active.** Completions give no skill. The player trains an activity in the Training panel with overskudd: 8, 15 and 25 for the three levels. Level 3 makes it automatic and opens the next rung.
+- **Skill is active.** Completions give no skill. The player trains an activity with the arrow button on its card, paid with overskudd: 8, 15 and 25 for the three levels. Level 3 makes it automatic and opens the next rung.
 - Later (ideas from play, not built): effort that depends on the resident and the activity (a job application could be 32 nudges), and several activities for each need.
 
 ### Omsorg
