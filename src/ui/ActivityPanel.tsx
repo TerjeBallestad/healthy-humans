@@ -32,13 +32,14 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const doing = r.current?.id === a.id;
   const progress =
     doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
-  const need = NEEDS[a.trigger].label.toLowerCase();
+  const need = NEEDS[a.trigger].label;
 
   let note: string;
   if (doing) note = 'Doing it now';
   else if (priority > 0 && r.needs[a.trigger] < READY_BELOW) note = 'Up next';
-  else if (priority > 0) note = `Waits until ${need} is below ${READY_BELOW}`;
-  else note = `${size - filled} nudges to go`;
+  // The dashed outline already says it waits. The note says for what.
+  else if (priority > 0) note = `${need} above ${READY_BELOW}`;
+  else note = `${filled}/${size}`;
 
   const classes = ['card', doing && 'doing', priority > 0 && 'ready', auto && 'auto']
     .filter(Boolean)
