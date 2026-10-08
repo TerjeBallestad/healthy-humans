@@ -1,13 +1,13 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-07 to 2026-10-08. Read this first, then `PLAN.md`.
+Last session: 2026-10-08. Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 5 are done.** Step 6 (discharge) is next.
+- **Steps 1 to 5 are done.** The first half of step 6 (discharge) is live. Waiting for Terje to play it.
 
 ## What the game does now
 
@@ -20,7 +20,11 @@ Last session: 2026-10-07 to 2026-10-08. Read this first, then `PLAN.md`.
    - **Milestone:** NAV meeting, then job application, then work trial.
 
    Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
-6. After the work trial, nothing more happens yet.
+6. **Discharge:** when a tier opens, a button shows it. The vedtak shows the tax, what waiting gives, and who comes next. Signing shows a two-line glimpse, then the next resident moves in.
+   - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/day), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
+   - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
+   - Residents cycle: Arvid, then Maja (23, sleeps all day). Both are grey-boxes in `src/content/archetypes.ts`.
+7. Days are 24 s at 1x (was 18).
 
 ## Feedback from playtests, in order
 
@@ -42,33 +46,21 @@ Last session: 2026-10-07 to 2026-10-08. Read this first, then `PLAN.md`.
 - **Tempo:** Terje wants it slower in the end. Try 24 s days in the balance pass.
 - **Bot stress numbers:** a need is at 0 about 20 to 30% of the time. The bot plays without strategy, so watch for this in real play. The levers are `SPIRAL_PER_EMPTY_NEED` and the decay rates in `src/content/needs.ts`.
 - **The shop is below the fold on a phone.** Add a small sign when something is affordable, if Terje misses it.
-- **Activity lines are shared** by all archetypes and are written gender-neutral. Lines for one archetype only must go in the archetype data in step 6.
+- **Activity lines are shared** by all archetypes and are written gender-neutral. Lines for one archetype only go in `src/content/archetypes.ts`.
+- **Archetypes are grey-boxes.** Terje plans a procedural personality system. Keep archetype data loose and easy to change. The `colours` field is there for that and is unused.
 
-## Next: step 6, discharge and the next resident
+## Next: rest of step 6, after Terje plays
 
-Draft design. Confirm it with Terje before building.
-
-- **Tiers:**
-  - **Fit to live alone:** rungs 1 to 6 automatic.
-  - **Fit for work:** NAV meeting and job application done, and all 9 routines automatic.
-  - **Healthy human:** work trial done.
-- **A "Discharge" button** appears with the best open tier. Discharge shows a dry vedtak (tier, monthly tax) and a two-line glimpse of his life outside.
-- **Tax** per tier is added to the daily budget for the rest of the game. Placeholder: 10, 30 and 100 kr per day.
-- **The waiting list** is a number that grows over time and shows as pressure. It has no mechanic yet.
-- **The next resident** comes from 3 hand-written archetypes:
-  - The man who has not left his flat (Arvid).
-  - The young woman who sleeps all day.
-  - The retired man who drinks a little too much.
-
-  Each archetype has its own decay rates, intro and a few lines of its own. The data shape gets an optional colour vector, as in `lifelines-core-loop/resources/scripts/character_profile.gd`, for procedural residents later.
-- **What carries over** to the next resident: budget, staff and upgrades. Skills and needs reset.
 - **Question for play:** is "discharge now or wait" a real decision?
+- **Waiting list:** a number that grows over time and shows as pressure. No mechanic yet.
+- **Third archetype:** the retired man who drinks a little too much. Add an entry to `ARCHETYPES`.
+- **Small issue:** the "needs" text for the next tier lists all parts, also the parts that are done.
 
 ## How to work on it
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 25 tests
+npm test           # vitest, 31 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --days=120
 npm run build      # type check and build
 ```
@@ -78,5 +70,5 @@ npm run build      # type check and build
   - `src/content/` holds the data and all tuning numbers (`tuning.ts`).
   - `src/ui/` holds the components. `src/store.ts` holds the loop and the signals.
 - **Saves:** bump `SAVE_VERSION` in `src/sim/state.ts` when the state shape changes. Old saves reset.
-- **Screenshots:** Playwright is installed globally. Import it from `/Users/godstemning/.nvm/versions/node/v22.22.0/lib/node_modules/playwright/index.mjs`. Run `npx vite build && npx vite preview --port 5180`, then use a 390×844 viewport. The debug panel (⚙ or the backtick key) has 10x and 100x speed, fill omsorg, +1000 kr, proposal now, and reset save.
+- **Screenshots:** Playwright is installed globally. Import it from `/Users/godstemning/.nvm/versions/node/v22.22.0/lib/node_modules/playwright/index.mjs`. Run `npx vite build && npx vite preview --port 5180`, then use a 390×844 viewport. The debug panel (⚙ or the backtick key) has 10x and 100x speed, fill omsorg, +1000 kr, proposal now, fill needs, all automatic, next milestone, and reset save.
 - **Way of working:** keep the process light. Make one playable change, deploy it, and let Terje play it. Terje's play test is the review. Build nothing deeper than the next play session.

@@ -1,7 +1,9 @@
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
+import { ACTIVITIES } from '../content/activities';
+import { MILESTONES } from '../content/milestones';
 import { NEED_ORDER } from '../content/needs';
-import { DEBUG_SPEEDS } from '../content/tuning';
+import { DEBUG_SPEEDS, MAX_SKILL } from '../content/tuning';
 import { omsorgCap } from '../sim/institution';
 import { act, resetGame } from '../store';
 
@@ -49,6 +51,29 @@ export function DebugPanel() {
               }
             >
               Fill needs
+            </button>
+          </div>
+          <div class="row">
+            <button
+              onClick={() =>
+                act((g) => {
+                  for (const a of ACTIVITIES) g.resident.skill[a.id] = MAX_SKILL;
+                  g.resident.unlockedRung = ACTIVITIES.length;
+                })
+              }
+            >
+              All automatic
+            </button>
+            <button
+              onClick={() =>
+                act((g) => {
+                  const r = g.resident;
+                  const m = MILESTONES.find((x) => !r.milestones.includes(x.id));
+                  if (m) r.milestones.push(m.id);
+                })
+              }
+            >
+              Next milestone
             </button>
           </div>
           <div class="row">

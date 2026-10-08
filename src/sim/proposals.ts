@@ -59,7 +59,7 @@ export function eligibleSubjects(r: Resident): ProposalSubject[] {
 
 /** Open a proposal when the cooldown is over and the resident has the overskudd. */
 export function maybePropose(state: GameState) {
-  if (state.proposal) return;
+  if (state.proposal || state.discharge) return;
   if (state.minute - state.lastProposalMinute < PROPOSAL_COOLDOWN_DAYS * 1440) return;
   const r = state.resident;
   const options = eligibleSubjects(r).filter((sub) => r.overskudd >= proposalCost(sub));

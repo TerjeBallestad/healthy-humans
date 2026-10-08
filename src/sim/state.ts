@@ -6,10 +6,12 @@ import {
   OMSORG_START,
   START_MINUTE_OF_DAY,
 } from '../content/tuning';
+import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
+import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -18,6 +20,7 @@ export interface CurrentActivity {
 }
 
 export interface Resident {
+  archetype: ArchetypeId;
   name: string;
   intro: string;
   needs: Record<NeedId, number>;
@@ -47,6 +50,19 @@ export interface Proposal {
   gain?: string;
 }
 
+export interface Discharged {
+  name: string;
+  tier: TierId;
+  minute: number;
+}
+
+/** Open discharge dialog. The game is paused while it is set. */
+export interface Discharge {
+  tier: TierId;
+  /** True once the vedtak is signed and the resident has left. */
+  signed: boolean;
+}
+
 export interface LogEntry {
   minute: number;
   text: string;
@@ -66,10 +82,13 @@ export interface GameState {
   staffCarry: number;
   upgrades: UpgradeId[];
   resident: Resident;
+  /** Everyone discharged so far. Each one pays tax for the rest of the game. */
+  discharged: Discharged[];
+  discharge: Discharge | null;
   log: LogEntry[];
   /** Open proposal. The game is paused while it is set. */
   proposal: Proposal | null;
-  /** Speed to return to when the proposal closes. */
+  /** Speed to return to when a dialog closes. */
   resumeSpeed: number;
   lastProposalMinute: number;
   seed: number;
@@ -78,11 +97,13 @@ export interface GameState {
 const perActivity = (value: number) =>
   Object.fromEntries(ACTIVITIES.map((a) => [a.id, value])) as Record<ActivityId, number>;
 
-export function newResident(): Resident {
+export function newResident(id: ArchetypeId = 'arvid'): Resident {
+  const a = ARCHETYPE_BY_ID[id];
   return {
-    name: 'Arvid',
-    intro: "41. Has not left his flat in a year. The curtains stay closed.",
-    needs: { food: 70, hygiene: 55, energy: 80, home: 60, social: 50 },
+    archetype: id,
+    name: a.name,
+    intro: a.intro,
+    needs: { ...a.startNeeds },
     bars: perActivity(0),
     skill: perActivity(0),
     xp: perActivity(0),
@@ -103,8 +124,10 @@ export function newGame(): GameState {
     staff: [],
     staffCarry: 0,
     upgrades: [],
-    resident: newResident(),
-    log: [{ minute: START_MINUTE_OF_DAY, text: 'Arvid moves in. He brought one bag.' }],
+    resident: newResident(ARCHETYPES[0]!.id),
+    discharged: [],
+    discharge: null,
+    log: [{ minute: START_MINUTE_OF_DAY, text: ARCHETYPES[0]!.arrives }],
     proposal: null,
     resumeSpeed: 1,
     lastProposalMinute: START_MINUTE_OF_DAY,

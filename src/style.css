@@ -143,3 +143,8 @@ button:disabled { cursor: default; opacity: 0.5; }
   margin: 0 0 16px; padding: 10px 12px; border-radius: 6px; font-weight: 600;
   color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
+
+.discharge { margin-top: 20px; }
+.discharge .hint { margin: 4px 0 0; }
+.vedtak-head { margin: 0 0 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.glimpse { display: block; }

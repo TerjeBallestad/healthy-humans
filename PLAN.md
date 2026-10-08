@@ -34,7 +34,7 @@ One word, one meaning.
 ### Time
 - Game time runs only while the game is open. No offline progress.
 - The calendar shows days and weeks. Speed controls: pause, 1x, 2x, 4x.
-- 1 game day = 18 real seconds at 1x. Tried 20 (felt slow, but omsorg was too scarce then) and 12 (frantic).
+- 1 game day = 24 real seconds at 1x. Tried 12 (frantic) and 18 (better, "could be even slower").
 
 ### Needs
 - Five needs, 0 to 100, each with its own decay rate per archetype.
@@ -80,7 +80,7 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 ### Discharge
 - When a tier is open, a "Discharge" button appears with the tier name.
 - Discharge shows a dry vedtak (tier, axes, monthly tax), then a two-line glimpse of the person's life outside.
-- Tax per month by tier (placeholder): 1 / 3 / 10 budget.
+- Tax per day by tier (placeholder): 10 / 30 / 100 kr, for the rest of the game.
 - A new resident arrives in the empty bed.
 
 ### Budget and staff
@@ -135,7 +135,7 @@ Each step ends with something playable and one question to answer by playing.
    *Question: does hiring the first staff member feel like relief?*
 5. **Overskudd and proposals.** Done. Overskudd builds while all needs are green. Proposals pause the game: try-alone (success = one skill level) or a milestone (NAV, job application, work trial). Support costs 0, 150 or 350 kr (moved from omsorg after play). The dialog shows what you win and lose before you choose. Odds as words.
    *Question: are proposals interesting choices or noise?*
-6. **Discharge and the next resident.** Tiers, vedtak, tax, waiting list number, three archetypes.
+6. **Discharge and the next resident.** First half done: tiers, vedtak, tax, glimpse, and two grey-box archetypes (Arvid, Maja) that cycle. Budget, staff and upgrades carry over. Days slowed to 24 s. Still to do after play: the waiting list number and the third archetype.
    *Question: is "discharge now or wait" a real decision?*
 7. **Balance pass.** Tune with `npm run sim`.
    *Question: the 30-minute test.*

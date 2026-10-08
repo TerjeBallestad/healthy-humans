@@ -1,6 +1,8 @@
 import { STAFF_WAGE_PER_DAY } from '../content/tuning';
+import { TIER_BY_ID } from '../content/tiers';
 import { UPGRADES } from '../content/upgrades';
 import { buyUpgrade, hire } from '../sim/actions';
+import { taxPerDay } from '../sim/discharge';
 import { canAffordWage, canBuy, canHire, hireCost } from '../sim/institution';
 import { act, useGame } from '../store';
 
@@ -9,6 +11,15 @@ export function InstitutionPanel() {
   const shop = UPGRADES.filter((u) => !s.upgrades.includes(u.id));
   return (
     <section class="institution">
+      {s.discharged.length > 0 && (
+        <>
+          <h3>Discharged</h3>
+          <p>
+            {s.discharged.map((d) => `${d.name} (${TIER_BY_ID[d.tier].label.toLowerCase()})`).join(', ')}
+            <span class="muted"> · +{taxPerDay(s)} kr/day in tax</span>
+          </p>
+        </>
+      )}
       <h3>Staff</h3>
       {s.staff.length > 0 ? (
         <p>{s.staff.join(', ')}</p>

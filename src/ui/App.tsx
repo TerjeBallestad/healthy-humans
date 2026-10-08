@@ -1,4 +1,5 @@
 import { DebugPanel } from './DebugPanel';
+import { DischargeDialog } from './DischargeDialog';
 import { InstitutionPanel } from './InstitutionPanel';
 import { Log } from './Log';
 import { ProposalDialog } from './ProposalDialog';
@@ -13,6 +14,7 @@ export function App() {
       <Log />
       <InstitutionPanel />
       <ProposalDialog />
+      <DischargeDialog />
       <DebugPanel />
     </main>
   );

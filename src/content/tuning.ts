@@ -1,7 +1,7 @@
 // All placeholder numbers live here. Tune in play.
 
 /** Real seconds per game day at 1x speed. */
-export const REAL_SECONDS_PER_DAY = 18;
+export const REAL_SECONDS_PER_DAY = 24;
 export const SPEEDS = [0, 1, 2, 4] as const;
 export const DEBUG_SPEEDS = [10, 100] as const;
 

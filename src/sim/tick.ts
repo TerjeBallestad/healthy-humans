@@ -1,4 +1,5 @@
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
+import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
 import {
   AUTO_BELOW,
@@ -69,11 +70,13 @@ function staffWork(state: GameState, r: Resident) {
 function decayNeeds(state: GameState, r: Resident) {
   const needs = activeNeeds(r);
   const current = r.current ? ACTIVITY_BY_ID[r.current.id] : null;
+  const personal = ARCHETYPE_BY_ID[r.archetype].decay;
   // Each empty need speeds up the others.
   for (const id of needs) {
     if (current?.refills[id] !== undefined) continue;
     const empty = needs.filter((n) => n !== id && r.needs[n] <= 0).length;
-    const rate = (NEEDS[id].decayPerHour / 60) * (1 + empty * SPIRAL_PER_EMPTY_NEED);
+    const base = (NEEDS[id].decayPerHour * (personal[id] ?? 1)) / 60;
+    const rate = base * (1 + empty * SPIRAL_PER_EMPTY_NEED);
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);
     if (before >= NEED_THRESHOLD && r.needs[id] < NEED_THRESHOLD) {

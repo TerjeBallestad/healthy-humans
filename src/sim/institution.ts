@@ -7,6 +7,7 @@ import {
   STAFF_WAGE_PER_DAY,
 } from '../content/tuning';
 import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
+import { taxPerDay } from './discharge';
 import type { GameState } from './state';
 
 export function omsorgCap(s: GameState): number {
@@ -22,7 +23,7 @@ export function wagesPerDay(s: GameState): number {
 }
 
 export function netIncomePerDay(s: GameState): number {
-  return GRANT_PER_DAY - wagesPerDay(s);
+  return GRANT_PER_DAY + taxPerDay(s) - wagesPerDay(s);
 }
 
 export function hireCost(s: GameState): number {
