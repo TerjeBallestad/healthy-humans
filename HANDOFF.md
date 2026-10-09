@@ -7,19 +7,19 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7j are done.** 7j (staff as units: candidates, staff cards, omsorg training) is live. Waiting for Terje to play it.
+- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well". He then saw a big lull after the first hire, so worker speed was cut to 0.4. Not yet played after that cut.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
-- **Next candidates:** staff specialisations, case worker and intake rules, joker cards. See "Automation ladder" under open issues.
+- **Next candidates:** first check the lull after the first hire (see open issues). Then: glanceable needs on the activity cards, drains and conversions for omsorg, case worker and intake rules, joker cards, roommate traits. See "Automation ladder" under open issues.
 
 ## What the game does now
 
 1. Arvid moves in. He learns six rungs at a time (`LEARNING_WINDOW`, was 3), so food, hygiene, energy and home are active from the start.
-2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. One click is one nudge (press-and-hold was removed after play). A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
-3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
+2. You spend **omsorg** (1 per nudge) to fill the effort ring on activity cards: a ring of segments around the icon, one per nudge. Staff nudges pop the staff member's initial on the ring. One click is one nudge (press-and-hold was removed after play). A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
+3. Skill comes from training with overskudd (item 5). Bars shrink from 12 to 6 to 3 nudges, and at the last level the activity is automatic: the card says "independent", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per week) buys staff and **requests** (`src/content/upgrades.ts`).
    - **Requests:** your click (course: a nudge fills 2 segments, then supervision: 3) and the machine (calendar: staff ×1.5, then handover: ×2). A "Requests" button opens a menu with tabs ("Your work", "Staff"). Each line of upgrades is one card with an icon, title, effect, level pips, price and Buy. Only the next level shows. The game pauses while a menu is open (`src/ui/modal.ts`).
    - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** hiring works as in Game Dev Story. "Hire" pays for a job ad (400 kr ×1.5 for each staff member). The button counts down "Søknadsfrist: 5 dager". One week later 3 candidates answer, each with a name, a face, a role and a rolled sheet. You pick one, and it costs only the wage. Picking closes the ad. "Turn them all down" closes it with no hire, and the fee is lost. Up to 6 staff.
-     - **Miljøarbeider** (40 kr/week): one speciality (a need: Cooking, Hygiene, Sleep, Housework, Social). They nudge bars of their speciality first, and there a nudge fills 2 segments. Otherwise they help the lowest need.
+     - **Miljøarbeider** (40 kr/week, 0.4 nudges/s before `PACE` and the calendar requests, was 0.75): one speciality (a need: Cooking, Hygiene, Sleep, Housework, Social). They nudge bars of their speciality first, and there a nudge fills 2 segments. Otherwise they help the lowest need.
      - **Coach** (60 kr/week): a sheet of the highest level they can teach for each activity (rolled: three activities at lvl 1, sometimes one at lvl 2 or 3). The coaches spend the residents' overskudd on any level that a coach in the house can teach. The cheapest level goes first, then the lowest need. They keep 20 overskudd for a proposal while a milestone is open. Training is instant, so more coaches only add coverage.
      - **Profiles (Game Dev Story style):** candidates and staff cards share one profile: name, a role button (icon and title; hover or click shows what the role does), a face (rolled per person, `STAFF_FACES`) and a table. The ×2 chip on a speciality explains itself the same way. Miljøarbeider: all five areas with the activities they cover and the nudge (×2 on a speciality). Coach: activities with "lvl 1", "lvl 2" or "independent". Terje found icon + pips too hard to parse.
      - **Staff card:** click a staff chip in the panel. **Training costs omsorg** (Terje's choice, as a drain on omsorg): a new speciality is 30, a coach level is 10, 20 or 35.
@@ -32,7 +32,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
    - **Result:** a marker sweeps the odds bar and stops at the roll. The result line appears, and the milestone dot on the three-step track fills in.
 
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
-   - **Beds:** you start with one. "+ Bed" in the strip buys more (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. Staff help the lowest need across all beds.
+   - **Beds:** you start with one. "+ Bed" in the strip buys more (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. Miljøarbeidere work across all beds: their speciality first, then the lowest need.
    - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
@@ -79,7 +79,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 
 ## Open issues
 
-- **Automation ladder (from 2026-10-09).** Built: nudge mult, staff mult, coach. Not built:
+- **Automation ladder (from 2026-10-09).** Built: nudge mult, staff mult, staff as units with specialities and coach sheets. Not built:
   - **Case worker:** proposals resolve by a rule ("wager up to 300 kr").
   - **Intake coordinator:** a free bed fills by a rule ("lowest health first").
   - **Joker cards (Balatro):** rule effects such as "if omsorg is above X, overskudd ×Y". Or things with an omsorg running cost: turn omsorg into overskudd for residents, or into kroner. A staff member who spends omsorg (personal trainer) is odd, because other staff do not.
