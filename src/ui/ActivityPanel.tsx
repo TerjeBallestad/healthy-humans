@@ -60,7 +60,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
             {a.icon}
           </span>
         </span>
-        <span class="nudge-label">{auto ? 'alone' : `${filled}/${size}`}</span>
+        <span class="nudge-label">{auto ? 'independent' : `${filled}/${size}`}</span>
       </span>
       <span class="body">
         <span class="title">{a.label}</span>
