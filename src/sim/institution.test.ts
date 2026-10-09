@@ -35,6 +35,7 @@ describe('budget', () => {
 
 const worker = (name: string, specialities: NeedId[] = []): Staff => ({
   name,
+  face: '🧑',
   role: 'worker',
   specialities,
   coaching: {},
@@ -42,6 +43,7 @@ const worker = (name: string, specialities: NeedId[] = []): Staff => ({
 });
 const coach = (coaching: Staff['coaching']): Staff => ({
   name: 'Coach',
+  face: '🧑',
   role: 'coach',
   specialities: [],
   coaching,

@@ -60,7 +60,9 @@ describe('discharge', () => {
 
   test('signing adds tax and empties the bed; admitting fills it fresh', () => {
     const s = newGame();
-    s.staff = [{ name: 'Kari', role: 'worker', specialities: [], coaching: {}, carry: 0 }];
+    s.staff = [
+      { name: 'Kari', face: '🧑', role: 'worker', specialities: [], coaching: {}, carry: 0 },
+    ];
     s.budget = 500;
     s.upgrades = ['calendar'];
     automatic(s.beds[0]!, 6);

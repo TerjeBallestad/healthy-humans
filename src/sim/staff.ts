@@ -7,6 +7,7 @@ import {
   MAX_STAFF,
   ROLES,
   SPECIALITY_TRAIN_COST,
+  STAFF_FACES,
   STAFF_NAMES,
   type StaffRole,
 } from '../content/staff';
@@ -26,7 +27,8 @@ function rollCandidate(s: GameState, taken: Set<string>): Staff {
   );
   taken.add(name);
   const role: StaffRole = random(s) < COACH_SHARE ? 'coach' : 'worker';
-  const staff: Staff = { name, role, specialities: [], coaching: {}, carry: 0 };
+  const face = pick(s, STAFF_FACES);
+  const staff: Staff = { name, face, role, specialities: [], coaching: {}, carry: 0 };
   if (role === 'worker') {
     staff.specialities.push(pick(s, NEED_ORDER));
     return staff;

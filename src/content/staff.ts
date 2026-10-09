@@ -55,6 +55,9 @@ export const SPECIALITY_TRAIN_COST = 30;
 /** Omsorg to teach a coach the next level of an activity, by the level they know now. */
 export const COACH_TRAIN_COST = [10, 20, 35] as const;
 
+/** Placeholder faces until there are sprites. Each person rolls one. */
+export const STAFF_FACES = ['🧑', '👩', '👨', '🧔', '👱', '👩‍🦱', '👨‍🦰', '👩‍🦳', '🧑‍🦱', '👨‍🦲'];
+
 export const STAFF_NAMES = [
   'Kari',
   'Jonas',

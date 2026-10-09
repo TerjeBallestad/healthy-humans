@@ -35,9 +35,8 @@ const covers = (need: NeedId) =>
 const levelText = (level: number) =>
   level >= MAX_SKILL ? 'independent' : level > 0 ? `lvl ${level}` : '–';
 
-/** Name, portrait, what the role does and a table of stats. Rows can hold a train button. */
+/** Name, role, face and a table of stats. Rows can hold a train button. */
 function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChildren }) {
-  const role = ROLES[x.role];
   return (
     <div class="profile">
       <div class="profile-head">
@@ -46,7 +45,7 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
       </div>
       <div class="profile-body">
         <span class="portrait" aria-hidden="true">
-          {role.icon}
+          {x.face}
         </span>
         <table class="stats">
           {x.role === 'worker' ? (
@@ -66,7 +65,17 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
                         {SPECIALITY_LABEL[n]}
                         <span class="covers">{covers(n)}</span>
                       </td>
-                      <td class="value">×{has ? SPECIALITY_FILL : 1}</td>
+                      <td class="value">
+                        {has ? (
+                          <Explain
+                            cls="speciality"
+                            label={`×${SPECIALITY_FILL}`}
+                            text={`${x.name} works on ${SPECIALITY_LABEL[n].toLowerCase()} first, and does ${SPECIALITY_LABEL[n].toLowerCase()} activities at ${SPECIALITY_FILL}× speed.`}
+                          />
+                        ) : (
+                          '×1'
+                        )}
+                      </td>
                       {train && <td>{train(n)}</td>}
                     </tr>
                   );
@@ -101,24 +110,39 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
   );
 }
 
-/** The job title as a small button. Hover or click shows what the role does. */
-function RoleTag({ role }: { role: StaffRole }) {
+/** A button that shows a short explanation on hover, or on click until focus moves. */
+function Explain({ label, cls, text }: { label: ComponentChildren; cls: string; text: string }) {
   const [open, setOpen] = useState(false);
-  const r = ROLES[role];
   return (
-    <span class={open ? 'role open' : 'role'}>
+    <span class={open ? 'explain open' : 'explain'}>
       <button
-        class="role-tag"
+        class={cls}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         onBlur={() => setOpen(false)}
       >
-        <span aria-hidden="true">{r.icon}</span> {r.label}
+        {label}
       </button>
       <span class="popover" role="tooltip">
-        {r.does}
+        {text}
       </span>
     </span>
+  );
+}
+
+/** The job title. Hover or click shows what the role does. */
+function RoleTag({ role }: { role: StaffRole }) {
+  const r = ROLES[role];
+  return (
+    <Explain
+      cls="role-tag"
+      text={r.does}
+      label={
+        <>
+          <span aria-hidden="true">{r.icon}</span> {r.label}
+        </>
+      }
+    />
   );
 }
 

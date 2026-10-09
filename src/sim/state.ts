@@ -22,7 +22,7 @@ import type { TierId } from '../content/tiers';
 import type { StaffRole } from '../content/staff';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 20;
+export const SAVE_VERSION = 21;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -56,6 +56,8 @@ export interface Resident {
 
 export interface Staff {
   name: string;
+  /** Placeholder face, rolled on hire. */
+  face: string;
   role: StaffRole;
   /** Needs a miljøarbeider works on first, with a stronger nudge. */
   specialities: NeedId[];
