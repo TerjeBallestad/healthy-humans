@@ -20,7 +20,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -48,6 +48,8 @@ export interface Resident {
   strain: number;
   /** When this resident last proposed something. */
   lastProposalTick: number;
+  /** The last staff nudge on each activity, so the card can show it. */
+  staffHit: Partial<Record<ActivityId, { tick: number; who: string }>>;
 }
 
 export interface WaitingPerson {
@@ -111,7 +113,11 @@ export interface GameState {
   staff: string[];
   /** Staff taps not yet spent, carried between ticks. */
   staffCarry: number;
+  /** Whose turn it is to nudge next. */
+  staffTurn: number;
   upgrades: UpgradeId[];
+  /** Coach steps the player has switched off. */
+  coachOff: number[];
   /** One slot per bed. Null is an empty bed. */
   beds: (Resident | null)[];
   /** The bed the player looks at. */
@@ -167,6 +173,7 @@ export function newResident(
     arrivalHealth: health,
     strain: (100 - health) * WAIT_STRAIN_PER_HEALTH,
     lastProposalTick: tick,
+    staffHit: {},
   };
   fillLearningWindow(r);
   return r;
@@ -201,7 +208,9 @@ export function newGame(): GameState {
     budget: BUDGET_START,
     staff: [],
     staffCarry: 0,
+    staffTurn: 0,
     upgrades: [],
+    coachOff: [],
     beds: [newResident(ARCHETYPES[0]!.id)],
     selected: 0,
     nextArchetype: 1 + WAITLIST_START,

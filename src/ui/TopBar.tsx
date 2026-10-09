@@ -1,5 +1,5 @@
 import { OMSORG_PER_NUDGE, SPEEDS } from '../content/tuning';
-import { netIncomePerWeek, omsorgCap } from '../sim/institution';
+import { netIncomePerWeek, nudgeMult, omsorgCap } from '../sim/institution';
 import { formatDate } from '../sim/time';
 import { act, useGame } from '../store';
 
@@ -23,7 +23,11 @@ export function TopBar() {
       </div>
       <div class="omsorg">
         <span class="muted">
-          Omsorg <span class="hint">· {OMSORG_PER_NUDGE} per nudge</span>
+          Omsorg{' '}
+          <span class="hint">
+            · {OMSORG_PER_NUDGE} per nudge
+            {nudgeMult(s) > 1 && `, fills ${nudgeMult(s)}`}
+          </span>
         </span>
         <strong>
           {Math.floor(s.omsorg)} <span class="muted">/ {cap}</span>

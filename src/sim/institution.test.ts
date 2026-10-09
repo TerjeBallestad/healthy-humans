@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'vitest';
-import { GRANT_PER_WEEK, HIRE_COST_BASE, OMSORG_CAP, STAFF_WAGE_PER_WEEK } from '../content/tuning';
-import { buyUpgrade, hire } from './actions';
-import { canHire, hireCost, netIncomePerWeek, omsorgCap } from './institution';
+import {
+  GRANT_PER_WEEK,
+  HIRE_COST_BASE,
+  STAFF_NUDGES_PER_SECOND,
+  STAFF_WAGE_PER_WEEK,
+  trainCost,
+} from '../content/tuning';
+import { buyUpgrade, hire, nudge, toggleCoachStep } from './actions';
+import { canHire, hireCost, netIncomePerWeek, staffNudgesPerSecond } from './institution';
 import { newGame } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
@@ -60,11 +66,58 @@ test('staff cannot make a rested resident sleep again', () => {
 });
 
 describe('upgrades', () => {
-  test('an upgrade costs budget and raises the cap once', () => {
+  test('an upgrade costs budget, is bought once, and the next rung needs the first', () => {
     const s = newGame();
-    s.budget = 1000;
-    expect(buyUpgrade(s, 'rota')).toBe(true);
-    expect(omsorgCap(s)).toBeGreaterThan(OMSORG_CAP);
-    expect(buyUpgrade(s, 'rota')).toBe(false);
+    s.budget = 5000;
+    expect(buyUpgrade(s, 'supervision')).toBe(false);
+    expect(buyUpgrade(s, 'course')).toBe(true);
+    expect(s.budget).toBe(4500);
+    expect(buyUpgrade(s, 'course')).toBe(false);
+    expect(buyUpgrade(s, 'supervision')).toBe(true);
+  });
+
+  test('the course makes one nudge fill two segments, never past the bar', () => {
+    const s = newGame();
+    s.upgrades = ['course'];
+    s.omsorg = 40;
+    nudge(s, 0, 'eat');
+    expect(s.beds[0]!.bars.eat).toBe(2);
+    s.beds[0]!.bars.eat = 11;
+    nudge(s, 0, 'eat');
+    expect(s.beds[0]!.bars.eat).toBe(12);
+  });
+
+  test('the calendar makes staff faster', () => {
+    const s = newGame();
+    s.staff = ['Kari'];
+    const before = staffNudgesPerSecond(s);
+    s.upgrades = ['calendar'];
+    expect(before).toBe(STAFF_NUDGES_PER_SECOND);
+    expect(staffNudgesPerSecond(s)).toBe(STAFF_NUDGES_PER_SECOND * 1.5);
+  });
+});
+
+describe('coach', () => {
+  test('spends overskudd on the cheapest switched-on level', () => {
+    const s = newGame();
+    const r = s.beds[0]!;
+    s.upgrades = ['coach1'];
+    r.overskudd = trainCost(0);
+    tick(s);
+    expect(r.overskudd).toBeLessThan(1);
+    expect(Object.values(r.skill).filter((v) => v === 1).length).toBe(2); // laundry started at 1
+  });
+
+  test('a switched-off level is left alone', () => {
+    const s = newGame();
+    const r = s.beds[0]!;
+    s.upgrades = ['coach1', 'coach2'];
+    toggleCoachStep(s, 1);
+    r.overskudd = trainCost(0);
+    tick(s);
+    expect(r.skill.eat).toBe(0);
+    r.overskudd = trainCost(1);
+    tick(s);
+    expect(r.skill.laundry).toBe(2);
   });
 });

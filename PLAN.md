@@ -162,6 +162,8 @@ Each step ends with something playable and one question to answer by playing.
    _Question: does choosing who to admit feel like matching a person to your capacity?_
    7g: **proposal scene card.** A face, a place and one line. A kroner slider with diminishing odds and a sure price. The overskudd cost is paid when the card opens, and the bar drains. A marker rolls on the odds bar.
    _Question: do proposals now feel like a bet you set yourself?_
+   7h: **mults and automation.** Requests become a stronger nudge, faster staff, and a coach that spends overskudd on levels you switch on.
+   _Question: does the game start to play itself in a way that frees you to think?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 

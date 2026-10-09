@@ -30,6 +30,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const size = effort(r, a.id);
   const auto = size === 0;
   const filled = r.bars[a.id];
+  const hit = r.staffHit[a.id];
   const doing = r.current?.id === a.id;
   const progress =
     doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
@@ -56,6 +57,11 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
       <span class="left">
         <span class="ring-wrap">
           {!auto && <EffortRing size={size} filled={filled} />}
+          {hit && s.tick - hit.tick < STAFF_POP_TICKS && (
+            <span key={hit.tick} class="staff-pop" title={hit.who}>
+              {hit.who[0]}
+            </span>
+          )}
           <span class="icon" aria-hidden="true">
             {a.icon}
           </span>
@@ -72,6 +78,9 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
     </div>
   );
 }
+
+/** How long a staff member's initial shows on the ring after a nudge. */
+const STAFF_POP_TICKS = TICKS_PER_SECOND * 0.8;
 
 const RING = 64;
 const RADIUS = 29;

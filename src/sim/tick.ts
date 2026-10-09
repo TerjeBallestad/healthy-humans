@@ -9,12 +9,18 @@ import {
   OVERSKUDD_CAP,
   OVERSKUDD_PER_SECOND,
   SPIRAL_PER_EMPTY_NEED,
-  STAFF_NUDGES_PER_SECOND,
   WAIT_HEALTH_LOSS_PER_WEEK,
   WAIT_STRAIN_FADE_PER_WEEK,
   WAITLIST_WEEKS_PER_PERSON,
+  trainCost,
 } from '../content/tuning';
-import { netIncomePerWeek, omsorgCap, omsorgPerSecond } from './institution';
+import {
+  coachSteps,
+  netIncomePerWeek,
+  omsorgCap,
+  omsorgPerSecond,
+  staffNudgesPerSecond,
+} from './institution';
 import { maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
@@ -51,6 +57,7 @@ export function tick(state: GameState) {
     progressActivity(state, r);
     if (!r.current) startNextActivity(r);
     gainOverskudd(r);
+    coachWork(state, r);
   }
   maybePropose(state);
 }
@@ -89,7 +96,7 @@ function gainOverskudd(r: Resident) {
 /** Staff put free nudges into the open bar with the lowest need, across all beds. */
 function staffWork(state: GameState) {
   if (state.staff.length === 0) return;
-  state.staffCarry += (state.staff.length * STAFF_NUDGES_PER_SECOND) / TICKS_PER_SECOND;
+  state.staffCarry += staffNudgesPerSecond(state) / TICKS_PER_SECOND;
   while (state.staffCarry >= 1) {
     const target = occupied(state)
       .flatMap(([, r]) =>
@@ -108,6 +115,9 @@ function staffWork(state: GameState) {
     }
     target.r.bars[target.a.id] += 1;
     state.staffCarry -= 1;
+    // Staff take turns, so each name shows up on the cards.
+    state.staffTurn = (state.staffTurn + 1) % state.staff.length;
+    target.r.staffHit[target.a.id] = { tick: state.tick, who: state.staff[state.staffTurn]! };
   }
 }
 
@@ -143,6 +153,30 @@ function progressActivity(state: GameState, r: Resident) {
   if (r.current.remaining > 0) return;
   r.current = null;
   log(state, a.done, r.name);
+}
+
+/**
+ * The coach spends the resident's overskudd on the switched-on levels.
+ * Cheapest level first, then the activity whose need is lowest.
+ */
+function coachWork(state: GameState, r: Resident) {
+  const steps = coachSteps(state);
+  if (steps.length === 0) return;
+  const next = unlockedActivities(r)
+    .filter((a) => steps.includes(r.skill[a.id] + 1) && r.overskudd >= trainCost(r.skill[a.id]))
+    .sort(
+      (x, y) =>
+        trainCost(r.skill[x.id]) - trainCost(r.skill[y.id]) ||
+        r.needs[x.trigger] - r.needs[y.trigger],
+    )[0];
+  if (next) trainResident(state, r, next);
+}
+
+/** Pay the overskudd and raise the level. The caller checks that it is allowed. */
+export function trainResident(state: GameState, r: Resident, a: ActivityDef) {
+  r.overskudd -= trainCost(r.skill[a.id]);
+  log(state, a.trained, r.name);
+  levelUp(state, r, a);
 }
 
 /** Raise one skill level. Opens new rungs when the activity becomes automatic. */

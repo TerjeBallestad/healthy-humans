@@ -2,11 +2,11 @@ import type { ActivityId } from '../content/activities';
 import { ACTIVITY_BY_ID } from '../content/activities';
 import { MAX_SKILL, OMSORG_PER_NUDGE, trainCost } from '../content/tuning';
 import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
-import { bedCost, canBuy, canBuyBed, canHire, hireCost } from './institution';
+import { bedCost, canBuy, canBuyBed, canHire, hireCost, nudgeMult } from './institution';
 import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
-import { levelUp, log } from './tick';
+import { log, trainResident } from './tick';
 
 export function canNudge(state: GameState, bed: number, id: ActivityId): boolean {
   const r = state.beds[bed];
@@ -18,8 +18,9 @@ export function canNudge(state: GameState, bed: number, id: ActivityId): boolean
 /** Spend omsorg on one nudge into an activity's bar. */
 export function nudge(state: GameState, bed: number, id: ActivityId): boolean {
   if (!canNudge(state, bed, id)) return false;
+  const r = state.beds[bed]!;
   state.omsorg -= OMSORG_PER_NUDGE;
-  state.beds[bed]!.bars[id] += 1;
+  r.bars[id] = Math.min(effort(r, id), r.bars[id] + nudgeMult(state));
   return true;
 }
 
@@ -33,12 +34,14 @@ export function canTrain(state: GameState, bed: number, id: ActivityId): boolean
 /** Spend overskudd to raise an activity one skill level. */
 export function train(state: GameState, bed: number, id: ActivityId): boolean {
   if (!canTrain(state, bed, id)) return false;
-  const r = state.beds[bed]!;
-  const a = ACTIVITY_BY_ID[id];
-  r.overskudd -= trainCost(r.skill[id]);
-  log(state, a.trained, r.name);
-  levelUp(state, r, a);
+  trainResident(state, state.beds[bed]!, ACTIVITY_BY_ID[id]);
   return true;
+}
+
+export function toggleCoachStep(state: GameState, step: number) {
+  const i = state.coachOff.indexOf(step);
+  if (i >= 0) state.coachOff.splice(i, 1);
+  else state.coachOff.push(step);
 }
 
 export function buyBed(state: GameState): boolean {
@@ -81,6 +84,6 @@ export function buyUpgrade(state: GameState, id: UpgradeId): boolean {
   const u = UPGRADE_BY_ID[id];
   state.budget -= u.cost;
   state.upgrades.push(id);
-  log(state, `${u.label}. ${u.note}`);
+  log(state, u.note ? `${u.label}. ${u.note}` : `${u.label}.`);
   return true;
 }

@@ -62,7 +62,7 @@ describe('discharge', () => {
     const s = newGame();
     s.staff = ['Kari'];
     s.budget = 500;
-    s.upgrades = ['coffee'];
+    s.upgrades = ['calendar'];
     automatic(s.beds[0]!, 6);
     const before = netIncomePerWeek(s);
     openDischarge(s, 0);
