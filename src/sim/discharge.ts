@@ -5,13 +5,11 @@ import { TRAIT_BY_ID } from '../content/traits';
 import {
   MAX_SKILL,
   WAIT_NEED_FLOOR,
-  WAIT_NEED_LOSS_PER_WEEK,
-  WAIT_STRAIN_CAP,
-  WAIT_STRAIN_PER_WEEK,
+  WAIT_NEED_LOSS_PER_HEALTH,
+  WAIT_STRAIN_PER_HEALTH,
 } from '../content/tuning';
 import type { GameState, Resident } from './state';
 import { log } from './tick';
-import { TICKS_PER_WEEK } from './time';
 
 const automatic = (r: Resident, upToRung: number) =>
   ACTIVITIES.filter((a) => a.rung <= upToRung).every((a) => r.skill[a.id] >= MAX_SKILL);
@@ -107,15 +105,11 @@ export function closeDischarge(s: GameState) {
   s.speed = s.resumeSpeed;
 }
 
-/** Whole weeks a person on the waiting list has waited. */
-export function waitedWeeks(s: GameState, joined: number): number {
-  return Math.floor((s.tick - joined) / TICKS_PER_WEEK);
-}
-
-/** What the wait has cost the next person so far, for the vedtak. */
-export function waitCost(weeks: number) {
+/** What poor health costs a person at admission, for the vedtak. */
+export function waitCost(health: number) {
+  const missing = 100 - Math.max(0, health);
   return {
-    needLoss: Math.min(100 - WAIT_NEED_FLOOR, weeks * WAIT_NEED_LOSS_PER_WEEK),
-    strainPct: Math.round(Math.min(WAIT_STRAIN_CAP, weeks * WAIT_STRAIN_PER_WEEK) * 100),
+    needLoss: Math.round(Math.min(100 - WAIT_NEED_FLOOR, missing * WAIT_NEED_LOSS_PER_HEALTH)),
+    strainPct: Math.round(missing * WAIT_STRAIN_PER_HEALTH * 100),
   };
 }

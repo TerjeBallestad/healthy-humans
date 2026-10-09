@@ -8,7 +8,6 @@ import {
   tierMissing,
   tierTax,
   waitCost,
-  waitedWeeks,
 } from '../sim/discharge';
 import { act, useGame } from '../store';
 
@@ -20,8 +19,7 @@ export function DischargeDialog() {
   const tier = TIER_BY_ID[d.tier];
   const better = nextTier(r);
   const first = s.waiting[0];
-  const waited = first ? waitedWeeks(s, first.joined) : 0;
-  const cost = waitCost(waited);
+  const cost = first ? waitCost(first.health) : null;
 
   return (
     <div class="overlay">
@@ -49,9 +47,9 @@ export function DischargeDialog() {
                 <>
                   <dt>First in line</dt>
                   <dd class="warn">
-                    {ARCHETYPE_BY_ID[first.archetype].name}, {waited} weeks.{' '}
-                    {waited > 0 &&
-                      `Arrives with needs −${cost.needLoss} and decay +${cost.strainPct}%. `}
+                    {ARCHETYPE_BY_ID[first.archetype].name}, health {Math.round(first.health)}.{' '}
+                    {cost!.needLoss > 0 &&
+                      `Arrives with needs −${cost!.needLoss} and decay +${cost!.strainPct}%. `}
                     Every week makes it worse.
                   </dd>
                 </>

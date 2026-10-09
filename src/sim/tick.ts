@@ -1,24 +1,23 @@
-import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
+import { ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
 import { ARCHETYPES, ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
 import { TRAIT_BY_ID } from '../content/traits';
 import {
   READY_BELOW,
-  LEARNING_WINDOW,
   MAX_SKILL,
   NEED_THRESHOLD,
   OVERSKUDD_CAP,
   OVERSKUDD_PER_SECOND,
   SPIRAL_PER_EMPTY_NEED,
   STAFF_NUDGES_PER_SECOND,
+  WAIT_HEALTH_LOSS_PER_WEEK,
   WAIT_STRAIN_FADE_PER_WEEK,
   WAITLIST_WEEKS_PER_PERSON,
-  barSize,
 } from '../content/tuning';
 import { netIncomePerWeek, omsorgCap, omsorgPerSecond } from './institution';
 import { maybePropose } from './proposals';
-import { activeNeeds, readyQueue, unlockedActivities } from './selectors';
-import { newReferral, occupied, type GameState, type Resident } from './state';
+import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
+import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
 
 const LOG_LIMIT = 30;
@@ -43,7 +42,7 @@ export function tick(state: GameState) {
     state.waiting.push(newReferral(state, a.id));
     state.nextArchetype += 1;
   }
-  giveUp(state);
+  declineWaiting(state);
 
   staffWork(state);
   for (const [, r] of occupied(state)) {
@@ -56,20 +55,22 @@ export function tick(state: GameState) {
   maybePropose(state);
 }
 
-const GIVE_UP_LINES = [
-  'could not wait any longer. Moved back home.',
-  'was taken in by the emergency ward.',
-  'stopped answering the phone. Taken off the list.',
+// Never said out loud. The player can guess.
+const LOST_LINES = [
+  'was taken in by the emergency ward. The case is closed.',
+  'stopped answering the phone. The case is closed.',
+  'was found by a neighbour. The case is closed.',
 ];
 
-/** People whose patience has run out leave the waiting list. */
-function giveUp(state: GameState) {
+/** Health drops for everyone on the waiting list. At 0 they are lost. */
+function declineWaiting(state: GameState) {
   for (let i = state.waiting.length - 1; i >= 0; i--) {
     const p = state.waiting[i]!;
-    if (state.tick < p.leaves) continue;
+    p.health -= WAIT_HEALTH_LOSS_PER_WEEK / TICKS_PER_WEEK;
+    if (p.health > 0) continue;
     state.waiting.splice(i, 1);
     state.lost += 1;
-    const line = GIVE_UP_LINES[state.lost % GIVE_UP_LINES.length]!;
+    const line = LOST_LINES[state.lost % LOST_LINES.length]!;
     log(state, `${ARCHETYPE_BY_ID[p.archetype].name} ${line}`);
   }
 }
@@ -94,7 +95,7 @@ function staffWork(state: GameState) {
       .flatMap(([, r]) =>
         unlockedActivities(r)
           .filter((a) => {
-            const size = barSize(r.skill[a.id]);
+            const size = effort(r, a.id);
             return size > 0 && r.bars[a.id] < size;
           })
           .map((a) => ({ r, a, need: r.needs[a.trigger] })),
@@ -149,26 +150,13 @@ export function levelUp(state: GameState, r: Resident, a: ActivityDef) {
   if (r.skill[a.id] >= MAX_SKILL) return;
   r.skill[a.id] += 1;
   // Clicks already in the bar carry over, capped at the new size.
-  r.bars[a.id] = Math.min(r.bars[a.id], barSize(r.skill[a.id]));
+  r.bars[a.id] = Math.min(r.bars[a.id], effort(r, a.id));
   if (r.skill[a.id] < MAX_SKILL) {
     log(state, `${a.label}: a little easier now.`, r.name);
     return;
   }
   log(state, a.independent, r.name);
   for (const opened of fillLearningWindow(r)) log(state, opened.appears, r.name);
-}
-
-/** Open new rungs until the resident is learning LEARNING_WINDOW activities. Returns the new ones. */
-export function fillLearningWindow(r: Resident): ActivityDef[] {
-  const opened: ActivityDef[] = [];
-  const learning = () => unlockedActivities(r).filter((a) => r.skill[a.id] < MAX_SKILL).length;
-  while (learning() < LEARNING_WINDOW) {
-    const next = ACTIVITIES.find((n) => n.rung === r.unlockedRung + 1);
-    if (!next) break;
-    r.unlockedRung = next.rung;
-    opened.push(next);
-  }
-  return opened;
 }
 
 function startNextActivity(r: Resident) {

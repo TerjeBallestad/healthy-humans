@@ -1,26 +1,26 @@
-import { ACTIVITIES, type ActivityId } from '../content/activities';
+import { ACTIVITIES, type ActivityDef, type ActivityId } from '../content/activities';
 import type { NeedId } from '../content/needs';
 import {
   BUDGET_START,
   LEARNING_WINDOW,
+  MAX_SKILL,
   OMSORG_START,
+  WAIT_HEALTH_MAX,
+  WAIT_HEALTH_MIN,
   WAIT_NEED_FLOOR,
-  WAIT_NEED_LOSS_PER_WEEK,
-  WAIT_STRAIN_CAP,
-  WAIT_STRAIN_PER_WEEK,
-  WAIT_PATIENCE_MAX,
-  WAIT_PATIENCE_MIN,
+  WAIT_NEED_LOSS_PER_HEALTH,
+  WAIT_STRAIN_PER_HEALTH,
   WAITLIST_START,
 } from '../content/tuning';
 import { TRAITS, TRAIT_BY_ID, type TraitId } from '../content/traits';
 import { random } from './rng';
-import { TICKS_PER_WEEK } from './time';
+import { unlockedActivities } from './selectors';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -42,9 +42,9 @@ export interface Resident {
   current: CurrentActivity | null;
   overskudd: number;
   milestones: MilestoneId[];
-  /** Days on the waiting list before moving in. */
-  waitedWeeks: number;
-  /** Extra need decay from the wait, as a fraction. Fades over time. */
+  /** Health when they moved in, 0 to 100. */
+  arrivalHealth: number;
+  /** Extra need decay from poor health at arrival, as a fraction. Fades over time. */
   strain: number;
   /** When this resident last proposed something. */
   lastProposalTick: number;
@@ -53,10 +53,8 @@ export interface Resident {
 export interface WaitingPerson {
   archetype: ArchetypeId;
   trait: TraitId;
-  /** The tick they joined the list. */
-  joined: number;
-  /** The tick they give up and leave the list. */
-  leaves: number;
+  /** 0 to 100. Drops each week on the list. At 0 the person is lost. */
+  health: number;
 }
 
 export type ProposalSubject = { kind: 'milestone'; milestone: MilestoneId };
@@ -133,22 +131,23 @@ export interface GameState {
 const perActivity = (value: number) =>
   Object.fromEntries(ACTIVITIES.map((a) => [a.id, value])) as Record<ActivityId, number>;
 
-/** A resident who waited longer arrives with lower needs and a strain on decay. */
+/** A resident in poorer health arrives with lower needs and a strain on decay. */
 export function newResident(
   id: ArchetypeId = 'arvid',
-  waitedWeeks = 0,
+  health = 100,
   tick = 0,
   trait: TraitId | null = null,
 ): Resident {
   const a = ARCHETYPE_BY_ID[id];
   const skill = perActivity(0);
-  for (const [act, level] of Object.entries((trait && TRAIT_BY_ID[trait].startSkill) ?? {}))
-    skill[act as ActivityId] = level;
-  const loss = waitedWeeks * WAIT_NEED_LOSS_PER_WEEK;
+  const traitSkill = (trait && TRAIT_BY_ID[trait].startSkill) ?? {};
+  for (const act of ACTIVITIES)
+    skill[act.id] = Math.max(a.skills[act.id] ?? 0, traitSkill[act.id] ?? 0);
+  const loss = (100 - health) * WAIT_NEED_LOSS_PER_HEALTH;
   const needs = Object.fromEntries(
     Object.entries(a.startNeeds).map(([n, v]) => [n, Math.max(WAIT_NEED_FLOOR, v - loss)]),
   ) as Record<NeedId, number>;
-  return {
+  const r: Resident = {
     archetype: id,
     name: a.name,
     intro: a.intro,
@@ -156,21 +155,36 @@ export function newResident(
     needs,
     bars: perActivity(0),
     skill,
-    unlockedRung: LEARNING_WINDOW,
+    unlockedRung: 0,
     current: null,
     overskudd: 0,
     milestones: [],
-    waitedWeeks,
-    strain: Math.min(WAIT_STRAIN_CAP, waitedWeeks * WAIT_STRAIN_PER_WEEK),
+    arrivalHealth: health,
+    strain: (100 - health) * WAIT_STRAIN_PER_HEALTH,
     lastProposalTick: tick,
   };
+  fillLearningWindow(r);
+  return r;
 }
 
-/** A new referral with a rolled trait and patience. Advances the seed. */
+/** Open new rungs until the resident is learning LEARNING_WINDOW activities. Returns the new ones. */
+export function fillLearningWindow(r: Resident): ActivityDef[] {
+  const opened: ActivityDef[] = [];
+  const learning = () => unlockedActivities(r).filter((a) => r.skill[a.id] < MAX_SKILL).length;
+  while (learning() < LEARNING_WINDOW) {
+    const next = ACTIVITIES.find((n) => n.rung === r.unlockedRung + 1);
+    if (!next) break;
+    r.unlockedRung = next.rung;
+    opened.push(next);
+  }
+  return opened;
+}
+
+/** A new referral with a rolled trait and health. Advances the seed. */
 export function newReferral(s: GameState, archetype: ArchetypeId): WaitingPerson {
   const trait = TRAITS[Math.floor(random(s) * TRAITS.length)]!.id;
-  const weeks = WAIT_PATIENCE_MIN + random(s) * (WAIT_PATIENCE_MAX - WAIT_PATIENCE_MIN);
-  return { archetype, trait, joined: s.tick, leaves: s.tick + Math.round(weeks * TICKS_PER_WEEK) };
+  const health = WAIT_HEALTH_MIN + random(s) * (WAIT_HEALTH_MAX - WAIT_HEALTH_MIN);
+  return { archetype, trait, health: Math.round(health) };
 }
 
 export function newGame(): GameState {

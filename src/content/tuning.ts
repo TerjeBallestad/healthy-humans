@@ -24,6 +24,8 @@ export function barSize(skill: number): number {
 }
 
 export const MAX_SKILL = BAR_SIZE_BY_SKILL.length - 1;
+/** Effort multiplier on an activity a resident finds hard. */
+export const HARD_EFFORT = 2;
 /** Overskudd to train an activity one level up, by current level. Skill only grows this way. */
 export const TRAIN_COST_BY_LEVEL = [8, 15, 25] as const;
 
@@ -69,16 +71,17 @@ export const MAX_CHANCE = 0.95;
 export const WAITLIST_WEEKS_PER_PERSON = 3;
 /** People on the list on week 1. */
 export const WAITLIST_START = 1;
-/** Start needs lost per week the next resident waited. */
-export const WAIT_NEED_LOSS_PER_WEEK = 2;
+/** Health a referral has when they join the list. Rolled in this range. */
+export const WAIT_HEALTH_MIN = 50;
+export const WAIT_HEALTH_MAX = 90;
+/** Health lost per week on the list. At 0 the person is lost. */
+export const WAIT_HEALTH_LOSS_PER_WEEK = 3;
+/** Start needs lost for each point of health below 100 at admission. */
+export const WAIT_NEED_LOSS_PER_HEALTH = 0.5;
 /** No start need drops below this. */
 export const WAIT_NEED_FLOOR = 15;
-/** Extra decay per week waited, as a fraction. Fades after arrival. */
-export const WAIT_STRAIN_PER_WEEK = 0.02;
-export const WAIT_STRAIN_CAP = 0.5;
+/** Extra decay for each point of health below 100 at admission, as a fraction. Fades after arrival. */
+export const WAIT_STRAIN_PER_HEALTH = 0.005;
 export const WAIT_STRAIN_FADE_PER_WEEK = 0.05;
-/** Weeks a person waits before they give up and leave the list. Rolled in this range. */
-export const WAIT_PATIENCE_MIN = 10;
-export const WAIT_PATIENCE_MAX = 30;
-/** The list shows a person as urgent when this many weeks are left. */
-export const WAIT_URGENT_WEEKS = 4;
+/** The list shows a person as urgent below this health. */
+export const WAIT_URGENT_HEALTH = 15;

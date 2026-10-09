@@ -1,6 +1,7 @@
-import { ARCHETYPE_BY_ID } from '../content/archetypes';
-import { TRAIT_BY_ID } from '../content/traits';
-import { WAIT_URGENT_WEEKS, WAITLIST_WEEKS_PER_PERSON } from '../content/tuning';
+import { ACTIVITIES } from '../content/activities';
+import { ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
+import { TRAIT_BY_ID, type TraitId } from '../content/traits';
+import { HARD_EFFORT, WAIT_URGENT_HEALTH, WAITLIST_WEEKS_PER_PERSON } from '../content/tuning';
 import { admit, freeBed } from '../sim/actions';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
@@ -19,22 +20,17 @@ export function WaitingList() {
       <ol>
         {s.waiting.map((p, i) => {
           const trait = TRAIT_BY_ID[p.trait];
-          const weeksLeft = Math.ceil((p.leaves - s.tick) / TICKS_PER_WEEK);
-          const left = (p.leaves - s.tick) / (p.leaves - p.joined);
-          const level = weeksLeft <= WAIT_URGENT_WEEKS ? 'bad' : left < 0.5 ? 'worse' : '';
+          const level = p.health < WAIT_URGENT_HEALTH ? 'bad' : p.health < 40 ? 'worse' : '';
           return (
             <li class={level}>
               <span class="who">
                 {ARCHETYPE_BY_ID[p.archetype].name}
                 <span class="tag">{trait.label}</span>
-                <span class="muted">
-                  {' '}
-                  · {weeksLeft} {weeksLeft === 1 ? 'week' : 'weeks'} left
-                </span>
               </span>
-              <span class="meter">
-                <span class="fill" style={{ width: `${left * 100}%` }} />
+              <span class="meter" title="Health">
+                <span class="fill" style={{ width: `${p.health}%` }} />
               </span>
+              <SkillSheet archetype={p.archetype} trait={p.trait} />
               <span class="row">
                 <span class="cost">{trait.effect}</span>
                 {bedFree && (
@@ -49,5 +45,30 @@ export function WaitingList() {
       </ol>
       <p class="muted hint">New referral in {nextIn.toFixed(1)} weeks.</p>
     </section>
+  );
+}
+
+/** Strengths as icons with level dots, hard activities with their effort multiplier. */
+function SkillSheet({ archetype, trait }: { archetype: ArchetypeId; trait: TraitId }) {
+  const a = ARCHETYPE_BY_ID[archetype];
+  const traitSkill = TRAIT_BY_ID[trait].startSkill ?? {};
+  return (
+    <span class="skills">
+      {ACTIVITIES.map((act) => {
+        const level = Math.max(a.skills[act.id] ?? 0, traitSkill[act.id] ?? 0);
+        const hard = a.hard.includes(act.id);
+        if (!level && !hard) return null;
+        return (
+          <span
+            class={hard ? 'skill hard' : 'skill'}
+            title={`${act.label}: ${level ? `lvl ${level}` : ''}${level && hard ? ', ' : ''}${hard ? `${HARD_EFFORT}× effort` : ''}`}
+          >
+            {act.icon}
+            {level > 0 && <span class="dots">{'●'.repeat(level)}</span>}
+            {hard && <span class="dots">×{HARD_EFFORT}</span>}
+          </span>
+        );
+      })}
+    </span>
   );
 }

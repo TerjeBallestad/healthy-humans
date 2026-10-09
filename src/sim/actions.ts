@@ -1,17 +1,17 @@
 import type { ActivityId } from '../content/activities';
 import { ACTIVITY_BY_ID } from '../content/activities';
-import { MAX_SKILL, OMSORG_PER_NUDGE, barSize, trainCost } from '../content/tuning';
+import { MAX_SKILL, OMSORG_PER_NUDGE, trainCost } from '../content/tuning';
 import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
 import { bedCost, canBuy, canBuyBed, canHire, hireCost } from './institution';
+import { effort } from './selectors';
 import { newResident, type GameState } from './state';
-import { TICKS_PER_WEEK } from './time';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { levelUp, log } from './tick';
 
 export function canNudge(state: GameState, bed: number, id: ActivityId): boolean {
   const r = state.beds[bed];
   if (!r) return false;
-  const size = barSize(r.skill[id]);
+  const size = effort(r, id);
   return size > 0 && state.omsorg >= OMSORG_PER_NUDGE && r.bars[id] < size;
 }
 
@@ -60,12 +60,10 @@ export function admit(state: GameState, index: number): boolean {
   const person = state.waiting[index];
   if (bed < 0 || !person) return false;
   const a = ARCHETYPE_BY_ID[person.archetype];
-  const waited = Math.floor((state.tick - person.joined) / TICKS_PER_WEEK);
   state.waiting.splice(index, 1);
-  state.beds[bed] = newResident(a.id, waited, state.tick, person.trait);
+  state.beds[bed] = newResident(a.id, person.health, state.tick, person.trait);
   state.selected = bed;
   log(state, a.arrives);
-  if (waited > 0) log(state, `Waited ${waited} weeks for a place.`, a.name);
   return true;
 }
 

@@ -1,14 +1,14 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
+Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7e are done.** 7e (traits and people who leave the list) is live. Waiting for Terje to play it.
-- **Next: 7f, the proposal scene card.** See "Proposals" under open issues.
+- **Steps 1 to 7f are done.** 7f (skill sheets and health on the list) is live. Waiting for Terje to play it.
+- **Next:** not decided. Candidates are roommate traits (Terje likes them) and the proposal scene card. Terje is still thinking about alumni and outreach. See "Strategic layer" under open issues.
 
 ## What the game does now
 
@@ -27,7 +27,8 @@ Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
    - **Traits (7e):** each referral rolls one trait (`src/content/traits.ts`): Cooks (eat and dishes start at lvl 2), Tidy (home decays at half rate), Family visits (overskudd +50%), Has a trade (double tax). The trait shows on the list and on the resident.
-   - **Patience (7e):** each referral leaves after 10 to 30 weeks. The list row shows the weeks left and a bar that drains. The top bar counts "Lost". The referral tempo stays at one each 3 weeks. Terje wants to catch up with it in the long run and watch the list shrink.
+   - **Skill sheets (7f):** each archetype has start levels and two hard activities (`skills` and `hard` in `src/content/archetypes.ts`). A hard activity takes `HARD_EFFORT` (2) times the nudges at every level, so 24/12/6. The trait's start skill stacks with the sheet (the higher level wins). The list row shows strengths as icons with dots and hard activities as "×2". Arvid: dishes 2, laundry 1, hard walk and call. Maja: call 3, shower 2, eat 1, hard sleep and groceries. Rolf: groceries 3, eat 2, walk 2, hard shower and tidy.
+   - **Health (7f, replaced patience from 7e):** each referral rolls health 50 to 90. It drops 3 per week. At 0 the person is lost, and the log line only implies it ("was found by a neighbour. The case is closed."). At admission, each point below 100 costs 0.5 start need and 0.5% decay strain. The referral tempo stays at one each 3 weeks. Terje wants to catch up with it in the long run and watch the list shrink.
    - The waiting list cycles archetypes: Arvid, Maja (23, sleeps all day), Rolf (67, retired, drinks a little). All are grey-boxes in `src/content/archetypes.ts`. With three archetypes, names can repeat across beds and the list.
 7. **Two clocks, as in Game Dev Story.** The calendar shows `Y1 M4 W2`, and one week is 24 s at 1x. Activities last real seconds (eat 2 s, sleep 4 s) and are not tied to the calendar. Everything that was per day is now per week, with the same numbers. The sim counts ticks: 60 per real second (`src/sim/time.ts`).
 
@@ -50,6 +51,8 @@ Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
 | Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.                                             |
 | Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.                                          |
 | 7d: picks the top patient, all the same, list grows | 7e: a trait for each referral, and people leave after 10 to 30 weeks. The wait cost had capped, so every row read "−85, +50%".              |
+| 7e: traits help, but identities are weak            | 7f: a skill sheet for each archetype, with strengths and hard activities.                                                                   |
+| 7e: patience bar is weak, wants Papers, Please      | 7f: the bar is health. At 0 the person is lost, implied in the log. Health at admission sets the start.                                     |
 | 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
 ## Open issues
@@ -59,7 +62,11 @@ Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
   - Terje sets the wager: a kr amount with diminishing returns on the odds, and a price that guarantees success.
   - An animation of the overskudd bar going down when the proposal comes.
   - A short result animation, then the milestone ticks.
-- **Strategic layer:** Terje wants to go above the tactical play. Nothing planned yet.
+- **Strategic layer and skill ceiling:** Terje: the loss of people only hits if it feels like optimal play could have saved them. Now the skill ceiling is obvious. There are no strong bonuses or combos, only clicking and waiting for money and overskudd. Ideas discussed on 2026-10-09:
+  - **Roommate traits:** traits that act across beds (a resident who cooks also feeds the next bed, family visits share overskudd). Terje likes this one.
+  - **Alumni:** discharged residents return as peer workers. Terje is not convinced.
+  - **Outreach:** spend omsorg or kroner to raise the health of someone on the list. Terje is not convinced.
+- **Trait strength:** Terje says double tax and overskudd +50% are good incentives, "perhaps a bit weak".
 - **Tempo:** fine at 24 s weeks (Terje, after 3.5 game years, about 48 min at 1x).
 - **Bot stress numbers:** a need is at 0 about 20 to 30% of the time. The bot plays without strategy, so watch for this in real play. The levers are `SPIRAL_PER_EMPTY_NEED` and the decay rates in `src/content/needs.ts`.
 - **The shop is below the fold on a phone.** Terje plays on a wide screen. Drop this unless phone play comes back.
@@ -88,7 +95,7 @@ Last session: 2026-10-08 (7e). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 48 tests
+npm test           # vitest, 49 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```

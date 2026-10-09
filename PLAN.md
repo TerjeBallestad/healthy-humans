@@ -101,7 +101,8 @@ Each activity is one rung. Routine activities repeat and refill a need. Mileston
 ### Residents
 
 - Beds: one at the start. More beds are bought with kroner (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. A strip of bed cards sits above the selected resident.
-- Three hand-written archetypes. Each has a name, a short intro, decay rates per need, a starting rung, and 2 to 3 events.
+- Three hand-written archetypes. Each has a name, a short intro, decay rates per need, a skill sheet and 2 to 3 events. The skill sheet (7f) gives start levels for some activities and marks others as hard (twice the nudges at every level).
+- Each referral rolls a trait and a health value (50 to 90). Health drops by 3 per week on the list. Low health at admission means lower start needs and faster decay. At 0 the person is lost, and the log only implies what happened.
   - The man who has not left his flat in a year.
   - The young woman who sleeps all day.
   - The retired man who drinks a little too much.
@@ -156,6 +157,9 @@ Each step ends with something playable and one question to answer by playing.
    _Question: is choosing what to train a real decision?_
    7d: **more beds.** Buy beds with kroner, admit with "Legg inn", one omsorg pool and one staff team for all. Third archetype: Rolf.
    _Question: does choosing which person to help make the game more tactical?_
+   7e: a trait for each referral, and people leave the list after 10 to 30 weeks.
+   7f: **identities and health.** A skill sheet for each archetype. Health replaces patience on the list.
+   _Question: does choosing who to admit feel like matching a person to your capacity?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 

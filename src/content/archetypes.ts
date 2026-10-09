@@ -1,3 +1,4 @@
+import type { ActivityId } from './activities';
 import type { NeedId } from './needs';
 import type { TierId } from './tiers';
 
@@ -16,6 +17,10 @@ export interface ArchetypeDef {
   startNeeds: Record<NeedId, number>;
   /** Multiplies each need's base decay rate. Missing means 1. */
   decay: Partial<Record<NeedId, number>>;
+  /** Skill levels the resident arrives with. Missing means 0. */
+  skills: Partial<Record<ActivityId, number>>;
+  /** Activities that take HARD_EFFORT times the nudges at every level. */
+  hard: ActivityId[];
   /** Two lines about life after discharge, for each tier. */
   glimpse: Record<TierId, [string, string]>;
   colours?: Partial<Record<Colour, number>>;
@@ -29,6 +34,8 @@ export const ARCHETYPES: ArchetypeDef[] = [
     arrives: 'Arvid moves in. He brought one bag.',
     startNeeds: { food: 70, hygiene: 55, energy: 80, home: 60, social: 50 },
     decay: {},
+    skills: { dishes: 2, laundry: 1 },
+    hard: ['walk', 'call'],
     glimpse: {
       alone: [
         'Arvid lives in a one-room flat in Grünerløkka.',
@@ -52,6 +59,8 @@ export const ARCHETYPES: ArchetypeDef[] = [
     arrives: 'Maja moves in. Her mother carries the boxes.',
     startNeeds: { food: 60, hygiene: 70, energy: 40, home: 50, social: 65 },
     decay: { energy: 1.3, food: 0.8, social: 1.2 },
+    skills: { shower: 2, call: 3, eat: 1 },
+    hard: ['sleep', 'groceries'],
     glimpse: {
       alone: ['Maja shares a flat with two students.', 'She is up before noon. Most days.'],
       work: [
@@ -72,6 +81,8 @@ export const ARCHETYPES: ArchetypeDef[] = [
     arrives: 'Rolf moves in. He asks where the nearest shop is.',
     startNeeds: { food: 50, hygiene: 60, energy: 70, home: 40, social: 45 },
     decay: { home: 1.3, food: 1.2, energy: 0.8 },
+    skills: { groceries: 3, eat: 2, walk: 2 },
+    hard: ['shower', 'tidy'],
     glimpse: {
       alone: [
         'Rolf has a flat with a balcony in Ammerud.',

@@ -1,15 +1,27 @@
-import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
+import {
+  ACTIVITIES,
+  ACTIVITY_BY_ID,
+  type ActivityDef,
+  type ActivityId,
+} from '../content/activities';
 import { NEEDS, NEED_ORDER, type NeedId } from '../content/needs';
-import { NEED_THRESHOLD, barSize } from '../content/tuning';
+import { ARCHETYPE_BY_ID } from '../content/archetypes';
+import { HARD_EFFORT, NEED_THRESHOLD, barSize } from '../content/tuning';
 import type { Resident } from './state';
 
 export function unlockedActivities(r: Resident): ActivityDef[] {
   return ACTIVITIES.filter((a) => a.rung <= r.unlockedRung);
 }
 
+/** Nudges to fill the bar at a skill level. 0 means automatic. Hard activities take more. */
+export function effort(r: Resident, id: ActivityId, skill = r.skill[id]): number {
+  const hard = ARCHETYPE_BY_ID[r.archetype].hard.includes(id);
+  return barSize(skill) * (hard ? HARD_EFFORT : 1);
+}
+
 /** True when the effort is gone: the bar is full, or the activity is automatic. */
 export function isReady(r: Resident, a: ActivityDef): boolean {
-  const size = barSize(r.skill[a.id]);
+  const size = effort(r, a.id);
   return size === 0 || r.bars[a.id] >= size;
 }
 
@@ -19,7 +31,7 @@ export function isReady(r: Resident, a: ActivityDef): boolean {
  * On the same need, a nudged activity goes before an automatic one: the player paid for it.
  */
 export function readyQueue(r: Resident): ActivityDef[] {
-  const auto = (a: ActivityDef) => (barSize(r.skill[a.id]) === 0 ? 1 : 0);
+  const auto = (a: ActivityDef) => (effort(r, a.id) === 0 ? 1 : 0);
   return unlockedActivities(r)
     .filter((a) => isReady(r, a))
     .sort((x, y) => r.needs[x.trigger] - r.needs[y.trigger] || auto(x) - auto(y));

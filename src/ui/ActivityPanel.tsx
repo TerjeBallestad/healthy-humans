@@ -1,7 +1,7 @@
 import type { ActivityDef } from '../content/activities';
-import { MAX_SKILL, barSize, trainCost } from '../content/tuning';
+import { MAX_SKILL, trainCost } from '../content/tuning';
 import { canNudge, canTrain, nudge, train } from '../sim/actions';
-import { readyQueue, unlockedActivities } from '../sim/selectors';
+import { effort, readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
@@ -27,8 +27,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   const s = useGame();
   const bed = s.selected;
   const r = s.beds[bed]!;
-  const skill = r.skill[a.id];
-  const size = barSize(skill);
+  const size = effort(r, a.id);
   const auto = size === 0;
   const filled = r.bars[a.id];
   const doing = r.current?.id === a.id;
@@ -86,10 +85,13 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
 function TrainButton({ activity: a }: { activity: ActivityDef }) {
   const s = useGame();
   const bed = s.selected;
-  const skill = s.beds[bed]!.skill[a.id];
+  const r = s.beds[bed]!;
+  const skill = r.skill[a.id];
   const next = skill + 1;
   const effect =
-    next >= MAX_SKILL ? 'becomes automatic' : `${barSize(skill)} → ${barSize(next)} nudges`;
+    next >= MAX_SKILL
+      ? 'becomes automatic'
+      : `${effort(r, a.id)} → ${effort(r, a.id, next)} nudges`;
   return (
     <span class="level">
       <span class="lvl">lvl {next}</span>

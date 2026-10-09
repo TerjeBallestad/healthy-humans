@@ -588,6 +588,22 @@ button:disabled {
   letter-spacing: 0.06em;
   color: var(--accent);
 }
+.waitlist .skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.85rem;
+}
+.waitlist .skill .dots {
+  margin-left: 2px;
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+.waitlist .skill.hard .dots {
+  font-size: 0.75rem;
+  color: var(--warn);
+}
 .waitlist .cost {
   font-size: 0.8rem;
   color: var(--muted);

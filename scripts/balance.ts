@@ -1,19 +1,13 @@
 // Plays the game with a simple bot and prints the pace.
 // Usage: npm run sim [-- --taps-per-second=1 --shop=0]
 import { ACTIVITIES } from '../src/content/activities';
-import {
-  MAX_SKILL,
-  NEED_THRESHOLD,
-  SECONDS_PER_WEEK,
-  barSize,
-  trainCost,
-} from '../src/content/tuning';
+import { MAX_SKILL, NEED_THRESHOLD, SECONDS_PER_WEEK, trainCost } from '../src/content/tuning';
 import { UPGRADES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, hire, nudge, train } from '../src/sim/actions';
 import { canBuy, canHire } from '../src/sim/institution';
 import { accept, canSupport, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
-import { activeNeeds, unlockedActivities } from '../src/sim/selectors';
+import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
 import { newGame, occupied } from '../src/sim/state';
 import { tick } from '../src/sim/tick';
 import { TICKS_PER_WEEK } from '../src/sim/time';
@@ -106,7 +100,7 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
   const learning = occupied(s)
     .flatMap(([bed, x]) =>
       unlockedActivities(x)
-        .filter((a) => barSize(x.skill[a.id]) > 0 && x.bars[a.id] < barSize(x.skill[a.id]))
+        .filter((a) => effort(x, a.id) > 0 && x.bars[a.id] < effort(x, a.id))
         .map((a) => ({ bed, a, need: x.needs[a.trigger] })),
     )
     .sort((a, b) => a.need - b.need);

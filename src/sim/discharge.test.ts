@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ACTIVITIES } from '../content/activities';
-import { GRANT_PER_WEEK, LEARNING_WINDOW, MAX_SKILL } from '../content/tuning';
+import { GRANT_PER_WEEK, LEARNING_WINDOW, MAX_SKILL, barSize } from '../content/tuning';
 import { admit, buyBed, freeBed } from './actions';
 import {
   bestTier,
@@ -13,7 +13,8 @@ import {
 } from './discharge';
 import { netIncomePerWeek } from './institution';
 import { maybePropose } from './proposals';
-import { newGame, type Resident } from './state';
+import { effort } from './selectors';
+import { newGame, newResident, type Resident } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
 
@@ -73,7 +74,8 @@ describe('discharge', () => {
     expect(admit(s, 0)).toBe(true);
     expect(s.beds[0]!.name).toBe('Maja');
     expect(s.beds[0]!.unlockedRung).toBe(LEARNING_WINDOW);
-    expect(Object.values(s.beds[0]!.skill).every((v) => v === 0)).toBe(true);
+    const r = s.beds[0]!;
+    expect(r.skill).toEqual(newResident('maja', 100, 0, r.trait).skill);
     expect(s.staff).toEqual(['Kari']);
     expect(s.budget).toBe(500);
     expect(s.upgrades).toHaveLength(1);
@@ -127,10 +129,10 @@ describe('waiting list', () => {
     expect(s.waiting.length).toBe(before + 1);
   });
 
-  test('a long wait means a worse start, and the strain fades', () => {
+  test('poor health means a worse start, and the strain fades', () => {
     const s = newGame();
     automatic(s.beds[0]!, 6);
-    s.tick += 10 * TICKS_PER_WEEK;
+    s.waiting[0]!.health = 60;
     openDischarge(s, 0);
     signDischarge(s);
     closeDischarge(s);
@@ -138,7 +140,7 @@ describe('waiting list', () => {
     admit(s, 0);
     const r = s.beds[0]!;
     expect(s.waiting.length).toBe(before - 1);
-    expect(r.waitedWeeks).toBe(10);
+    expect(r.arrivalHealth).toBe(60);
     expect(r.needs.food).toBe(60 - 20);
     expect(r.strain).toBeCloseTo(0.2);
     for (let i = 0; i < TICKS_PER_WEEK; i++) tick(s);
@@ -161,10 +163,13 @@ describe('waiting list', () => {
     expect(newGame().beds[0]!.strain).toBe(0);
   });
 
-  test('people leave the list when their patience runs out', () => {
+  test('health drops on the list, and at 0 the person is lost', () => {
     const s = newGame();
-    s.waiting[0]!.leaves = s.tick + 5;
-    for (let i = 0; i < 5; i++) tick(s);
+    s.waiting[0]!.health = 50;
+    for (let i = 0; i < TICKS_PER_WEEK; i++) tick(s);
+    expect(s.waiting[0]!.health).toBeCloseTo(47);
+    s.waiting[0]!.health = 0.001;
+    tick(s);
     expect(s.waiting.length).toBe(0);
     expect(s.lost).toBe(1);
   });
@@ -179,7 +184,15 @@ describe('waiting list', () => {
     expect(r.trait).toBe('cooks');
     expect(r.skill.eat).toBe(2);
     expect(r.skill.dishes).toBe(2);
-    expect(r.skill.shower).toBe(0);
+    expect(r.skill.sleep).toBe(0);
+  });
+
+  test('each archetype arrives with its own skills and hard activities', () => {
+    const r = newResident('rolf');
+    expect(r.skill.groceries).toBe(3);
+    expect(r.skill.eat).toBe(2);
+    expect(effort(r, 'shower')).toBe(2 * barSize(0));
+    expect(effort(r, 'sleep')).toBe(barSize(0));
   });
 
   test('a trade doubles the tax', () => {
