@@ -1,10 +1,18 @@
 import { signal } from '@preact/signals';
-import { UPGRADES, UPGRADE_BY_ID, type UpgradeDef } from '../content/upgrades';
+import { LINES, UPGRADES, type LineId } from '../content/upgrades';
 import { buyUpgrade } from '../sim/actions';
-import { canBuy, offered } from '../sim/institution';
+import { canBuy } from '../sim/institution';
+import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 
+type Tab = 'you' | 'staff';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'you', label: 'Your work' },
+  { id: 'staff', label: 'Staff' },
+];
+
 const open = signal(false);
+const tab = signal<Tab>('you');
 
 /** Open the menu and pause, so there is time to read. */
 export function openRequests() {
@@ -21,72 +29,90 @@ function closeRequests() {
 }
 
 /** Requests the player can buy right now, for the button badge. */
-export function affordableRequests(s: ReturnType<typeof useGame>): number {
+export function affordableRequests(s: GameState): number {
   return UPGRADES.filter((u) => canBuy(s, u.id)).length;
 }
 
 export function RequestsMenu() {
-  useGame();
+  const s = useGame();
   if (!open.value) return null;
-  const pane = (id: UpgradeDef['pane']) => UPGRADES.filter((u) => u.pane === id && !u.coachStep);
-  const coach = UPGRADES.filter((u) => u.coachStep);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeRequests()}>
       <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Requests">
         <header>
-          <h2>Requests to the kommune</h2>
+          <nav class="tabs" role="tablist">
+            {TABS.map((t) => {
+              const count = LINES.filter(
+                (l) => l.tab === t.id && UPGRADES.some((u) => u.line === l.id && canBuy(s, u.id)),
+              ).length;
+              return (
+                <button
+                  role="tab"
+                  aria-selected={tab.value === t.id}
+                  class={tab.value === t.id ? 'tab on' : 'tab'}
+                  onClick={() => (tab.value = t.id)}
+                >
+                  {t.label}
+                  {count > 0 && <span class="badge">{count}</span>}
+                </button>
+              );
+            })}
+          </nav>
           <button class="close" onClick={closeRequests} aria-label="Close">
             ✕
           </button>
         </header>
-        <div class="panes">
-          <section>
-            <h3>Your work</h3>
-            {pane('you').map((u) => (
-              <RequestCard u={u} />
-            ))}
-          </section>
-          <section>
-            <h3>Staff</h3>
-            {pane('staff').map((u) => (
-              <RequestCard u={u} />
-            ))}
-            <h3>Coach</h3>
-            {coach.map((u) => (
-              <RequestCard u={u} />
-            ))}
-          </section>
+        <div class="lines">
+          {LINES.filter((l) => l.tab === tab.value).map((l) => (
+            <LineCard line={l.id} />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function RequestCard({ u }: { u: UpgradeDef }) {
+/** One card per line. It shows the next level, or the last one when the line is done. */
+function LineCard({ line }: { line: LineId }) {
   const s = useGame();
-  const bought = s.upgrades.includes(u.id);
-  const state = bought ? 'bought' : offered(s, u.id) ? '' : 'locked';
+  const levels = UPGRADES.filter((u) => u.line === line);
+  const bought = levels.filter((u) => s.upgrades.includes(u.id)).length;
+  const next = levels[bought];
+  const shown = next ?? levels[levels.length - 1]!;
   return (
-    <article class={`request ${state}`}>
-      <div class="head">
-        <strong>{u.label}</strong>
-        {bought ? (
-          <span class="tag">Bought</span>
-        ) : (
-          <button
-            class="buy-request"
-            disabled={!canBuy(s, u.id)}
-            onClick={() => act((g) => buyUpgrade(g, u.id))}
-          >
-            {u.cost} kr
-          </button>
+    <article class={next ? 'request' : 'request done'}>
+      <span class="icon" aria-hidden="true">
+        {shown.icon}
+      </span>
+      <div class="text">
+        <strong class="title">{shown.label}</strong>
+        <span class="effect">{shown.effect}</span>
+        {levels.length > 1 && (
+          <span class="pips" aria-label={`Level ${bought} of ${levels.length}`}>
+            {levels.map((_, i) => (
+              <span class={i < bought ? 'pip on' : 'pip'} />
+            ))}
+          </span>
         )}
       </div>
-      {u.note && <p class="muted note">{u.note}</p>}
-      <p>{u.description}</p>
-      {state === 'locked' && u.after && (
-        <p class="muted">After: {UPGRADE_BY_ID[u.after].label.toLowerCase()}</p>
-      )}
+      <div class="buy-col">
+        {next ? (
+          <>
+            <span class="price">{next.cost} kr</span>
+            <button
+              class="buy-request"
+              disabled={!canBuy(s, next.id)}
+              onClick={() => act((g) => buyUpgrade(g, next.id))}
+            >
+              Buy
+            </button>
+          </>
+        ) : (
+          <span class="tick" aria-label="Done">
+            ✓
+          </span>
+        )}
+      </div>
     </article>
   );
 }
