@@ -9,9 +9,9 @@ import {
   OMSORG_PER_SECOND,
   PACE,
   STAFF_NUDGES_PER_SECOND,
-  STAFF_WAGE_PER_WEEK,
 } from '../content/tuning';
-import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
+import { ROLES, type StaffRole } from '../content/staff';
+import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
 import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
 
@@ -33,20 +33,18 @@ export function staffMult(s: GameState): number {
   return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].staffMult ?? 1));
 }
 
-/** Free nudges per real second from all staff at 1x. */
-export function staffNudgesPerSecond(s: GameState): number {
-  return s.staff.length * STAFF_NUDGES_PER_SECOND * PACE * staffMult(s);
+/** Nudges per real second from one miljøarbeider at 1x. */
+export function workerNudgesPerSecond(s: GameState): number {
+  return STAFF_NUDGES_PER_SECOND * PACE * staffMult(s);
 }
 
-/** Skill levels the coach trains. Bought steps stay: there is no way back. */
-export function coachSteps(s: GameState): number[] {
-  return s.upgrades
-    .map((id) => UPGRADE_BY_ID[id].coachStep)
-    .filter((step): step is number => !!step);
+/** Free nudges per real second from all miljøarbeidere at 1x. */
+export function staffNudgesPerSecond(s: GameState): number {
+  return s.staff.filter((x) => x.role === 'worker').length * workerNudgesPerSecond(s);
 }
 
 export function wagesPerWeek(s: GameState): number {
-  return s.staff.length * STAFF_WAGE_PER_WEEK;
+  return s.staff.reduce((sum, x) => sum + ROLES[x.role].wage, 0);
 }
 
 export function netIncomePerWeek(s: GameState): number {
@@ -58,12 +56,8 @@ export function hireCost(s: GameState): number {
 }
 
 /** Wages may never eat the whole grant. */
-export function canAffordWage(s: GameState): boolean {
-  return netIncomePerWeek(s) - STAFF_WAGE_PER_WEEK >= 0;
-}
-
-export function canHire(s: GameState): boolean {
-  return canAffordWage(s) && s.budget >= hireCost(s) && s.staff.length < STAFF_NAMES.length;
+export function canAffordWage(s: GameState, role: StaffRole): boolean {
+  return netIncomePerWeek(s) - ROLES[role].wage >= 0;
 }
 
 /** Not bought yet, and anything it builds on is bought. */

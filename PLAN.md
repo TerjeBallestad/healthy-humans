@@ -165,6 +165,8 @@ Each step ends with something playable and one question to answer by playing.
    7h: **mults and automation.** Requests become a stronger nudge, faster staff, and a coach that spends overskudd on levels you switch on.
    _Question: does the game start to play itself in a way that frees you to think?_
    7i: requests menu with two panes, a one-way coach that keeps overskudd for proposals, and `PACE` 0.7.
+   7j: **staff as units.** Candidates with a role and a sheet. Miljøarbeidere have specialities, coaches have a sheet of levels they can teach. Training costs omsorg. Coaches have a wage.
+   _Question: is choosing and training staff a strategic layer you enjoy?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 

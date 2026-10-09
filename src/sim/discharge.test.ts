@@ -60,7 +60,7 @@ describe('discharge', () => {
 
   test('signing adds tax and empties the bed; admitting fills it fresh', () => {
     const s = newGame();
-    s.staff = ['Kari'];
+    s.staff = [{ name: 'Kari', role: 'worker', specialities: [], coaching: {}, carry: 0 }];
     s.budget = 500;
     s.upgrades = ['calendar'];
     automatic(s.beds[0]!, 6);
@@ -76,7 +76,7 @@ describe('discharge', () => {
     expect(s.beds[0]!.unlockedRung).toBe(LEARNING_WINDOW);
     const r = s.beds[0]!;
     expect(r.skill).toEqual(newResident('maja', 100, 0, r.trait).skill);
-    expect(s.staff).toEqual(['Kari']);
+    expect(s.staff.map((x) => x.name)).toEqual(['Kari']);
     expect(s.budget).toBe(500);
     expect(s.upgrades).toHaveLength(1);
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - 40 + 10);

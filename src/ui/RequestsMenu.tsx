@@ -4,6 +4,7 @@ import { buyUpgrade } from '../sim/actions';
 import { canBuy } from '../sim/institution';
 import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
+import { closeModal, modal } from './modal';
 
 type Tab = 'you' | 'staff';
 const TABS: { id: Tab; label: string }[] = [
@@ -11,22 +12,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'staff', label: 'Staff' },
 ];
 
-const open = signal(false);
 const tab = signal<Tab>('you');
-
-/** Open the menu and pause, so there is time to read. */
-export function openRequests() {
-  open.value = true;
-  act((g) => {
-    g.resumeSpeed = g.speed || g.resumeSpeed;
-    g.speed = 0;
-  });
-}
-
-function closeRequests() {
-  open.value = false;
-  act((g) => (g.speed = g.resumeSpeed));
-}
 
 /** Requests the player can buy right now, for the button badge. */
 export function affordableRequests(s: GameState): number {
@@ -35,9 +21,9 @@ export function affordableRequests(s: GameState): number {
 
 export function RequestsMenu() {
   const s = useGame();
-  if (!open.value) return null;
+  if (modal.value?.kind !== 'requests') return null;
   return (
-    <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeRequests()}>
+    <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Requests">
         <header>
           <nav class="tabs" role="tablist">
@@ -58,7 +44,7 @@ export function RequestsMenu() {
               );
             })}
           </nav>
-          <button class="close" onClick={closeRequests} aria-label="Close">
+          <button class="close" onClick={closeModal} aria-label="Close">
             ✕
           </button>
         </header>

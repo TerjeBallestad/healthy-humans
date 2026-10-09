@@ -7,6 +7,7 @@ import { ProposalDialog } from './ProposalDialog';
 import { RequestsMenu } from './RequestsMenu';
 import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
+import { HireMenu, StaffCard } from './StaffMenus';
 import { TopBar } from './TopBar';
 import { WaitingList } from './WaitingList';
 
@@ -33,6 +34,8 @@ export function App() {
       <ProposalDialog />
       <DischargeDialog />
       <RequestsMenu />
+      <HireMenu />
+      <StaffCard />
       <DebugPanel />
       <footer class="version">
         {__COMMIT__} · {__BUILD_TIME__}

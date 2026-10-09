@@ -1,7 +1,6 @@
-export type LineId = 'nudge' | 'staff' | 'coach';
+export type LineId = 'nudge' | 'staff';
 
-export type UpgradeId =
-  'course' | 'supervision' | 'calendar' | 'handover' | 'coach1' | 'coach2' | 'coach3';
+export type UpgradeId = 'course' | 'supervision' | 'calendar' | 'handover';
 
 export interface UpgradeDef {
   id: UpgradeId;
@@ -21,8 +20,6 @@ export interface UpgradeDef {
   nudgeMult?: number;
   /** Multiplies staff nudges. The highest bought wins. */
   staffMult?: number;
-  /** The coach can train to this level. */
-  coachStep?: number;
 }
 
 // Two ways to grow: make your own click stronger, or build the machine that clicks for you.
@@ -69,38 +66,6 @@ export const UPGRADES: UpgradeDef[] = [
     after: 'calendar',
     staffMult: 2,
   },
-  {
-    id: 'coach1',
-    label: 'Coach',
-    note: 'Someone who knows how to start small.',
-    effect: 'The coach trains lvl 1 for 8 overskudd',
-    icon: '🧑‍🏫',
-    line: 'coach',
-    cost: 400,
-    coachStep: 1,
-  },
-  {
-    id: 'coach2',
-    label: 'Experienced coach',
-    note: '',
-    effect: 'The coach also trains lvl 2 for 15 overskudd',
-    icon: '🧑‍🏫',
-    line: 'coach',
-    cost: 900,
-    after: 'coach1',
-    coachStep: 2,
-  },
-  {
-    id: 'coach3',
-    label: 'Senior coach',
-    note: '',
-    effect: 'The coach also trains the last level for 25 overskudd',
-    icon: '🧑‍🏫',
-    line: 'coach',
-    cost: 1400,
-    after: 'coach2',
-    coachStep: 3,
-  },
 ];
 
 export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) as Record<
@@ -112,7 +77,4 @@ export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) 
 export const LINES: { id: LineId; tab: 'you' | 'staff' }[] = [
   { id: 'nudge', tab: 'you' },
   { id: 'staff', tab: 'staff' },
-  { id: 'coach', tab: 'staff' },
 ];
-
-export const STAFF_NAMES = ['Kari', 'Jonas', 'Mette', 'Ali', 'Sigrid', 'Tore'];

@@ -1,14 +1,17 @@
-import { STAFF_WAGE_PER_WEEK } from '../content/tuning';
+import { ROLES } from '../content/staff';
 import { TIER_BY_ID } from '../content/tiers';
-import { hire } from '../sim/actions';
 import { taxPerWeek } from '../sim/discharge';
-import { canAffordWage, canHire, hireCost, staffNudgesPerSecond } from '../sim/institution';
-import { affordableRequests, openRequests } from './RequestsMenu';
-import { act, useGame } from '../store';
+import { staffNudgesPerSecond } from '../sim/institution';
+import { canHire } from '../sim/staff';
+import { openModal } from './modal';
+import { affordableRequests } from './RequestsMenu';
+import { SheetLine } from './StaffMenus';
+import { useGame } from '../store';
 
 export function InstitutionPanel() {
   const s = useGame();
   const affordable = affordableRequests(s);
+  const hireable = s.candidates.filter((_, i) => canHire(s, i)).length;
   return (
     <section class="panel institution">
       {s.discharged.length > 0 && (
@@ -24,23 +27,26 @@ export function InstitutionPanel() {
       )}
       <h3>Staff</h3>
       {s.staff.length > 0 ? (
-        <p>
-          {s.staff.join(', ')}
-          <span class="muted"> · {staffNudgesPerSecond(s).toFixed(2)} nudges/s</span>
-        </p>
+        <div class="staff-list">
+          {s.staff.map((x, i) => (
+            <button class="staff-chip" onClick={() => openModal({ kind: 'staff', index: i })}>
+              <span aria-hidden="true">{ROLES[x.role].icon}</span>
+              <span class="name">{x.name}</span>
+              <SheetLine x={x} />
+            </button>
+          ))}
+        </div>
       ) : (
         <p class="muted">Nobody yet. It is just you.</p>
       )}
-      <button class="buy" disabled={!canHire(s)} onClick={() => act(hire)}>
-        <span>Hire a miljøarbeider</span>
-        <span class="price">
-          {canAffordWage(s)
-            ? `${hireCost(s)} kr · ${STAFF_WAGE_PER_WEEK} kr/week`
-            : 'no room in the budget'}
-        </span>
+      {staffNudgesPerSecond(s) > 0 && (
+        <p class="muted hint">{staffNudgesPerSecond(s).toFixed(2)} nudges/s in all</p>
+      )}
+      <button class="buy" onClick={() => openModal({ kind: 'hire' })}>
+        <span>Hire</span>
+        {hireable > 0 && <span class="badge">{hireable}</span>}
       </button>
-
-      <button class="buy requests-open" onClick={openRequests}>
+      <button class="buy requests-open" onClick={() => openModal({ kind: 'requests' })}>
         <span>Requests</span>
         {affordable > 0 && <span class="badge">{affordable}</span>}
       </button>

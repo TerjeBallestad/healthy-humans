@@ -3,8 +3,9 @@
 import { ACTIVITIES } from '../src/content/activities';
 import { MAX_SKILL, NEED_THRESHOLD, SECONDS_PER_WEEK, trainCost } from '../src/content/tuning';
 import { UPGRADES } from '../src/content/upgrades';
-import { admit, buyBed, buyUpgrade, freeBed, hire, nudge, train } from '../src/sim/actions';
-import { canBuy, canHire } from '../src/sim/institution';
+import { admit, buyBed, buyUpgrade, freeBed, nudge, train } from '../src/sim/actions';
+import { canHire, hire } from '../src/sim/staff';
+import { canBuy } from '../src/sim/institution';
 import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
@@ -68,12 +69,17 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
 
   // Spend budget: staff first, then the cheapest upgrade.
   if (SHOP) {
-    if (canHire(s)) {
-      hire(s);
-      purchases.push({ what: `hire ${s.staff.at(-1)}`, tick: s.tick - start });
+    // Hire any candidate it can afford: a miljøarbeider first, then a coach.
+    const order = s.candidates
+      .map((c, i) => ({ c, i }))
+      .sort((x, y) => (x.c.role === 'worker' ? 0 : 1) - (y.c.role === 'worker' ? 0 : 1));
+    const pick = order.find(({ i }) => canHire(s, i));
+    if (pick && hire(s, pick.i)) {
+      const x = s.staff.at(-1)!;
+      purchases.push({ what: `hire ${x.name} (${x.role})`, tick: s.tick - start });
     }
     const u = UPGRADES.find((x) => canBuy(s, x.id));
-    if (u && !canHire(s)) {
+    if (u && !pick) {
       buyUpgrade(s, u.id);
       purchases.push({ what: u.label, tick: s.tick - start });
     }

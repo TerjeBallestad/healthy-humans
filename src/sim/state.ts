@@ -14,13 +14,15 @@ import {
 } from '../content/tuning';
 import { TRAITS, TRAIT_BY_ID, type TraitId } from '../content/traits';
 import { random } from './rng';
+import { rollCandidates } from './staff';
 import { unlockedActivities } from './selectors';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
+import type { StaffRole } from '../content/staff';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -50,6 +52,17 @@ export interface Resident {
   lastProposalTick: number;
   /** The last staff nudge on each activity, so the card can show it. */
   staffHit: Partial<Record<ActivityId, { tick: number; who: string }>>;
+}
+
+export interface Staff {
+  name: string;
+  role: StaffRole;
+  /** Needs a miljøarbeider works on first, with a stronger nudge. */
+  specialities: NeedId[];
+  /** Highest level a coach can train, per activity. Missing means none. */
+  coaching: Partial<Record<ActivityId, number>>;
+  /** Nudges not yet given, carried between ticks. */
+  carry: number;
 }
 
 export interface WaitingPerson {
@@ -109,12 +122,9 @@ export interface GameState {
   omsorg: number;
   /** Kroner. */
   budget: number;
-  /** Names of hired staff. */
-  staff: string[];
-  /** Staff taps not yet spent, carried between ticks. */
-  staffCarry: number;
-  /** Whose turn it is to nudge next. */
-  staffTurn: number;
+  staff: Staff[];
+  /** People the player can hire. New ones every CANDIDATE_WEEKS. */
+  candidates: Staff[];
   upgrades: UpgradeId[];
   /** One slot per bed. Null is an empty bed. */
   beds: (Resident | null)[];
@@ -205,8 +215,7 @@ export function newGame(): GameState {
     omsorg: OMSORG_START,
     budget: BUDGET_START,
     staff: [],
-    staffCarry: 0,
-    staffTurn: 0,
+    candidates: [],
     upgrades: [],
     beds: [newResident(ARCHETYPES[0]!.id)],
     selected: 0,
@@ -220,6 +229,7 @@ export function newGame(): GameState {
     resumeSpeed: 1,
     seed: (Math.random() * 2 ** 32) | 0,
   };
+  rollCandidates(s);
   for (let i = 0; i < WAITLIST_START; i++)
     s.waiting.push(newReferral(s, ARCHETYPES[(1 + i) % ARCHETYPES.length]!.id));
   return s;

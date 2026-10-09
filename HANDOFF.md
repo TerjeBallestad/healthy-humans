@@ -1,13 +1,13 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
+Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7i are done.** 7i (requests menu, one-way coach, slower pace) is live. Waiting for Terje to play it.
+- **Steps 1 to 7j are done.** 7j (staff as units: candidates, staff cards, omsorg training) is live. Waiting for Terje to play it.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
 - **Next candidates:** staff specialisations, case worker and intake rules, joker cards. See "Automation ladder" under open issues.
 
@@ -16,11 +16,13 @@ Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
 1. Arvid moves in. He learns six rungs at a time (`LEARNING_WINDOW`, was 3), so food, hygiene, energy and home are active from the start.
 2. You spend **omsorg** (1 per nudge) to fill effort bars on activity cards. One click is one nudge (press-and-hold was removed after play). A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
 3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
-4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and **requests** (7h, in `src/content/upgrades.ts`). The old omsorg requests are gone, because omsorg is at the cap once residents are stable.
-   - **Your click:** course in motivational interviewing (500 kr, a nudge fills 2 segments), then supervision group (1500 kr, 3).
-   - **The machine:** shared calendar (600 kr, staff ×1.5), then handover routine (1600 kr, ×2). The staff line shows nudges per second. A staff nudge pops the staff member's initial on the card's ring, so the staff are visible.
-   - **Coach:** three steps bought in order (400, 900, 1400 kr): lvl 1 (8 overskudd), lvl 2 (15), independent (25). One-way: a bought step cannot be switched off (Terje: buying lvl 2 too soon is the strategic mistake, toggles remove it). The coach spends the cheapest level first, then the lowest need. While a milestone is open, it keeps 20 overskudd for the proposal.
-   - **Requests menu (7i, redone):** a "Requests" button in the staff panel, with a badge for how many you can afford. It opens a menu with tabs ("Your work", "Staff"). Each line of upgrades (`line` in `upgrades.ts`) is one card: big round icon, title, effect, level pips, price and a Buy button that is only enabled when you can afford it. The card shows only the next level. The game pauses while the menu is open.
+4. **Budget** (120 kr per week) buys staff and **requests** (`src/content/upgrades.ts`).
+   - **Requests:** your click (course: a nudge fills 2 segments, then supervision: 3) and the machine (calendar: staff ×1.5, then handover: ×2). A "Requests" button opens a menu with tabs ("Your work", "Staff"). Each line of upgrades is one card with an icon, title, effect, level pips, price and Buy. Only the next level shows. The game pauses while a menu is open (`src/ui/modal.ts`).
+   - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** "Hire" opens a list of 3 candidates, new every 4 weeks. Each one has a name, a role and a rolled sheet. The fee is 400 kr ×1.5 for each staff member. Up to 6 staff.
+     - **Miljøarbeider** (40 kr/week): one speciality (a need: Cooking, Hygiene, Sleep, Housework, Social). They nudge bars of their speciality first, and there a nudge fills 2 segments. Otherwise they help the lowest need.
+     - **Coach** (60 kr/week): a sheet of the highest level they can teach for each activity (rolled: three activities at lvl 1, sometimes one at lvl 2 or 3). The coaches spend the residents' overskudd on any level that a coach in the house can teach. The cheapest level goes first, then the lowest need. They keep 20 overskudd for a proposal while a milestone is open. Training is instant, so more coaches only add coverage.
+     - **Staff card:** click a staff chip in the panel. **Training costs omsorg** (Terje's choice, as a drain on omsorg): a new speciality is 30, a coach level is 10, 20 or 35.
+     - Coaches have a wage on purpose, as a brake on growth (Terje).
    - **Pace (7i):** `PACE` (0.7) in `tuning.ts` scales need decay, omsorg, staff and overskudd per real second. Activity durations and the calendar do not change. In the bot, the work trial comes at the same time as before, because kroner per week gate progress.
 5. **Overskudd** builds with the share of needs that are green. You spend it with the **arrow** on each activity card: 8, 15 or 25 overskudd raises one activity one level. The card shows the level (lvl 1 to 3). Completions give no skill. When a milestone is open and there is enough overskudd, a **proposal** pauses the game:
    - **Milestone:** NAV meeting, then job application, then work trial.
@@ -65,6 +67,7 @@ Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
 | Requests feel pointless, omsorg is always capped    | 7h: requests are now mults (your nudge ×2/×3, staff ×1.5/×2) and a coach that spends overskudd on levels you switch on.                     |
 | 7h: wants a menu with descriptions, panes           | 7i: requests menu with "Your work" and "Staff" panes and longer descriptions. Pauses the game.                                              |
 | 7i: panes should be tabs, too much text             | Tabs, one card per line with icon, title, effect, price and Buy. Only the next level shows.                                                 |
+| 7i: miljøarbeider and coach are the same mechanic   | 7j: staff are units with a role and a sheet, hired from candidates. Staff cards train specialities and coach levels for omsorg.             |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
 | Max level label "alone"                             | Now "independent".                                                                                                                          |
@@ -73,7 +76,6 @@ Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
 ## Open issues
 
 - **Automation ladder (from 2026-10-09).** Built: nudge mult, staff mult, coach. Not built:
-  - **Staff specialisations:** train a staff member in cooking, hygiene or sleep. They put that first and get residents through that stage fast. This replaces the "care plan" idea.
   - **Case worker:** proposals resolve by a rule ("wager up to 300 kr").
   - **Intake coordinator:** a free bed fills by a rule ("lowest health first").
   - **Joker cards (Balatro):** rule effects such as "if omsorg is above X, overskudd ×Y". Or things with an omsorg running cost: turn omsorg into overskudd for residents, or into kroner. A staff member who spends omsorg (personal trainer) is odd, because other staff do not.
@@ -111,7 +113,7 @@ Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 56 tests
+npm test           # vitest, 59 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```

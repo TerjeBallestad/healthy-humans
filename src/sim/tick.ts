@@ -1,6 +1,7 @@
 import { ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
 import { ARCHETYPES, ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
+import { CANDIDATE_WEEKS, SPECIALITY_FILL } from '../content/staff';
 import { TRAIT_BY_ID } from '../content/traits';
 import {
   READY_BELOW,
@@ -16,13 +17,8 @@ import {
   WAITLIST_WEEKS_PER_PERSON,
   trainCost,
 } from '../content/tuning';
-import {
-  coachSteps,
-  netIncomePerWeek,
-  omsorgCap,
-  omsorgPerSecond,
-  staffNudgesPerSecond,
-} from './institution';
+import { netIncomePerWeek, omsorgCap, omsorgPerSecond, workerNudgesPerSecond } from './institution';
+import { coachLevel, rollCandidates } from './staff';
 import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
@@ -51,6 +47,7 @@ export function tick(state: GameState) {
     state.nextArchetype += 1;
   }
   declineWaiting(state);
+  if (state.tick % (CANDIDATE_WEEKS * TICKS_PER_WEEK) === 0) rollCandidates(state);
 
   staffWork(state);
   for (const [, r] of occupied(state)) {
@@ -95,31 +92,38 @@ function gainOverskudd(r: Resident) {
   );
 }
 
-/** Staff put free nudges into the open bar with the lowest need, across all beds. */
+/**
+ * Each miljøarbeider puts free nudges into an open bar, across all beds.
+ * Bars for their specialities come first, and a nudge there fills more.
+ * Otherwise they help the lowest need.
+ */
 function staffWork(state: GameState) {
-  if (state.staff.length === 0) return;
-  state.staffCarry += staffNudgesPerSecond(state) / TICKS_PER_SECOND;
-  while (state.staffCarry >= 1) {
-    const target = occupied(state)
-      .flatMap(([, r]) =>
+  const rate = workerNudgesPerSecond(state) / TICKS_PER_SECOND;
+  for (const w of state.staff) {
+    if (w.role !== 'worker') continue;
+    w.carry += rate;
+    while (w.carry >= 1) {
+      const open = occupied(state).flatMap(([, r]) =>
         unlockedActivities(r)
           .filter((a) => {
             const size = effort(r, a.id);
             return size > 0 && r.bars[a.id] < size;
           })
           .map((a) => ({ r, a, need: r.needs[a.trigger] })),
-      )
-      .sort((x, y) => x.need - y.need)[0];
-    if (!target) {
-      // Nothing to help with. Staff do not bank work.
-      state.staffCarry = Math.min(state.staffCarry, 1);
-      return;
+      );
+      const special = (x: (typeof open)[number]) => (w.specialities.includes(x.a.trigger) ? 0 : 1);
+      const target = open.sort((x, y) => special(x) - special(y) || x.need - y.need)[0];
+      if (!target) {
+        // Nothing to help with. Staff do not bank work.
+        w.carry = Math.min(w.carry, 1);
+        break;
+      }
+      const fill = special(target) === 0 ? SPECIALITY_FILL : 1;
+      const { r, a } = target;
+      r.bars[a.id] = Math.min(effort(r, a.id), r.bars[a.id] + fill);
+      r.staffHit[a.id] = { tick: state.tick, who: w.name };
+      w.carry -= 1;
     }
-    target.r.bars[target.a.id] += 1;
-    state.staffCarry -= 1;
-    // Staff take turns, so each name shows up on the cards.
-    state.staffTurn = (state.staffTurn + 1) % state.staff.length;
-    target.r.staffHit[target.a.id] = { tick: state.tick, who: state.staff[state.staffTurn]! };
   }
 }
 
@@ -158,17 +162,18 @@ function progressActivity(state: GameState, r: Resident) {
 }
 
 /**
- * The coach spends the resident's overskudd on the levels it knows.
+ * The coaches spend the resident's overskudd on the levels they can teach.
  * Cheapest level first, then the activity whose need is lowest.
- * While a milestone is open, it leaves enough for the proposal.
+ * While a milestone is open, they leave enough for the proposal.
  */
 function coachWork(state: GameState, r: Resident) {
-  const steps = coachSteps(state);
-  if (steps.length === 0) return;
+  if (!state.staff.some((x) => x.role === 'coach')) return;
   const reserve = eligibleSubjects(r).length > 0 ? PROPOSAL_COST_MILESTONE : 0;
   const next = unlockedActivities(r)
     .filter(
-      (a) => steps.includes(r.skill[a.id] + 1) && r.overskudd - trainCost(r.skill[a.id]) >= reserve,
+      (a) =>
+        r.skill[a.id] < coachLevel(state, a.id) &&
+        r.overskudd - trainCost(r.skill[a.id]) >= reserve,
     )
     .sort(
       (x, y) =>

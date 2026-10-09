@@ -1,8 +1,8 @@
 import type { ActivityId } from '../content/activities';
 import { ACTIVITY_BY_ID } from '../content/activities';
 import { MAX_SKILL, OMSORG_PER_NUDGE, trainCost } from '../content/tuning';
-import { STAFF_NAMES, UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
-import { bedCost, canBuy, canBuyBed, canHire, hireCost, nudgeMult } from './institution';
+import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
+import { bedCost, canBuy, canBuyBed, nudgeMult } from './institution';
 import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
@@ -61,15 +61,6 @@ export function admit(state: GameState, index: number): boolean {
   state.beds[bed] = newResident(a.id, person.health, state.tick, person.trait);
   state.selected = bed;
   log(state, a.arrives);
-  return true;
-}
-
-export function hire(state: GameState): boolean {
-  if (!canHire(state)) return false;
-  state.budget -= hireCost(state);
-  const name = STAFF_NAMES[state.staff.length] ?? 'Someone';
-  state.staff.push(name);
-  log(state, `${name} starts on the day shift.`);
   return true;
 }
 

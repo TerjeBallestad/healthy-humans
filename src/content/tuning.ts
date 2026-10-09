@@ -54,7 +54,6 @@ export const MAX_BEDS = 4;
 /** First recruitment fee. Each hire multiplies it. */
 export const HIRE_COST_BASE = 400;
 export const HIRE_COST_GROWTH = 1.5;
-export const STAFF_WAGE_PER_WEEK = 40;
 /** Free nudges each staff member gives per real second at 1x. */
 export const STAFF_NUDGES_PER_SECOND = 0.75;
 
