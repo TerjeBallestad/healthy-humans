@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact';
+import { useState } from 'preact/hooks';
 import { ACTIVITIES } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
@@ -7,6 +8,7 @@ import {
   SPECIALITY_FILL,
   SPECIALITY_LABEL,
   SPECIALITY_TRAIN_COST,
+  type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
 import { canAffordWage, hireCost, omsorgCap } from '../sim/institution';
@@ -40,9 +42,8 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
     <div class="profile">
       <div class="profile-head">
         <strong>{x.name}</strong>
-        <span class="role-tag">{role.label}</span>
+        <RoleTag role={x.role} />
       </div>
-      <p class="does">{role.does}</p>
       <div class="profile-body">
         <span class="portrait" aria-hidden="true">
           {role.icon}
@@ -97,6 +98,27 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
         </table>
       </div>
     </div>
+  );
+}
+
+/** The job title as a small button. Hover or click shows what the role does. */
+function RoleTag({ role }: { role: StaffRole }) {
+  const [open, setOpen] = useState(false);
+  const r = ROLES[role];
+  return (
+    <span class={open ? 'role open' : 'role'}>
+      <button
+        class="role-tag"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        onBlur={() => setOpen(false)}
+      >
+        <span aria-hidden="true">{r.icon}</span> {r.label}
+      </button>
+      <span class="popover" role="tooltip">
+        {r.does}
+      </span>
+    </span>
   );
 }
 

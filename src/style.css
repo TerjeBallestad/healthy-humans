@@ -516,7 +516,6 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--panel);
-  overflow: hidden;
 }
 .profile {
   display: grid;
@@ -530,15 +529,46 @@ button:disabled {
   align-items: center;
   font-size: 1.15rem;
 }
+.role {
+  position: relative;
+}
 .role-tag {
-  padding: 2px 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border-color: var(--accent);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--bg);
-  background: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  cursor: help;
+}
+.role .popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 2;
+  width: 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.15);
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.role:hover .popover,
+.role.open .popover {
+  visibility: visible;
+  opacity: 1;
 }
 .profile-body {
   display: grid;
@@ -601,12 +631,6 @@ button:disabled {
   padding: 4px 8px;
   font-size: 0.8rem;
   white-space: nowrap;
-}
-.profile .does {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.4;
 }
 .hire-foot {
   display: flex;
