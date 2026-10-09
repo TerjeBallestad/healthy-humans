@@ -54,21 +54,13 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
     >
       {priority > 0 && <span class="priority">#{priority}</span>}
       <span class="left">
-        <span class="icon" aria-hidden="true">
-          {a.icon}
+        <span class="ring-wrap">
+          {!auto && <EffortRing size={size} filled={filled} />}
+          <span class="icon" aria-hidden="true">
+            {a.icon}
+          </span>
         </span>
-        {auto ? (
-          <span class="nudge-label">alone</span>
-        ) : (
-          <>
-            <span class="meter effort" title="Effort: nudges until ready">
-              <span class="fill" style={{ width: `${(filled / size) * 100}%` }} />
-            </span>
-            <span class="nudge-label">
-              {filled}/{size}
-            </span>
-          </>
-        )}
+        <span class="nudge-label">{auto ? 'alone' : `${filled}/${size}`}</span>
       </span>
       <span class="body">
         <span class="title">{a.label}</span>
@@ -78,6 +70,32 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
         <span class="foot">{!auto && <TrainButton activity={a} />}</span>
       </span>
     </div>
+  );
+}
+
+const RING = 64;
+const RADIUS = 29;
+
+/** One arc per nudge around the icon. A long ring of thin segments means a costly activity. */
+function EffortRing({ size, filled }: { size: number; filled: number }) {
+  const step = (2 * Math.PI) / size;
+  // The gap is a fixed length on the ring, so many segments still read as separate.
+  const gap = Math.min(step * 0.35, 2.2 / RADIUS);
+  const point = (angle: number) =>
+    `${RING / 2 + RADIUS * Math.sin(angle)} ${RING / 2 - RADIUS * Math.cos(angle)}`;
+  return (
+    <svg class="ring" viewBox={`0 0 ${RING} ${RING}`} aria-hidden="true">
+      {Array.from({ length: size }, (_, i) => {
+        const from = i * step + gap / 2;
+        const to = (i + 1) * step - gap / 2;
+        return (
+          <path
+            class={i < filled ? 'seg on' : 'seg'}
+            d={`M ${point(from)} A ${RADIUS} ${RADIUS} 0 0 1 ${point(to)}`}
+          />
+        );
+      })}
+    </svg>
   );
 }
 

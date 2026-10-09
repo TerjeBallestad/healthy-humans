@@ -476,7 +476,7 @@ button:disabled {
 .card {
   position: relative;
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: 64px 1fr;
   gap: 12px;
   align-items: start;
   padding: 12px;
@@ -505,16 +505,30 @@ button:disabled {
 .card .icon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   font-size: 1.6rem;
   background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
-.card .effort {
-  width: 52px;
-  height: 8px;
-  border-radius: 4px;
+.card .ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+}
+.card .ring {
+  position: absolute;
+  inset: 0;
+}
+.card .ring .seg {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 5;
+}
+.card .ring .seg.on {
+  stroke: var(--accent);
 }
 .card .nudge-label {
   font-size: 0.7rem;

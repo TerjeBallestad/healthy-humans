@@ -53,6 +53,7 @@ Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
 | 7d: picks the top patient, all the same, list grows | 7e: a trait for each referral, and people leave after 10 to 30 weeks. The wait cost had capped, so every row read "−85, +50%".              |
 | 7e: traits help, but identities are weak            | 7f: a skill sheet for each archetype, with strengths and hard activities.                                                                   |
 | 7e: patience bar is weak, wants Papers, Please      | 7f: the bar is health. At 0 the person is lost, implied in the log. Health at admission sets the start.                                     |
+| 7f: can't read "0/24" while clicking fast           | The effort bar is a ring of segments around the icon, one per nudge. 24 thin segments look costly at a glance.                              |
 | 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
 ## Open issues
