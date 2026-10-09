@@ -11,6 +11,8 @@ export type Colour = 'white' | 'blue' | 'black' | 'red' | 'green';
 export interface ArchetypeDef {
   id: ArchetypeId;
   name: string;
+  /** Placeholder face until there is a sprite. */
+  face: string;
   intro: string;
   /** Log line when the resident moves in. */
   arrives: string;
@@ -30,6 +32,7 @@ export const ARCHETYPES: ArchetypeDef[] = [
   {
     id: 'arvid',
     name: 'Arvid',
+    face: '🧔',
     intro: '41. Has not left his flat in a year. The curtains stay closed.',
     arrives: 'Arvid moves in. He brought one bag.',
     startNeeds: { food: 70, hygiene: 55, energy: 80, home: 60, social: 50 },
@@ -55,6 +58,7 @@ export const ARCHETYPES: ArchetypeDef[] = [
   {
     id: 'maja',
     name: 'Maja',
+    face: '👩',
     intro: '23. Sleeps until three. Dropped out of school in the spring.',
     arrives: 'Maja moves in. Her mother carries the boxes.',
     startNeeds: { food: 60, hygiene: 70, energy: 40, home: 50, social: 65 },
@@ -77,6 +81,7 @@ export const ARCHETYPES: ArchetypeDef[] = [
   {
     id: 'rolf',
     name: 'Rolf',
+    face: '👴',
     intro: '67. Retired from the post office. A few beers by lunch.',
     arrives: 'Rolf moves in. He asks where the nearest shop is.',
     startNeeds: { food: 50, hygiene: 60, energy: 70, home: 40, social: 45 },

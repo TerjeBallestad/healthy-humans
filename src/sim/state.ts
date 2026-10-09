@@ -20,7 +20,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -63,12 +63,17 @@ export interface Proposal {
   /** The bed of the resident who proposes. */
   bed: number;
   subject: ProposalSubject;
+  /** Overskudd the resident had before the proposal took its cost. */
+  overskuddBefore: number;
+  /** Kroner wagered and the chance it gave. Set once the player has chosen. */
+  kr?: number;
+  chance?: number;
+  /** The roll, 0 to 1. Below the chance is a success. */
+  roll?: number;
   /** Set once the player has chosen. */
   outcome?: 'success' | 'failure' | 'declined';
   /** What happened, in one line. */
   result?: string;
-  /** What the player gained, when it worked. */
-  gain?: string;
 }
 
 export interface Discharged {

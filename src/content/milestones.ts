@@ -8,6 +8,11 @@ export interface MilestoneDef {
   success: string;
   failure: string;
   baseChance: number;
+  /** Kroner that make success sure. Smaller wagers give less, with diminishing returns. */
+  sure: number;
+  /** Where it happens, for the scene card. */
+  place: string;
+  placeIcon: string;
   /** Rung the resident must have reached. */
   needsRung: number;
   /** Milestone that must be done first. */
@@ -22,20 +27,26 @@ export const MILESTONES: MilestoneDef[] = [
   {
     id: 'nav',
     label: 'Meeting at NAV',
-    ask: 'I got a letter from NAV. I want to go to the meeting myself.',
+    ask: 'I want to go to the NAV meeting myself.',
     success: 'Went to NAV. Said what was needed. Came home with a plan.',
     failure: 'Sat in the waiting room. Left before the name was called.',
     baseChance: 0.45,
+    sure: 600,
+    place: 'NAV office',
+    placeIcon: '🏢',
     needsRung: 7,
     forTier: 'fit for work',
   },
   {
     id: 'application',
     label: 'Job application',
-    ask: "There's a job at the warehouse. Will you help me write to them?",
+    ask: 'There is a job at the warehouse. I want to apply.',
     success: 'Sent the application. Read it nine times first.',
     failure: 'Wrote two lines. Deleted them.',
     baseChance: 0.35,
+    sure: 900,
+    place: 'Kitchen table',
+    placeIcon: '📝',
     needsRung: 9,
     after: 'nav',
     forTier: 'fit for work',
@@ -43,10 +54,13 @@ export const MILESTONES: MilestoneDef[] = [
   {
     id: 'worktrial',
     label: 'Work trial',
-    ask: 'They want me for a trial week. I think I want to go.',
+    ask: 'They want me for a trial week.',
     success: 'Five days at the warehouse. Came home tired. The good kind.',
     failure: 'Called in sick on Wednesday.',
     baseChance: 0.3,
+    sure: 1400,
+    place: 'Warehouse',
+    placeIcon: '🏭',
     needsRung: 9,
     after: 'application',
     needsAllRoutines: true,

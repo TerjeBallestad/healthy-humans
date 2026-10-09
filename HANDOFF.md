@@ -1,14 +1,14 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
+Last session: 2026-10-09 (7g). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7f are done.** 7f (skill sheets and health on the list) is live. Waiting for Terje to play it.
-- **Next:** not decided. Candidates are roommate traits (Terje likes them) and the proposal scene card. Terje is still thinking about alumni and outreach. See "Strategic layer" under open issues.
+- **Steps 1 to 7g are done.** 7g (the proposal scene card) is live. Waiting for Terje to play it.
+- **Next:** roommate traits are the main candidate (Terje likes them). Terje is still thinking about alumni and outreach. See "Strategic layer" under open issues.
 
 ## What the game does now
 
@@ -18,8 +18,9 @@ Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
 4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
 5. **Overskudd** builds with the share of needs that are green. You spend it with the **arrow** on each activity card: 8, 15 or 25 overskudd raises one activity one level. The card shows the level (lvl 1 to 3). Completions give no skill. When a milestone is open and there is enough overskudd, a **proposal** pauses the game:
    - **Milestone:** NAV meeting, then job application, then work trial.
-
-   Support costs 0, 150 or 350 kr. The dialog shows the stakes before you choose.
+   - **Scene card (7g):** the resident's face (an emoji for now, `face` in archetypes), a dotted path, and the place (`place` and `placeIcon` in milestones). One short line. The overskudd bar drains by 20 when the card opens: the cost is paid even if you say "Not now".
+   - **Wager:** a kroner slider in steps of 50. Odds rise with diminishing returns toward 95%. The sure price (600, 900, 1400 kr) makes it certain. The odds bar shows the chance in green.
+   - **Result:** a marker sweeps the odds bar and stops at the roll. The result line appears, and the milestone dot on the three-step track fills in.
 
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
    - **Beds:** you start with one. "+ Bed" in the strip buys more (1500 kr, ×1.6 each, up to 4). All beds share omsorg and staff. Staff help the lowest need across all beds.
@@ -54,15 +55,11 @@ Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
 | 7e: traits help, but identities are weak            | 7f: a skill sheet for each archetype, with strengths and hard activities.                                                                   |
 | 7e: patience bar is weak, wants Papers, Please      | 7f: the bar is health. At 0 the person is lost, implied in the log. Health at admission sets the start.                                     |
 | 7f: can't read "0/24" while clicking fast           | The effort bar is a ring of segments around the icon, one per nudge. 24 thin segments look costly at a glance.                              |
+| Proposals: too much text, overskudd cost unseen     | 7g: scene card with a face and a place, a kroner slider with a sure price, the overskudd bar drains, a marker rolls on the odds bar.        |
 | 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
 ## Open issues
 
-- **Proposals still feel weak (plan for 7f).** Terje: too much text, "read something NAV, click money if I have a lot". The overskudd cost does not register. Agreed plan:
-  - A scene card instead of the text dialog: resident sprite, a place icon (NAV office), one short line.
-  - Terje sets the wager: a kr amount with diminishing returns on the odds, and a price that guarantees success.
-  - An animation of the overskudd bar going down when the proposal comes.
-  - A short result animation, then the milestone ticks.
 - **Strategic layer and skill ceiling:** Terje: the loss of people only hits if it feels like optimal play could have saved them. Now the skill ceiling is obvious. There are no strong bonuses or combos, only clicking and waiting for money and overskudd. Ideas discussed on 2026-10-09:
   - **Roommate traits:** traits that act across beds (a resident who cooks also feeds the next bed, family visits share overskudd). Terje likes this one.
   - **Alumni:** discharged residents return as peer workers. Terje is not convinced.
@@ -96,7 +93,7 @@ Last session: 2026-10-09 (7f). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 49 tests
+npm test           # vitest, 51 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```
@@ -107,4 +104,5 @@ npm run build      # type check and build
   - `src/ui/` holds the components. `src/store.ts` holds the loop and the signals.
 - **Saves:** bump `SAVE_VERSION` in `src/sim/state.ts` when the state shape changes. Old saves reset.
 - **Screenshots:** Playwright is installed globally. Import it from `/Users/godstemning/.nvm/versions/node/v22.22.0/lib/node_modules/playwright/index.mjs`. Run `npx vite build && npx vite preview --port 5180`, then use a 390×844 viewport. The debug panel (⚙ or the backtick key) has 10x and 100x speed, fill omsorg, +1000 kr, proposal now, fill needs, all automatic, next milestone, and reset save.
+- **Signals gotcha:** `@preact/signals` skips a child whose props did not change. The state is one mutable object, so a child that gets `s` as a prop does not re-render. Call `useGame()` in every component that reads the state.
 - **Way of working:** keep the process light. Make one playable change, deploy it, and let Terje play it. Terje's play test is the review. Build nothing deeper than the next play session.

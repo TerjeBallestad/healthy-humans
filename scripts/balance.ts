@@ -5,7 +5,7 @@ import { MAX_SKILL, NEED_THRESHOLD, SECONDS_PER_WEEK, trainCost } from '../src/c
 import { UPGRADES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, hire, nudge, train } from '../src/sim/actions';
 import { canBuy, canHire } from '../src/sim/institution';
-import { accept, canSupport, closeProposal, eligibleSubjects } from '../src/sim/proposals';
+import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
 import { newGame, occupied } from '../src/sim/state';
@@ -46,10 +46,9 @@ const start = s.tick;
 while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
   tick(s);
 
-  // Proposals: accept with some help when it can afford it.
+  // Proposals: wager up to 250 kr when it can afford it.
   if (s.proposal) {
-    const step = [1, 0].find((i) => canSupport(s, i))!;
-    accept(s, step);
+    accept(s, Math.min(250, Math.floor(s.budget / 50) * 50));
     if (s.proposal.outcome === 'success') milestoneSuccess++;
     else milestoneFail++;
     if (s.proposal.outcome === 'success') {

@@ -59,12 +59,9 @@ export const OVERSKUDD_CAP = 60;
 export const PROPOSAL_COST_MILESTONE = 20;
 /** Shortest gap between two proposals. */
 export const PROPOSAL_COOLDOWN_WEEKS = 3;
-/** Kroner the player can spend on a proposal, and the odds each step adds. */
-export const SUPPORT_STEPS = [
-  { kr: 0, bonus: 0 },
-  { kr: 150, bonus: 0.2 },
-  { kr: 350, bonus: 0.35 },
-] as const;
+/** The wager slider moves in steps of this many kroner. */
+export const WAGER_STEP = 50;
+/** Highest chance below the sure price. */
 export const MAX_CHANCE = 0.95;
 
 /** A new person joins the waiting list this often. */

@@ -1,11 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ACTIVITIES } from '../content/activities';
-import {
-  MAX_SKILL,
-  PROPOSAL_COOLDOWN_WEEKS,
-  PROPOSAL_COST_MILESTONE,
-  SUPPORT_STEPS,
-} from '../content/tuning';
+import { MAX_SKILL, PROPOSAL_COOLDOWN_WEEKS, PROPOSAL_COST_MILESTONE } from '../content/tuning';
 import {
   accept,
   chance,
@@ -13,6 +8,7 @@ import {
   decline,
   eligibleSubjects,
   maybePropose,
+  surePrice,
 } from './proposals';
 import { newGame } from './state';
 import { tick } from './tick';
@@ -42,12 +38,14 @@ describe('overskudd', () => {
 });
 
 describe('proposals', () => {
-  test('a proposal opens and pauses the game', () => {
+  test('a proposal opens, pauses the game and takes its overskudd', () => {
     const s = ready();
     s.speed = 2;
     maybePropose(s);
     expect(s.proposal).not.toBeNull();
     expect(s.speed).toBe(0);
+    expect(s.proposal!.overskuddBefore).toBe(30);
+    expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
   });
 
   test('no proposal during the cooldown', () => {
@@ -64,17 +62,39 @@ describe('proposals', () => {
     expect(s.proposal).toBeNull();
   });
 
-  test('support costs kroner and raises the odds', () => {
+  test('kroner raise the odds, less for each krone, and the sure price is certain', () => {
     const s = ready();
     maybePropose(s);
+    const r = s.beds[0]!;
     const subject = s.proposal!.subject;
-    expect(chance(s.beds[0]!, subject, 2)).toBeGreaterThan(chance(s.beds[0]!, subject, 0));
+    const sure = surePrice(subject);
+    const [c0, c1, c2] = [0, 100, 200].map((kr) => chance(r, subject, kr));
+    expect(c1! - c0!).toBeGreaterThan(c2! - c1!);
+    expect(chance(r, subject, sure - 50)).toBeLessThan(1);
+    expect(chance(r, subject, sure)).toBe(1);
+  });
+
+  test('a wager costs kroner and rolls', () => {
+    const s = ready();
+    maybePropose(s);
     s.budget = 1000;
-    accept(s, 2);
-    expect(s.budget).toBe(1000 - SUPPORT_STEPS[2].kr);
-    expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
+    expect(accept(s, 125)).toBe(false); // not a whole step
+    accept(s, 200);
+    expect(s.budget).toBe(800);
     expect(s.proposal!.outcome).toMatch(/success|failure/);
-    expect(s.proposal!.result).toBeTruthy();
+    expect(s.proposal!.roll).toBeGreaterThanOrEqual(0);
+  });
+
+  test('the sure price always works, and no wager above the budget', () => {
+    const s = ready();
+    maybePropose(s);
+    const sure = surePrice(s.proposal!.subject);
+    s.budget = sure - 50;
+    expect(accept(s, sure)).toBe(false);
+    s.budget = sure;
+    accept(s, sure);
+    expect(s.proposal!.outcome).toBe('success');
+    expect(s.beds[0]!.milestones).toEqual(['nav']);
   });
 
   test('a successful milestone is kept', () => {
@@ -83,7 +103,7 @@ describe('proposals', () => {
       const s = ready();
       maybePropose(s);
       s.budget = 1000;
-      accept(s, 2);
+      accept(s, 300);
       if (s.proposal!.outcome !== 'success') continue;
       expect(s.beds[0]!.milestones).toEqual(['nav']);
       return;

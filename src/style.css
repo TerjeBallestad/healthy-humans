@@ -286,6 +286,182 @@ button:disabled {
   color: var(--warn);
 }
 
+/* Proposal scene card */
+.scene .stage {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.scene .face,
+.scene .place-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 2.2rem;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.scene .place {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+.scene .path {
+  height: 0;
+  border-top: 3px dotted var(--line);
+  margin-bottom: 18px;
+}
+.scene .face {
+  margin-bottom: 18px;
+}
+.scene blockquote {
+  margin: 12px 0 16px;
+  text-align: center;
+}
+.drain {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+.drain .fill {
+  width: var(--to);
+  animation: drain 0.9s ease-in 0.3s both;
+}
+.drain .cost {
+  color: var(--warn);
+  font-variant-numeric: tabular-nums;
+}
+@keyframes drain {
+  from {
+    width: var(--from);
+  }
+  to {
+    width: var(--to);
+  }
+}
+.track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.track .step {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.track .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--bg);
+}
+.track .done .dot {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.track .now {
+  color: var(--fg);
+  font-weight: 600;
+}
+.track .now .dot {
+  border-color: var(--accent);
+}
+.track .tick .dot {
+  animation: tick 0.4s ease-out 1.6s both;
+}
+@keyframes tick {
+  from {
+    transform: scale(1);
+    background: var(--bg);
+  }
+  50% {
+    transform: scale(1.6);
+  }
+  to {
+    transform: scale(1);
+    background: var(--accent);
+  }
+}
+.odds-bar {
+  position: relative;
+  height: 26px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  overflow: hidden;
+}
+.odds-bar .zone {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  transition: width 0.15s;
+}
+.odds-bar .odds-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.odds-bar .marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  margin-left: -2px;
+  background: var(--fg);
+  animation: roll 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes roll {
+  from {
+    left: 0%;
+  }
+  45% {
+    left: 100%;
+  }
+  to {
+    left: var(--roll);
+  }
+}
+.wager input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.wager-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 16px;
+}
+.wager-ends .sure.on {
+  color: var(--accent);
+  font-weight: 600;
+}
+.choices.row {
+  grid-template-columns: 2fr 1fr;
+}
+.result.rolled > * {
+  animation: appear 0.3s ease-out 1.4s both;
+}
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 .stakes {
   display: grid;
   grid-template-columns: auto 1fr;

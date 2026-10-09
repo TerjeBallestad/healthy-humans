@@ -160,6 +160,8 @@ Each step ends with something playable and one question to answer by playing.
    7e: a trait for each referral, and people leave the list after 10 to 30 weeks.
    7f: **identities and health.** A skill sheet for each archetype. Health replaces patience on the list.
    _Question: does choosing who to admit feel like matching a person to your capacity?_
+   7g: **proposal scene card.** A face, a place and one line. A kroner slider with diminishing odds and a sure price. The overskudd cost is paid when the card opens, and the bar drains. A marker rolls on the odds bar.
+   _Question: do proposals now feel like a bet you set yourself?_
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 
