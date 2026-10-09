@@ -195,10 +195,10 @@ describe('waiting list', () => {
     expect(effort(r, 'sleep')).toBe(barSize(0));
   });
 
-  test('a trade doubles the tax', () => {
+  test('a rich resident pays double tax', () => {
     const s = newGame();
     const r = s.beds[0]!;
-    r.trait = 'trade';
+    r.trait = 'rich';
     automatic(r, 6);
     openDischarge(s, 0);
     signDischarge(s);

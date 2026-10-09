@@ -84,7 +84,6 @@ export function DebugPanel() {
           <div class="row">
             <button onClick={resetGame}>Reset save</button>
           </div>
-          <p class="muted">Build {__BUILD_TIME__}</p>
         </aside>
       )}
     </>

@@ -1,7 +1,7 @@
 import type { ActivityId } from './activities';
 import type { NeedId } from './needs';
 
-export type TraitId = 'cooks' | 'tidy' | 'family' | 'trade';
+export type TraitId = 'cooks' | 'tidy' | 'family' | 'rich';
 
 // One trait for each referral, rolled when they join the list. Each one helps a different plan.
 export interface TraitDef {
@@ -28,7 +28,7 @@ export const TRAITS: TraitDef[] = [
   },
   { id: 'tidy', label: 'Tidy', effect: 'Home drops half as fast', decay: { home: 0.5 } },
   { id: 'family', label: 'Family visits', effect: 'Overskudd +50%', overskudd: 1.5 },
-  { id: 'trade', label: 'Has a trade', effect: 'Double tax at discharge', tax: 2 },
+  { id: 'rich', label: 'Rich', effect: 'Double tax at discharge', tax: 2 },
 ];
 
 export const TRAIT_BY_ID = Object.fromEntries(TRAITS.map((t) => [t.id, t])) as Record<

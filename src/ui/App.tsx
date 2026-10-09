@@ -32,6 +32,9 @@ export function App() {
       <ProposalDialog />
       <DischargeDialog />
       <DebugPanel />
+      <footer class="version">
+        {__COMMIT__} · {__BUILD_TIME__}
+      </footer>
     </main>
   );
 }
