@@ -39,10 +39,10 @@ export const SPECIALITY_LABEL: Record<NeedId, string> = {
   social: 'Social',
 };
 
-/** Candidates on the hiring list at one time. */
+/** People who answer one job ad. */
 export const CANDIDATES = 3;
-/** The hiring list is new this often. */
-export const CANDIDATE_WEEKS = 4;
+/** Weeks from the job ad until the candidates show up. */
+export const AD_WEEKS = 1;
 /** Most staff the house can have. */
 export const MAX_STAFF = 6;
 /** A chance for each candidate to be a coach. */

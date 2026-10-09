@@ -657,10 +657,12 @@ button:disabled {
 .hire-foot .wage.short {
   color: var(--warn);
 }
-.hire-foot .price {
+.turn-down {
+  margin-top: 12px;
+  justify-content: center;
+}
+.hire-foot .buy-request {
   margin-left: auto;
-  font-weight: 700;
-  color: var(--gold);
 }
 
 /* Proposal scene card */

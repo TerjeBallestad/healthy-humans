@@ -14,7 +14,6 @@ import {
 } from '../content/tuning';
 import { TRAITS, TRAIT_BY_ID, type TraitId } from '../content/traits';
 import { random } from './rng';
-import { rollCandidates } from './staff';
 import { unlockedActivities } from './selectors';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
@@ -22,7 +21,7 @@ import type { TierId } from '../content/tiers';
 import type { StaffRole } from '../content/staff';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 21;
+export const SAVE_VERSION = 22;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -125,7 +124,9 @@ export interface GameState {
   /** Kroner. */
   budget: number;
   staff: Staff[];
-  /** People the player can hire. New ones every CANDIDATE_WEEKS. */
+  /** The tick the candidates for an open job ad show up. Null when there is no ad. */
+  adReady: number | null;
+  /** People who answered the job ad. The player picks one. */
   candidates: Staff[];
   upgrades: UpgradeId[];
   /** One slot per bed. Null is an empty bed. */
@@ -217,6 +218,7 @@ export function newGame(): GameState {
     omsorg: OMSORG_START,
     budget: BUDGET_START,
     staff: [],
+    adReady: null,
     candidates: [],
     upgrades: [],
     beds: [newResident(ARCHETYPES[0]!.id)],
@@ -231,7 +233,6 @@ export function newGame(): GameState {
     resumeSpeed: 1,
     seed: (Math.random() * 2 ** 32) | 0,
   };
-  rollCandidates(s);
   for (let i = 0; i < WAITLIST_START; i++)
     s.waiting.push(newReferral(s, ARCHETYPES[(1 + i) % ARCHETYPES.length]!.id));
   return s;

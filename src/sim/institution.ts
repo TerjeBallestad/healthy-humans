@@ -51,6 +51,7 @@ export function netIncomePerWeek(s: GameState): number {
   return GRANT_PER_WEEK + taxPerWeek(s) - wagesPerWeek(s);
 }
 
+/** The price of a job ad. It rises with each staff member. */
 export function hireCost(s: GameState): number {
   return Math.round(HIRE_COST_BASE * HIRE_COST_GROWTH ** s.staff.length);
 }

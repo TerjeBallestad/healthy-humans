@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { NeedId } from '../content/needs';
 import {
-  CANDIDATE_WEEKS,
+  AD_WEEKS,
   CANDIDATES,
   COACH_TRAIN_COST,
   ROLES,
@@ -16,7 +16,7 @@ import {
 } from '../content/tuning';
 import { buyUpgrade, nudge } from './actions';
 import { hireCost, netIncomePerWeek, staffNudgesPerSecond } from './institution';
-import { hire, rollCandidates, trainCoach, trainSpeciality } from './staff';
+import { hire, postAd, rollCandidates, trainCoach, trainSpeciality, turnDown } from './staff';
 import { newGame, type Staff } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
@@ -51,32 +51,46 @@ const coach = (coaching: Staff['coaching']): Staff => ({
 });
 
 describe('staff', () => {
-  test('hiring costs the fee and adds the wage of the role', () => {
+  test('a job ad costs the fee, and candidates show up a week later', () => {
     const s = newGame();
     s.budget = HIRE_COST_BASE;
-    s.candidates[0]!.role = 'coach';
-    expect(hire(s, 0)).toBe(true);
+    expect(postAd(s)).toBe(true);
     expect(s.budget).toBe(0);
+    expect(postAd(s)).toBe(false); // one ad at a time
+    run(s, AD_WEEKS * TICKS_PER_WEEK - 1);
+    expect(s.candidates).toHaveLength(0);
+    tick(s);
+    expect(s.candidates).toHaveLength(CANDIDATES);
+  });
+
+  test('picking someone costs only the wage of the role and closes the ad', () => {
+    const s = newGame();
+    rollCandidates(s);
+    s.candidates[0]!.role = 'coach';
+    const budget = s.budget;
+    expect(hire(s, 0)).toBe(true);
+    expect(s.budget).toBe(budget);
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - ROLES.coach.wage);
+    expect(s.candidates).toHaveLength(0);
     expect(hireCost(s)).toBeGreaterThan(HIRE_COST_BASE);
-    expect(s.candidates).toHaveLength(CANDIDATES - 1);
+  });
+
+  test('turning everyone down closes the ad', () => {
+    const s = newGame();
+    rollCandidates(s);
+    turnDown(s);
+    expect(s.candidates).toHaveLength(0);
+    s.budget = HIRE_COST_BASE;
+    expect(postAd(s)).toBe(true);
   });
 
   test('wages may not eat the whole grant', () => {
     const s = newGame();
-    s.budget = 1e6;
     for (let i = 0; i < 10; i++) {
       rollCandidates(s);
-      while (hire(s, 0));
+      hire(s, 0);
     }
     expect(netIncomePerWeek(s)).toBeGreaterThanOrEqual(0);
-  });
-
-  test('the hiring list is new every few weeks', () => {
-    const s = newGame();
-    s.candidates = [];
-    run(s, CANDIDATE_WEEKS * TICKS_PER_WEEK);
-    expect(s.candidates).toHaveLength(CANDIDATES);
   });
 
   test('staff fill the bar of the lowest need for free', () => {

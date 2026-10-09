@@ -18,7 +18,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 3. Completions raise skill. Bars shrink from 12 to 6 to 3 nudges, and at ●●● the activity is automatic. It goes into "Handles alone", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per week) buys staff and **requests** (`src/content/upgrades.ts`).
    - **Requests:** your click (course: a nudge fills 2 segments, then supervision: 3) and the machine (calendar: staff ×1.5, then handover: ×2). A "Requests" button opens a menu with tabs ("Your work", "Staff"). Each line of upgrades is one card with an icon, title, effect, level pips, price and Buy. Only the next level shows. The game pauses while a menu is open (`src/ui/modal.ts`).
-   - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** "Hire" opens a list of 3 candidates, new every 4 weeks. Each one has a name, a role and a rolled sheet. The fee is 400 kr ×1.5 for each staff member. Up to 6 staff.
+   - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** hiring works as in Game Dev Story. "Hire" pays for a job ad (400 kr ×1.5 for each staff member). One week later 3 candidates answer, each with a name, a face, a role and a rolled sheet. You pick one, and it costs only the wage. Picking closes the ad. "Turn them all down" closes it with no hire, and the fee is lost. Up to 6 staff.
      - **Miljøarbeider** (40 kr/week): one speciality (a need: Cooking, Hygiene, Sleep, Housework, Social). They nudge bars of their speciality first, and there a nudge fills 2 segments. Otherwise they help the lowest need.
      - **Coach** (60 kr/week): a sheet of the highest level they can teach for each activity (rolled: three activities at lvl 1, sometimes one at lvl 2 or 3). The coaches spend the residents' overskudd on any level that a coach in the house can teach. The cheapest level goes first, then the lowest need. They keep 20 overskudd for a proposal while a milestone is open. Training is instant, so more coaches only add coverage.
      - **Profiles (Game Dev Story style):** candidates and staff cards share one profile: name, a role button (icon and title; hover or click shows what the role does), a face (rolled per person, `STAFF_FACES`) and a table. The ×2 chip on a speciality explains itself the same way. Miljøarbeider: all five areas with the activities they cover and the nudge (×2 on a speciality). Coach: activities with "lvl 1", "lvl 2" or "independent". Terje found icon + pips too hard to parse.
@@ -70,6 +70,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 | 7i: panes should be tabs, too much text             | Tabs, one card per line with icon, title, effect, price and Buy. Only the next level shows.                                                 |
 | 7i: miljøarbeider and coach are the same mechanic   | 7j: staff are units with a role and a sheet, hired from candidates. Staff cards train specialities and coach levels for omsorg.             |
 | 7j: roles and specialities are a mystery            | Profiles with a role line and a stats table in words, as in Game Dev Story. Training buttons sit in the table rows.                         |
+| Fee + wage at pick felt odd                         | Game Dev Story hiring: pay for a job ad, candidates come a week later, the pick costs only the wage.                                        |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
 | Max level label "alone"                             | Now "independent".                                                                                                                          |
@@ -115,7 +116,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 59 tests
+npm test           # vitest, 60 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```

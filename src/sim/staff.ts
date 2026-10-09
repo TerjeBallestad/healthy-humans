@@ -1,6 +1,7 @@
 import { ACTIVITIES, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
+  AD_WEEKS,
   CANDIDATES,
   COACH_SHARE,
   COACH_TRAIN_COST,
@@ -15,6 +16,7 @@ import { MAX_SKILL } from '../content/tuning';
 import { canAffordWage, hireCost } from './institution';
 import { random } from './rng';
 import type { GameState, Staff } from './state';
+import { TICKS_PER_WEEK } from './time';
 import { log } from './tick';
 
 const pick = <T>(s: GameState, list: readonly T[]): T => list[Math.floor(random(s) * list.length)]!;
@@ -42,24 +44,59 @@ function rollCandidate(s: GameState, taken: Set<string>): Staff {
   return staff;
 }
 
-/** A new hiring list. Names already in the house are not used again. */
+/** The answers to a job ad. Names already in the house are not used again. */
 export function rollCandidates(s: GameState) {
   const taken = new Set(s.staff.map((x) => x.name));
   s.candidates = Array.from({ length: CANDIDATES }, () => rollCandidate(s, taken));
 }
 
+/** A job ad is possible when no other ad is open and there is room in the house. */
+export function canPostAd(s: GameState): boolean {
+  return (
+    s.adReady === null &&
+    s.candidates.length === 0 &&
+    s.staff.length < MAX_STAFF &&
+    s.budget >= hireCost(s)
+  );
+}
+
+/** Pay for a job ad. The candidates show up AD_WEEKS later. */
+export function postAd(s: GameState): boolean {
+  if (!canPostAd(s)) return false;
+  s.budget -= hireCost(s);
+  s.adReady = s.tick + AD_WEEKS * TICKS_PER_WEEK;
+  log(s, 'The job ad is out.');
+  return true;
+}
+
+/** Called each tick: the candidates arrive when the ad is ready. */
+export function checkAd(s: GameState) {
+  if (s.adReady === null || s.tick < s.adReady) return;
+  s.adReady = null;
+  rollCandidates(s);
+  log(s, `${s.candidates.length} people answered the job ad.`);
+}
+
+/** Picking a candidate costs no fee, only the wage. The ad closes. */
 export function canHire(s: GameState, index: number): boolean {
   const c = s.candidates[index];
-  return !!c && s.staff.length < MAX_STAFF && s.budget >= hireCost(s) && canAffordWage(s, c.role);
+  return !!c && s.staff.length < MAX_STAFF && canAffordWage(s, c.role);
 }
 
 export function hire(s: GameState, index: number): boolean {
   if (!canHire(s, index)) return false;
-  s.budget -= hireCost(s);
-  const [person] = s.candidates.splice(index, 1);
-  s.staff.push(person!);
-  log(s, `${person!.name} starts as ${ROLES[person!.role].label.toLowerCase()}.`);
+  const person = s.candidates[index]!;
+  s.candidates = [];
+  s.staff.push(person);
+  log(s, `${person.name} starts as ${ROLES[person.role].label.toLowerCase()}.`);
   return true;
+}
+
+/** Say no to everyone. The ad closes, and the fee is gone. */
+export function turnDown(s: GameState) {
+  if (s.candidates.length === 0) return;
+  s.candidates = [];
+  log(s, 'Nobody was right for the job.');
 }
 
 /** The highest level any coach in the house can train an activity to. */

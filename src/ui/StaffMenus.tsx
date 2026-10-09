@@ -3,7 +3,6 @@ import { useState } from 'preact/hooks';
 import { ACTIVITIES } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
-  CANDIDATE_WEEKS,
   ROLES,
   SPECIALITY_FILL,
   SPECIALITY_LABEL,
@@ -11,7 +10,7 @@ import {
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost, omsorgCap } from '../sim/institution';
+import { canAffordWage, omsorgCap } from '../sim/institution';
 import {
   canHire,
   canTrainCoach,
@@ -20,9 +19,9 @@ import {
   hire,
   trainCoach,
   trainSpeciality,
+  turnDown,
 } from '../sim/staff';
 import type { Staff } from '../sim/state';
-import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
 
@@ -165,18 +164,15 @@ export function StaffSummary({ x }: { x: Staff }) {
 export function HireMenu() {
   const s = useGame();
   if (modal.value?.kind !== 'hire') return null;
-  const period = CANDIDATE_WEEKS * TICKS_PER_WEEK;
-  const weeks = Math.ceil((period - (s.tick % period)) / TICKS_PER_WEEK);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog hire" role="dialog" aria-modal="true" aria-label="Hire">
         <header>
-          <h2>Candidates</h2>
+          <h2>Pick one</h2>
           <button class="close" onClick={closeModal} aria-label="Close">
             ✕
           </button>
         </header>
-        {s.candidates.length === 0 && <p class="muted">Nobody else has applied.</p>}
         <div class="candidates">
           {s.candidates.map((c, i) => (
             <article class="candidate">
@@ -185,11 +181,13 @@ export function HireMenu() {
                 <span class={canAffordWage(s, c.role) ? 'wage' : 'wage short'}>
                   {ROLES[c.role].wage} kr/week
                 </span>
-                <span class="price">{hireCost(s)} kr</span>
                 <button
                   class="buy-request"
                   disabled={!canHire(s, i)}
-                  onClick={() => act((g) => hire(g, i))}
+                  onClick={() => {
+                    act((g) => hire(g, i));
+                    closeModal();
+                  }}
                 >
                   Hire
                 </button>
@@ -197,9 +195,15 @@ export function HireMenu() {
             </article>
           ))}
         </div>
-        <p class="muted hint">
-          New candidates in {weeks} {weeks === 1 ? 'week' : 'weeks'}.
-        </p>
+        <button
+          class="choice quiet turn-down"
+          onClick={() => {
+            act(turnDown);
+            closeModal();
+          }}
+        >
+          Turn them all down
+        </button>
       </div>
     </div>
   );

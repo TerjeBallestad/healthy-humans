@@ -1,7 +1,7 @@
 import { ACTIVITY_BY_ID, type ActivityDef } from '../content/activities';
 import { ARCHETYPES, ARCHETYPE_BY_ID } from '../content/archetypes';
 import { NEEDS } from '../content/needs';
-import { CANDIDATE_WEEKS, SPECIALITY_FILL } from '../content/staff';
+import { SPECIALITY_FILL } from '../content/staff';
 import { TRAIT_BY_ID } from '../content/traits';
 import {
   READY_BELOW,
@@ -18,7 +18,7 @@ import {
   trainCost,
 } from '../content/tuning';
 import { netIncomePerWeek, omsorgCap, omsorgPerSecond, workerNudgesPerSecond } from './institution';
-import { coachLevel, rollCandidates } from './staff';
+import { checkAd, coachLevel } from './staff';
 import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
@@ -47,7 +47,7 @@ export function tick(state: GameState) {
     state.nextArchetype += 1;
   }
   declineWaiting(state);
-  if (state.tick % (CANDIDATE_WEEKS * TICKS_PER_WEEK) === 0) rollCandidates(state);
+  checkAd(state);
 
   staffWork(state);
   for (const [, r] of occupied(state)) {
