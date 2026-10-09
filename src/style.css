@@ -469,71 +469,163 @@ button:disabled {
 .request .wage.short {
   color: var(--warn);
 }
-.staff-card .who {
+/* Staff profile, in the style of Game Dev Story: portrait and a table of stats */
+.overlay:has(.hire),
+.overlay:has(.staff-card) {
+  align-items: center;
+}
+.dialog.hire {
+  width: min(960px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.dialog.staff-card {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.hire header,
+.staff-card header {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 12px;
 }
-.staff-card .who .icon {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 2px solid var(--line);
-  font-size: 1.9rem;
-}
-.staff-card .who h2 {
+.hire header h2 {
   margin: 0;
-}
-.staff-card header {
-  gap: 12px;
-}
-.staff-card .omsorg-left {
-  margin-left: auto;
-  font-size: 0.9rem;
-}
-.train-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-.train-list li {
-  display: grid;
-  grid-template-columns: 1fr auto 110px;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-.train-list li.has {
-  border-color: var(--accent);
-}
-.train-list .tick {
-  justify-self: center;
-  color: var(--accent);
   font-size: 1.2rem;
 }
-.train-list .buy-request {
-  min-width: 0;
-  padding: 6px 8px;
+.hire .close,
+.staff-card .close {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.staff-card .omsorg-left {
+  font-size: 0.9rem;
+}
+.candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.candidate {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.profile {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+}
+.profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.15rem;
+}
+.role-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bg);
+  background: var(--accent);
+}
+.profile-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+}
+.portrait {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 88px;
+  border-radius: 8px;
+  font-size: 2.6rem;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.stats {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.85rem;
 }
-.train-list .pips {
+.stats th {
+  text-align: right;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.stats td {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+.stats tr.strong td {
+  color: var(--fg);
+  font-weight: 600;
+}
+.stats .covers {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.stats .value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stats tr.strong .value {
+  color: var(--accent);
+}
+.stats td:nth-child(3) {
+  padding-left: 10px;
+  text-align: right;
+  width: 1%;
+}
+.stats .buy-request {
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.profile .does {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.hire-foot {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
 }
-.train-list .pip {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1.5px solid var(--accent);
+.hire-foot .wage {
+  font-size: 0.85rem;
+  color: var(--muted);
 }
-.train-list .pip.on {
-  background: var(--accent);
+.hire-foot .wage.short {
+  color: var(--warn);
+}
+.hire-foot .price {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--gold);
 }
 
 /* Proposal scene card */

@@ -5,7 +5,7 @@ import { staffNudgesPerSecond } from '../sim/institution';
 import { canHire } from '../sim/staff';
 import { openModal } from './modal';
 import { affordableRequests } from './RequestsMenu';
-import { SheetLine } from './StaffMenus';
+import { StaffSummary } from './StaffMenus';
 import { useGame } from '../store';
 
 export function InstitutionPanel() {
@@ -32,7 +32,7 @@ export function InstitutionPanel() {
             <button class="staff-chip" onClick={() => openModal({ kind: 'staff', index: i })}>
               <span aria-hidden="true">{ROLES[x.role].icon}</span>
               <span class="name">{x.name}</span>
-              <SheetLine x={x} />
+              <StaffSummary x={x} />
             </button>
           ))}
         </div>

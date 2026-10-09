@@ -8,12 +8,26 @@ export interface RoleDef {
   icon: string;
   /** Kroner per week. */
   wage: number;
+  /** What the role does, in one line on the profile. */
+  does: string;
 }
 
 // Miljøarbeidere nudge bars. Coaches spend the residents' overskudd on training.
 export const ROLES: Record<StaffRole, RoleDef> = {
-  worker: { id: 'worker', label: 'Miljøarbeider', icon: '🤝', wage: 40 },
-  coach: { id: 'coach', label: 'Coach', icon: '🧑‍🏫', wage: 60 },
+  worker: {
+    id: 'worker',
+    label: 'Miljøarbeider',
+    icon: '🤝',
+    wage: 40,
+    does: 'Nudges activity bars for free. Works on the specialities first, with a stronger nudge.',
+  },
+  coach: {
+    id: 'coach',
+    label: 'Coach',
+    icon: '🧑‍🏫',
+    wage: 60,
+    does: "Spends the residents' overskudd to train their activities, up to the levels in the table.",
+  },
 };
 
 /** What a miljøarbeider is good at: the activities that refill one need. */

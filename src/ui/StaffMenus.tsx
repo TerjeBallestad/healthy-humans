@@ -1,5 +1,6 @@
+import type { ComponentChildren } from 'preact';
 import { ACTIVITIES } from '../content/activities';
-import { NEED_ORDER } from '../content/needs';
+import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
   CANDIDATE_WEEKS,
   ROLES,
@@ -8,7 +9,7 @@ import {
   SPECIALITY_TRAIN_COST,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost, omsorgCap, workerNudgesPerSecond } from '../sim/institution';
+import { canAffordWage, hireCost, omsorgCap } from '../sim/institution';
 import {
   canHire,
   canTrainCoach,
@@ -23,18 +24,94 @@ import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
 
-/** What a staff member can do, in one line: specialities, or the levels a coach can teach. */
-export function SheetLine({ x }: { x: Staff }) {
+/** The activities a speciality covers, in plain words. */
+const covers = (need: NeedId) =>
+  ACTIVITIES.filter((a) => a.trigger === need)
+    .map((a) => a.label)
+    .join(', ');
+
+const levelText = (level: number) =>
+  level >= MAX_SKILL ? 'independent' : level > 0 ? `lvl ${level}` : '–';
+
+/** Name, portrait, what the role does and a table of stats. Rows can hold a train button. */
+function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChildren }) {
+  const role = ROLES[x.role];
+  return (
+    <div class="profile">
+      <div class="profile-head">
+        <strong>{x.name}</strong>
+        <span class="role-tag">{role.label}</span>
+      </div>
+      <p class="does">{role.does}</p>
+      <div class="profile-body">
+        <span class="portrait" aria-hidden="true">
+          {role.icon}
+        </span>
+        <table class="stats">
+          {x.role === 'worker' ? (
+            <>
+              <thead>
+                <tr>
+                  <th />
+                  <th>Nudge</th>
+                </tr>
+              </thead>
+              <tbody>
+                {NEED_ORDER.map((n) => {
+                  const has = x.specialities.includes(n);
+                  return (
+                    <tr class={has ? 'strong' : ''}>
+                      <td>
+                        {SPECIALITY_LABEL[n]}
+                        <span class="covers">{covers(n)}</span>
+                      </td>
+                      <td class="value">×{has ? SPECIALITY_FILL : 1}</td>
+                      {train && <td>{train(n)}</td>}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </>
+          ) : (
+            <>
+              <thead>
+                <tr>
+                  <th />
+                  <th>Trains to</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ACTIVITIES.filter((a) => train || x.coaching[a.id]).map((a) => {
+                  const level = x.coaching[a.id] ?? 0;
+                  return (
+                    <tr class={level > 0 ? 'strong' : ''}>
+                      <td>{a.label}</td>
+                      <td class="value">{levelText(level)}</td>
+                      {train && <td>{train(a.id)}</td>}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </>
+          )}
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/** One short line for the staff panel. */
+export function StaffSummary({ x }: { x: Staff }) {
   if (x.role === 'worker')
-    return <span class="sheet">{x.specialities.map((n) => SPECIALITY_LABEL[n]).join(', ')}</span>;
+    return (
+      <span class="sheet">
+        {ROLES.worker.label} · {x.specialities.map((n) => SPECIALITY_LABEL[n]).join(', ')}
+      </span>
+    );
+  const n = Object.values(x.coaching).filter(Boolean).length;
   return (
     <span class="sheet">
-      {ACTIVITIES.filter((a) => x.coaching[a.id]).map((a) => (
-        <span class="skill" title={`${a.label}: up to lvl ${x.coaching[a.id]}`}>
-          {a.icon}
-          <span class="dots">{'●'.repeat(x.coaching[a.id]!)}</span>
-        </span>
-      ))}
+      {ROLES.coach.label} · {n} {n === 1 ? 'activity' : 'activities'}
     </span>
   );
 }
@@ -46,32 +123,22 @@ export function HireMenu() {
   const weeks = Math.ceil((period - (s.tick % period)) / TICKS_PER_WEEK);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Hire">
+      <div class="dialog hire" role="dialog" aria-modal="true" aria-label="Hire">
         <header>
           <h2>Candidates</h2>
           <button class="close" onClick={closeModal} aria-label="Close">
             ✕
           </button>
         </header>
-        <div class="lines">
-          {s.candidates.length === 0 && <p class="muted">Nobody else has applied.</p>}
+        {s.candidates.length === 0 && <p class="muted">Nobody else has applied.</p>}
+        <div class="candidates">
           {s.candidates.map((c, i) => (
-            <article class="request">
-              <span class="icon" aria-hidden="true">
-                {ROLES[c.role].icon}
-              </span>
-              <div class="text">
-                <strong class="title">
-                  {c.name} <span class="muted role">{ROLES[c.role].label}</span>
-                </strong>
-                <span class="effect">
-                  <SheetLine x={c} />
-                </span>
+            <article class="candidate">
+              <Profile x={c} />
+              <div class="hire-foot">
                 <span class={canAffordWage(s, c.role) ? 'wage' : 'wage short'}>
                   {ROLES[c.role].wage} kr/week
                 </span>
-              </div>
-              <div class="buy-col">
                 <span class="price">{hireCost(s)} kr</span>
                 <button
                   class="buy-request"
@@ -98,92 +165,49 @@ export function StaffCard() {
   if (m?.kind !== 'staff') return null;
   const x = s.staff[m.index];
   if (!x) return null;
-  const role = ROLES[x.role];
+  const i = m.index;
+
+  const trainWorker = (need: string) => {
+    const n = need as NeedId;
+    if (x.specialities.includes(n)) return null;
+    return (
+      <button
+        class="buy-request"
+        disabled={!canTrainSpeciality(s, i, n)}
+        onClick={() => act((g) => trainSpeciality(g, i, n))}
+      >
+        {SPECIALITY_TRAIN_COST} omsorg
+      </button>
+    );
+  };
+  const trainCoachRow = (id: string) => {
+    const a = ACTIVITIES.find((y) => y.id === id)!;
+    if ((x.coaching[a.id] ?? 0) >= MAX_SKILL) return null;
+    return (
+      <button
+        class="buy-request"
+        disabled={!canTrainCoach(s, i, a.id)}
+        onClick={() => act((g) => trainCoach(g, i, a.id))}
+      >
+        {coachTrainCost(x, a.id)} omsorg
+      </button>
+    );
+  };
+
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog requests staff-card" role="dialog" aria-modal="true" aria-label={x.name}>
+      <div class="dialog staff-card" role="dialog" aria-modal="true" aria-label={x.name}>
         <header>
-          <div class="who">
-            <span class="icon" aria-hidden="true">
-              {role.icon}
-            </span>
-            <div>
-              <h2>{x.name}</h2>
-              <span class="muted">
-                {role.label} · {role.wage} kr/week
-              </span>
-            </div>
-          </div>
           <span class="omsorg-left">
             Omsorg <strong>{Math.floor(s.omsorg)}</strong>
             <span class="muted"> / {omsorgCap(s)}</span>
           </span>
+          <span class="muted">{ROLES[x.role].wage} kr/week</span>
           <button class="close" onClick={closeModal} aria-label="Close">
             ✕
           </button>
         </header>
-
-        {x.role === 'worker' && (
-          <>
-            <p class="muted">
-              {workerNudgesPerSecond(s).toFixed(2)} nudges/s. Specialities come first and fill{' '}
-              {SPECIALITY_FILL} segments.
-            </p>
-            <ul class="train-list">
-              {NEED_ORDER.map((n) => {
-                const has = x.specialities.includes(n);
-                return (
-                  <li class={has ? 'has' : ''}>
-                    <span>{SPECIALITY_LABEL[n]}</span>
-                    <span />
-                    {has ? (
-                      <span class="tick">✓</span>
-                    ) : (
-                      <button
-                        class="buy-request"
-                        disabled={!canTrainSpeciality(s, m.index, n)}
-                        onClick={() => act((g) => trainSpeciality(g, m.index, n))}
-                      >
-                        {SPECIALITY_TRAIN_COST} omsorg
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
-
-        {x.role === 'coach' && (
-          <ul class="train-list">
-            {ACTIVITIES.map((a) => {
-              const level = x.coaching[a.id] ?? 0;
-              return (
-                <li class={level > 0 ? 'has' : ''}>
-                  <span>
-                    <span aria-hidden="true">{a.icon}</span> {a.label}
-                  </span>
-                  <span class="pips" aria-label={`Up to lvl ${level}`}>
-                    {Array.from({ length: MAX_SKILL }, (_, i) => (
-                      <span class={i < level ? 'pip on' : 'pip'} />
-                    ))}
-                  </span>
-                  {level >= MAX_SKILL ? (
-                    <span class="tick">✓</span>
-                  ) : (
-                    <button
-                      class="buy-request"
-                      disabled={!canTrainCoach(s, m.index, a.id)}
-                      onClick={() => act((g) => trainCoach(g, m.index, a.id))}
-                    >
-                      {coachTrainCost(x, a.id)} omsorg
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <Profile x={x} train={x.role === 'worker' ? trainWorker : trainCoachRow} />
       </div>
     </div>
   );
