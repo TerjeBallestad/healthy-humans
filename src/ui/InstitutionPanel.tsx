@@ -12,6 +12,7 @@ import { act, useGame } from '../store';
 export function InstitutionPanel() {
   const s = useGame();
   const affordable = affordableRequests(s);
+  const daysLeft = s.adReady === null ? 0 : Math.ceil(((s.adReady - s.tick) / TICKS_PER_WEEK) * 7);
   return (
     <section class="panel institution">
       {s.discharged.length > 0 && (
@@ -49,8 +50,10 @@ export function InstitutionPanel() {
         </button>
       ) : s.adReady !== null ? (
         <button class="buy" disabled>
-          <span>Job ad is out</span>
-          <span class="price">{((s.adReady - s.tick) / TICKS_PER_WEEK).toFixed(1)} weeks</span>
+          <span>Søknadsfrist</span>
+          <span class="price">
+            {daysLeft} {daysLeft === 1 ? 'dag' : 'dager'}
+          </span>
         </button>
       ) : (
         <button class="buy" disabled={!canPostAd(s)} onClick={() => act(postAd)}>

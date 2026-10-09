@@ -55,7 +55,7 @@ export const MAX_BEDS = 4;
 export const HIRE_COST_BASE = 400;
 export const HIRE_COST_GROWTH = 1.5;
 /** Free nudges each staff member gives per real second at 1x. */
-export const STAFF_NUDGES_PER_SECOND = 0.75;
+export const STAFF_NUDGES_PER_SECOND = 0.4;
 
 /** Overskudd per real second at 1x with every active need green. Scales with the green share. */
 export const OVERSKUDD_PER_SECOND = 1;
