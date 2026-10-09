@@ -18,8 +18,8 @@ Last session: 2026-10-09 (7g). Read this first, then `PLAN.md`.
 4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and four one-off requests, which raise the omsorg cap or rate.
 5. **Overskudd** builds with the share of needs that are green. You spend it with the **arrow** on each activity card: 8, 15 or 25 overskudd raises one activity one level. The card shows the level (lvl 1 to 3). Completions give no skill. When a milestone is open and there is enough overskudd, a **proposal** pauses the game:
    - **Milestone:** NAV meeting, then job application, then work trial.
-   - **Scene card (7g):** the resident's face (an emoji for now, `face` in archetypes), a dotted path, and the place (`place` and `placeIcon` in milestones). One short line. The overskudd bar drains by 20 when the card opens: the cost is paid even if you say "Not now".
-   - **Wager:** a kroner slider in steps of 50. Odds rise with diminishing returns toward 95%. The sure price (600, 900, 1400 kr) makes it certain. The odds bar shows the chance in green.
+   - **Scene card (7g):** the resident's face (an emoji for now, `face` in archetypes), a dotted path, and the place (`place` and `placeIcon` in milestones). One short line. The overskudd bar marks the 20 the proposal costs in red stripes. The cost is paid on "Go", and the stripes drain. "Not now" is free (Terje: the overskudd is the price of doing it).
+   - **Wager:** a kroner slider, any whole amount. Odds rise with diminishing returns toward 95%. The sure price (600, 900, 1400 kr) makes it certain. The knob stops at the budget. A black mark shows the stop, and the track past it is hatched.
    - **Result:** a marker sweeps the odds bar and stops at the roll. The result line appears, and the milestone dot on the three-step track fills in.
 
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
@@ -64,6 +64,7 @@ Last session: 2026-10-09 (7g). Read this first, then `PLAN.md`.
   - **Roommate traits:** traits that act across beds (a resident who cooks also feeds the next bed, family visits share overskudd). Terje likes this one.
   - **Alumni:** discharged residents return as peer workers. Terje is not convinced.
   - **Outreach:** spend omsorg or kroner to raise the health of someone on the list. Terje is not convinced.
+- **Proposal cost, kroner or omsorg:** Terje: kroner feel wrong in theme but work, because they cost something. Omsorg fits the theme better (encouraging the resident), but with stable residents omsorg is always at the cap, so it feels free. Kept kroner for now.
 - **Trait strength:** Terje says double tax and overskudd +50% are good incentives, "perhaps a bit weak".
 - **Tempo:** fine at 24 s weeks (Terje, after 3.5 game years, about 48 min at 1x).
 - **Bot stress numbers:** a need is at 0 about 20 to 30% of the time. The bot plays without strategy, so watch for this in real play. The levers are `SPIRAL_PER_EMPTY_NEED` and the decay rates in `src/content/needs.ts`.

@@ -59,8 +59,6 @@ export const OVERSKUDD_CAP = 60;
 export const PROPOSAL_COST_MILESTONE = 20;
 /** Shortest gap between two proposals. */
 export const PROPOSAL_COOLDOWN_WEEKS = 3;
-/** The wager slider moves in steps of this many kroner. */
-export const WAGER_STEP = 50;
 /** Highest chance below the sure price. */
 export const MAX_CHANCE = 0.95;
 

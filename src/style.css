@@ -328,9 +328,27 @@ button:disabled {
   gap: 10px;
   font-size: 0.85rem;
 }
+.drain .meter {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+}
 .drain .fill {
+  width: var(--from);
+}
+.drain .fill.paid {
   width: var(--to);
-  animation: drain 0.9s ease-in 0.3s both;
+  animation: drain 0.7s ease-in both;
+}
+.drain .price {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--warn) 0 4px,
+    color-mix(in srgb, var(--warn) 55%, transparent) 4px 8px
+  );
 }
 .drain .cost {
   color: var(--warn);
@@ -435,9 +453,67 @@ button:disabled {
     left: var(--roll);
   }
 }
+/* The track: wagered, then affordable, then out of reach. The thumb is 20px wide. */
+.wager .slider {
+  --pos-val: calc(10px + var(--val) * (100% - 20px));
+  --pos-cap: calc(10px + var(--cap) * (100% - 20px));
+  position: relative;
+  margin: 10px 0;
+}
 .wager input {
+  position: relative;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: var(--accent);
+  height: 8px;
+  margin: 0;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--pos-val),
+    var(--line) var(--pos-val) var(--pos-cap),
+    transparent var(--pos-cap)
+  );
+}
+.wager .beyond {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--pos-cap);
+  right: 0;
+  border-radius: 0 4px 4px 0;
+  background: repeating-linear-gradient(135deg, var(--line) 0 3px, transparent 3px 7px);
+}
+.wager .cap-mark {
+  position: absolute;
+  top: -7px;
+  bottom: -7px;
+  left: var(--pos-cap);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
+}
+.wager input::-webkit-slider-thumb {
+  position: relative;
+  z-index: 1;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
+  cursor: grab;
+}
+.wager input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
+  cursor: grab;
 }
 .wager-ends {
   display: flex;

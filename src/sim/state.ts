@@ -63,7 +63,7 @@ export interface Proposal {
   /** The bed of the resident who proposes. */
   bed: number;
   subject: ProposalSubject;
-  /** Overskudd the resident had before the proposal took its cost. */
+  /** Overskudd the resident had when the proposal opened. The cost is paid on accept. */
   overskuddBefore: number;
   /** Kroner wagered and the chance it gave. Set once the player has chosen. */
   kr?: number;

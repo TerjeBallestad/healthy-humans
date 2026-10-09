@@ -4,7 +4,6 @@ import {
   MAX_SKILL,
   PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
-  WAGER_STEP,
 } from '../content/tuning';
 import { random } from './rng';
 import { unlockedActivities } from './selectors';
@@ -56,9 +55,7 @@ export function maybePropose(state: GameState) {
     if (state.tick - r.lastProposalTick < PROPOSAL_COOLDOWN_WEEKS * TICKS_PER_WEEK) continue;
     const subject = eligibleSubjects(r)[0];
     if (!subject || r.overskudd < proposalCost(subject)) continue;
-    // The resident spends the overskudd to find the courage, whatever the player says.
     state.proposal = { bed, subject, overskuddBefore: r.overskudd };
-    r.overskudd -= proposalCost(subject);
     r.lastProposalTick = state.tick;
     state.resumeSpeed = state.speed || state.resumeSpeed;
     state.speed = 0;
@@ -66,12 +63,14 @@ export function maybePropose(state: GameState) {
   }
 }
 
-/** The player can wager this much: a whole step, within the budget, at most the sure price. */
-export function canWager(state: GameState, kr: number): boolean {
+/** The most the player can wager now: the budget in whole kroner, at most the sure price. */
+export function maxWager(state: GameState): number {
   const p = state.proposal;
-  return (
-    !!p && kr >= 0 && kr % WAGER_STEP === 0 && kr <= surePrice(p.subject) && kr <= state.budget
-  );
+  return p ? Math.max(0, Math.min(surePrice(p.subject), Math.floor(state.budget))) : 0;
+}
+
+export function canWager(state: GameState, kr: number): boolean {
+  return !!state.proposal && Number.isInteger(kr) && kr >= 0 && kr <= maxWager(state);
 }
 
 /** Accept with a wager in kroner. Rolls the outcome. */
@@ -81,6 +80,8 @@ export function accept(state: GameState, kr: number): boolean {
   if (!p || !r || p.outcome || !canWager(state, kr)) return false;
   const odds = chance(r, p.subject, kr);
   state.budget -= kr;
+  // The overskudd is the price of doing it. Saying no costs nothing.
+  r.overskudd -= proposalCost(p.subject);
   const roll = random(state);
   const won = roll < odds;
   Object.assign(p, { kr, chance: odds, roll, outcome: won ? 'success' : 'failure' });

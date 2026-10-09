@@ -38,14 +38,22 @@ describe('overskudd', () => {
 });
 
 describe('proposals', () => {
-  test('a proposal opens, pauses the game and takes its overskudd', () => {
+  test('a proposal opens and pauses the game, and only going costs overskudd', () => {
     const s = ready();
     s.speed = 2;
     maybePropose(s);
     expect(s.proposal).not.toBeNull();
     expect(s.speed).toBe(0);
-    expect(s.proposal!.overskuddBefore).toBe(30);
+    expect(s.beds[0]!.overskudd).toBe(30);
+    accept(s, 0);
     expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
+  });
+
+  test('saying no costs no overskudd', () => {
+    const s = ready();
+    maybePropose(s);
+    decline(s);
+    expect(s.beds[0]!.overskudd).toBe(30);
   });
 
   test('no proposal during the cooldown', () => {
@@ -78,9 +86,9 @@ describe('proposals', () => {
     const s = ready();
     maybePropose(s);
     s.budget = 1000;
-    expect(accept(s, 125)).toBe(false); // not a whole step
-    accept(s, 200);
-    expect(s.budget).toBe(800);
+    expect(accept(s, 12.5)).toBe(false); // whole kroner only
+    accept(s, 122);
+    expect(s.budget).toBe(878);
     expect(s.proposal!.outcome).toMatch(/success|failure/);
     expect(s.proposal!.roll).toBeGreaterThanOrEqual(0);
   });
@@ -89,7 +97,7 @@ describe('proposals', () => {
     const s = ready();
     maybePropose(s);
     const sure = surePrice(s.proposal!.subject);
-    s.budget = sure - 50;
+    s.budget = sure - 0.5;
     expect(accept(s, sure)).toBe(false);
     s.budget = sure;
     accept(s, sure);

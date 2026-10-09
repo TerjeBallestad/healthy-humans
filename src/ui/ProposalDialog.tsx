@@ -1,8 +1,17 @@
 import { useState } from 'preact/hooks';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
-import { OVERSKUDD_CAP, WAGER_STEP } from '../content/tuning';
-import { accept, canWager, chance, closeProposal, decline, surePrice } from '../sim/proposals';
+import { OVERSKUDD_CAP } from '../content/tuning';
+import {
+  accept,
+  canWager,
+  chance,
+  closeProposal,
+  decline,
+  maxWager,
+  proposalCost,
+  surePrice,
+} from '../sim/proposals';
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
 
@@ -22,7 +31,7 @@ function SceneCard() {
   const r = s.beds[p.bed]!;
   const m = MILESTONE_BY_ID[p.subject.milestone];
   const sure = surePrice(p.subject);
-  const affordable = Math.min(sure, Math.floor(s.budget / WAGER_STEP) * WAGER_STEP);
+  const cap = maxWager(s);
   const [kr, setKr] = useState(0);
   const odds = p.chance ?? chance(r, p.subject, kr);
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
@@ -44,7 +53,7 @@ function SceneCard() {
         </div>
         <blockquote>“{m.ask}”</blockquote>
 
-        <OverskuddDrain before={p.overskuddBefore} after={r.overskudd} />
+        <OverskuddDrain before={p.overskuddBefore} cost={proposalCost(p.subject)} paid={rolled} />
         <Track r={r} current={m.id} ticking={p.outcome === 'success'} />
 
         <div class="odds-bar" aria-label={`Chance ${Math.round(odds * 100)}%`}>
@@ -56,15 +65,24 @@ function SceneCard() {
         {!p.outcome && (
           <>
             <div class="wager">
-              <input
-                type="range"
-                min={0}
-                max={sure}
-                step={WAGER_STEP}
-                value={kr}
-                aria-label="Kroner to spend"
-                onInput={(e) => setKr(Math.min(affordable, Number(e.currentTarget.value)))}
-              />
+              <div class="slider" style={{ '--val': kr / sure, '--cap': cap / sure }}>
+                {cap < sure && <span class="beyond" aria-hidden="true" />}
+                {cap < sure && <span class="cap-mark" aria-hidden="true" />}
+                <input
+                  type="range"
+                  min={0}
+                  max={sure}
+                  step={1}
+                  value={kr}
+                  aria-label="Kroner to spend"
+                  onInput={(e) => {
+                    // The knob stops at the budget. Reset the input too, so it cannot run past.
+                    const v = Math.min(cap, Number(e.currentTarget.value));
+                    e.currentTarget.value = String(v);
+                    setKr(v);
+                  }}
+                />
+              </div>
               <span class="wager-ends muted">
                 <span>0 kr</span>
                 <span class={kr >= sure ? 'sure on' : 'sure'}>{sure} kr: sure</span>
@@ -101,21 +119,20 @@ function SceneCard() {
   );
 }
 
-/** The overskudd bar runs down by the cost when the card opens. */
-function OverskuddDrain({ before, after }: { before: number; after: number }) {
+/** The overskudd bar with the cost marked at its end. The cost drains when the player goes. */
+function OverskuddDrain({ before, cost, paid }: { before: number; cost: number; paid: boolean }) {
+  const pct = (v: number) => `${(v / OVERSKUDD_CAP) * 100}%`;
   return (
     <div class="drain">
       <span class="label">Overskudd</span>
       <div class="meter">
         <div
-          class="fill"
-          style={{
-            '--from': `${(before / OVERSKUDD_CAP) * 100}%`,
-            '--to': `${(after / OVERSKUDD_CAP) * 100}%`,
-          }}
+          class={paid ? 'fill paid' : 'fill'}
+          style={{ '--from': pct(before), '--to': pct(before - cost) }}
         />
+        {!paid && <div class="price" style={{ left: pct(before - cost), width: pct(cost) }} />}
       </div>
-      <span class="cost">−{Math.round(before - after)}</span>
+      <span class="cost">−{cost}</span>
     </div>
   );
 }
