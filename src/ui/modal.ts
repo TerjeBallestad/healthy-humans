@@ -5,7 +5,8 @@ export type Modal =
   | { kind: 'requests' }
   | { kind: 'hire' }
   | { kind: 'staff'; index: number }
-  | { kind: 'patient'; index: number };
+  | { kind: 'patient'; index: number }
+  | { kind: 'training'; index: number };
 
 /** The open menu, if any. The game is paused while one is open. */
 export const modal = signal<Modal | null>(null);

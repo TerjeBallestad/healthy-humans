@@ -39,6 +39,15 @@ export const SPECIALITY_LABEL: Record<NeedId, string> = {
   social: 'Social',
 };
 
+/** Placeholder icons for the speciality courses. */
+export const SPECIALITY_ICON: Record<NeedId, string> = {
+  food: '🍳',
+  hygiene: '🧼',
+  energy: '🛌',
+  home: '🧹',
+  social: '💬',
+};
+
 /** People who answer one job ad. */
 export const CANDIDATES = 3;
 /** Weeks from the job ad until the candidates show up. */

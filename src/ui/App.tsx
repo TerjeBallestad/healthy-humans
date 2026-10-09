@@ -7,7 +7,7 @@ import { ProposalDialog } from './ProposalDialog';
 import { RequestsMenu } from './RequestsMenu';
 import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
-import { HireMenu, StaffCard } from './StaffMenus';
+import { HireMenu, StaffCard, TrainingMenu } from './StaffMenus';
 import { TopBar } from './TopBar';
 import { PatientCard, WaitingList } from './WaitingList';
 
@@ -36,6 +36,7 @@ export function App() {
       <RequestsMenu />
       <HireMenu />
       <StaffCard />
+      <TrainingMenu />
       <PatientCard />
       <DebugPanel />
       <footer class="version">

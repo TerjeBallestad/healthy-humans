@@ -1,10 +1,11 @@
 import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
-import { ACTIVITIES } from '../content/activities';
+import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
   ROLES,
   SPECIALITY_FILL,
+  SPECIALITY_ICON,
   SPECIALITY_LABEL,
   SPECIALITY_TRAIN_COST,
   type StaffRole,
@@ -23,7 +24,7 @@ import {
 } from '../sim/staff';
 import type { Staff } from '../sim/state';
 import { act, useGame } from '../store';
-import { closeModal, modal } from './modal';
+import { closeModal, modal, openModal } from './modal';
 
 /** The activities a speciality covers, in plain words. */
 const covers = (need: NeedId) =>
@@ -34,8 +35,8 @@ const covers = (need: NeedId) =>
 const levelText = (level: number) =>
   level >= MAX_SKILL ? 'independent' : level > 0 ? `lvl ${level}` : '–';
 
-/** Name, role, face and a table of stats. Rows can hold a train button. */
-function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChildren }) {
+/** Name, role, face and a table of stats. */
+function Profile({ x }: { x: Staff }) {
   return (
     <div class="profile">
       <div class="profile-head">
@@ -75,7 +76,6 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
                           '×1'
                         )}
                       </td>
-                      {train && <td>{train(n)}</td>}
                     </tr>
                   );
                 })}
@@ -90,13 +90,12 @@ function Profile({ x, train }: { x: Staff; train?: (row: string) => ComponentChi
                 </tr>
               </thead>
               <tbody>
-                {ACTIVITIES.filter((a) => train || x.coaching[a.id]).map((a) => {
+                {ACTIVITIES.filter((a) => x.coaching[a.id]).map((a) => {
                   const level = x.coaching[a.id] ?? 0;
                   return (
                     <tr class={level > 0 ? 'strong' : ''}>
                       <td>{a.label}</td>
                       <td class="value">{levelText(level)}</td>
-                      {train && <td>{train(a.id)}</td>}
                     </tr>
                   );
                 })}
@@ -215,50 +214,149 @@ export function StaffCard() {
   if (m?.kind !== 'staff') return null;
   const x = s.staff[m.index];
   if (!x) return null;
-  const i = m.index;
-
-  const trainWorker = (need: string) => {
-    const n = need as NeedId;
-    if (x.specialities.includes(n)) return null;
-    return (
-      <button
-        class="buy-request"
-        disabled={!canTrainSpeciality(s, i, n)}
-        onClick={() => act((g) => trainSpeciality(g, i, n))}
-      >
-        {SPECIALITY_TRAIN_COST} omsorg
-      </button>
-    );
-  };
-  const trainCoachRow = (id: string) => {
-    const a = ACTIVITIES.find((y) => y.id === id)!;
-    if ((x.coaching[a.id] ?? 0) >= MAX_SKILL) return null;
-    return (
-      <button
-        class="buy-request"
-        disabled={!canTrainCoach(s, i, a.id)}
-        onClick={() => act((g) => trainCoach(g, i, a.id))}
-      >
-        {coachTrainCost(x, a.id)} omsorg
-      </button>
-    );
-  };
-
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog staff-card" role="dialog" aria-modal="true" aria-label={x.name}>
         <header>
-          <span class="omsorg-left">
-            Omsorg <strong>{Math.floor(s.omsorg)}</strong>
-            <span class="muted"> / {omsorgCap(s)}</span>
-          </span>
           <span class="muted">{ROLES[x.role].wage} kr/week</span>
           <button class="close" onClick={closeModal} aria-label="Close">
             ✕
           </button>
         </header>
-        <Profile x={x} train={x.role === 'worker' ? trainWorker : trainCoachRow} />
+        <Profile x={x} />
+        <button
+          class="buy-request wide"
+          onClick={() => openModal({ kind: 'training', index: m.index })}
+        >
+          Training →
+        </button>
       </div>
     </div>
+  );
+}
+
+/** Courses paid with omsorg. One tab for each staff member. */
+export function TrainingMenu() {
+  const s = useGame();
+  const m = modal.value;
+  if (m?.kind !== 'training') return null;
+  const i = Math.min(m.index, s.staff.length - 1);
+  const x = s.staff[i];
+  if (!x) return null;
+  return (
+    <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+      <div class="dialog requests training" role="dialog" aria-modal="true" aria-label="Training">
+        <header>
+          <nav class="tabs" role="tablist">
+            {s.staff.map((y, j) => (
+              <button
+                role="tab"
+                aria-selected={j === i}
+                class={j === i ? 'tab on' : 'tab'}
+                onClick={() => (modal.value = { kind: 'training', index: j })}
+              >
+                <span aria-hidden="true">{y.face}</span>
+                {y.name}
+              </button>
+            ))}
+          </nav>
+          <span class="omsorg-left">
+            Omsorg <strong>{Math.floor(s.omsorg)}</strong>
+            <span class="muted">/{omsorgCap(s)}</span>
+          </span>
+          <button class="close" onClick={closeModal} aria-label="Close">
+            ✕
+          </button>
+        </header>
+        <p class="training-who">
+          <RoleTag role={x.role} />
+        </p>
+        <div class="lines">
+          {x.role === 'worker'
+            ? NEED_ORDER.map((n) => <SpecialityCourse i={i} x={x} need={n} />)
+            : ACTIVITIES.map((a) => <CoachCourse i={i} x={x} id={a.id} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SpecialityCourse({ i, x, need }: { i: number; x: Staff; need: NeedId }) {
+  const s = useGame();
+  const has = x.specialities.includes(need);
+  return (
+    <Course
+      icon={SPECIALITY_ICON[need]}
+      title={`${SPECIALITY_LABEL[need]} course`}
+      effect={`${covers(need)}: ×${SPECIALITY_FILL} nudge, and first in line`}
+      done={has}
+      cost={SPECIALITY_TRAIN_COST}
+      can={canTrainSpeciality(s, i, need)}
+      onTrain={() => act((g) => trainSpeciality(g, i, need))}
+    />
+  );
+}
+
+function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
+  const s = useGame();
+  const a = ACTIVITY_BY_ID[id];
+  const level = x.coaching[id] ?? 0;
+  const done = level >= MAX_SKILL;
+  return (
+    <Course
+      icon={a.icon}
+      title={`Teach ${a.label.toLowerCase()}`}
+      effect={done ? 'Up to independent' : `Up to ${levelText(level + 1)}`}
+      level={level}
+      done={done}
+      cost={coachTrainCost(x, id)}
+      can={canTrainCoach(s, i, id)}
+      onTrain={() => act((g) => trainCoach(g, i, id))}
+    />
+  );
+}
+
+/** One course, in the shape of an upgrade card. */
+function Course(p: {
+  icon: string;
+  title: string;
+  effect: string;
+  level?: number;
+  done: boolean;
+  cost: number;
+  can: boolean;
+  onTrain: () => void;
+}) {
+  return (
+    <article class={p.done ? 'request done' : 'request'}>
+      <span class="icon" aria-hidden="true">
+        {p.icon}
+      </span>
+      <div class="text">
+        <strong class="title">{p.title}</strong>
+        <span class="effect">{p.effect}</span>
+        {p.level !== undefined && (
+          <span class="pips" aria-label={`Level ${p.level} of ${MAX_SKILL}`}>
+            {Array.from({ length: MAX_SKILL }, (_, k) => (
+              <span class={k < p.level! ? 'pip on' : 'pip'} />
+            ))}
+          </span>
+        )}
+      </div>
+      <div class="buy-col">
+        {p.done ? (
+          <span class="tick" aria-label="Done">
+            ✓
+          </span>
+        ) : (
+          <>
+            <span class="price">{p.cost} omsorg</span>
+            <button class="buy-request" disabled={!p.can} onClick={p.onTrain}>
+              Train
+            </button>
+          </>
+        )}
+      </div>
+    </article>
   );
 }

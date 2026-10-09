@@ -61,6 +61,13 @@ export function InstitutionPanel() {
           <span class="price">{hireCost(s)} kr</span>
         </button>
       )}
+      <button
+        class="buy requests-open"
+        disabled={s.staff.length === 0}
+        onClick={() => openModal({ kind: 'training', index: 0 })}
+      >
+        <span>Training</span>
+      </button>
       <button class="buy requests-open" onClick={() => openModal({ kind: 'requests' })}>
         <span>Upgrades</span>
         {affordable > 0 && <span class="badge">{affordable}</span>}

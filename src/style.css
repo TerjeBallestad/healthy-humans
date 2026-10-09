@@ -308,7 +308,26 @@ button:disabled {
 }
 .requests .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
+}
+.training header {
+  gap: 12px;
+}
+.training .omsorg-left {
+  margin-left: auto;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.training-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.buy-request.wide {
+  width: 100%;
+  margin-top: 4px;
 }
 .requests .tab {
   display: flex;
