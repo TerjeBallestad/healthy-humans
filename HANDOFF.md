@@ -1,13 +1,13 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-09 (7h). Read this first, then `PLAN.md`.
+Last session: 2026-10-09 (7i). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7h are done.** 7h (mults and automation) is live. Waiting for Terje to play it.
+- **Steps 1 to 7i are done.** 7i (requests menu, one-way coach, slower pace) is live. Waiting for Terje to play it.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
 - **Next candidates:** staff specialisations, case worker and intake rules, joker cards. See "Automation ladder" under open issues.
 
@@ -19,7 +19,9 @@ Last session: 2026-10-09 (7h). Read this first, then `PLAN.md`.
 4. **Budget** (120 kr per week) buys staff, who autoclick the lowest need, and **requests** (7h, in `src/content/upgrades.ts`). The old omsorg requests are gone, because omsorg is at the cap once residents are stable.
    - **Your click:** course in motivational interviewing (500 kr, a nudge fills 2 segments), then supervision group (1500 kr, 3).
    - **The machine:** shared calendar (600 kr, staff ×1.5), then handover routine (1600 kr, ×2). The staff line shows nudges per second. A staff nudge pops the staff member's initial on the card's ring, so the staff are visible.
-   - **Coach:** three steps bought in order (400, 900, 1400 kr): lvl 1 (8 overskudd), lvl 2 (15), independent (25). Each bought step is a chip you switch on or off. The coach spends the resident's overskudd on the cheapest switched-on level, then on the lowest need. Terje's plan: lvl 1 and independent are good value, lvl 2 is not, so switch it off. The coach can drain overskudd that proposals need. Watch for this.
+   - **Coach:** three steps bought in order (400, 900, 1400 kr): lvl 1 (8 overskudd), lvl 2 (15), independent (25). One-way: a bought step cannot be switched off (Terje: buying lvl 2 too soon is the strategic mistake, toggles remove it). The coach spends the cheapest level first, then the lowest need. While a milestone is open, it keeps 20 overskudd for the proposal.
+   - **Requests menu (7i):** a "Requests" button in the staff panel, with a badge for how many you can afford. It opens a menu with two panes, "Your work" and "Staff" (with the coach). Each request has a note and a longer description. The game pauses while it is open.
+   - **Pace (7i):** `PACE` (0.7) in `tuning.ts` scales need decay, omsorg, staff and overskudd per real second. Activity durations and the calendar do not change. In the bot, the work trial comes at the same time as before, because kroner per week gate progress.
 5. **Overskudd** builds with the share of needs that are green. You spend it with the **arrow** on each activity card: 8, 15 or 25 overskudd raises one activity one level. The card shows the level (lvl 1 to 3). Completions give no skill. When a milestone is open and there is enough overskudd, a **proposal** pauses the game:
    - **Milestone:** NAV meeting, then job application, then work trial.
    - **Scene card (7g):** the resident's face (an emoji for now, `face` in archetypes), a dotted path, and the place (`place` and `placeIcon` in milestones). One short line. The overskudd bar marks the 20 the proposal costs in red stripes. The cost is paid on "Go", and the stripes drain. "Not now" is free (Terje: the overskudd is the price of doing it).
@@ -61,6 +63,9 @@ Last session: 2026-10-09 (7h). Read this first, then `PLAN.md`.
 | 7f: can't read "0/24" while clicking fast           | The effort bar is a ring of segments around the icon, one per nudge. 24 thin segments look costly at a glance.                              |
 | Proposals: too much text, overskudd cost unseen     | 7g: scene card with a face and a place, a kroner slider with a sure price, the overskudd bar drains, a marker rolls on the odds bar.        |
 | Requests feel pointless, omsorg is always capped    | 7h: requests are now mults (your nudge ×2/×3, staff ×1.5/×2) and a coach that spends overskudd on levels you switch on.                     |
+| 7h: wants a menu with descriptions, panes           | 7i: requests menu with "Your work" and "Staff" panes and longer descriptions. Pauses the game.                                              |
+| 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
+| 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
 | Max level label "alone"                             | Now "independent".                                                                                                                          |
 | 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
@@ -72,6 +77,8 @@ Last session: 2026-10-09 (7h). Read this first, then `PLAN.md`.
   - **Intake coordinator:** a free bed fills by a rule ("lowest health first").
   - **Joker cards (Balatro):** rule effects such as "if omsorg is above X, overskudd ×Y". Or things with an omsorg running cost: turn omsorg into overskudd for residents, or into kroner. A staff member who spends omsorg (personal trainer) is odd, because other staff do not.
   - **Roommate traits:** traits that act across beds. Terje likes them. Alumni and outreach: Terje is not convinced.
+- **Resident resources are a blind spot (Terje, 7h).** In the execution phase you only see that needs are red and that you should click. The player has no link to the overskudd bar. Wanted: a glanceable link, such as "hygiene is low, so click shower". The pace slowdown is the first step. Next idea: show each card's trigger need on the card.
+- **Omsorg is free.** With the nudge mult it is even more free. It needs drains and conversions. The execution phase may also be too short now. Terje wants the player to spend some time there. Tune later.
 - **Staff are invisible.** Only their actions show. The initial pop on the ring is the first fix. A 50% upgrade is hard to feel.
 - **Proposal cost, kroner or omsorg:** Terje: kroner feel wrong in theme but work, because they cost something. Omsorg fits the theme better (encouraging the resident), but with stable residents omsorg is always at the cap, so it feels free. Kept kroner for now.
 - **Trait strength:** Terje says double tax and overskudd +50% are good incentives, "perhaps a bit weak".

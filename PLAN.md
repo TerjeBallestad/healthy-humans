@@ -164,6 +164,7 @@ Each step ends with something playable and one question to answer by playing.
    _Question: do proposals now feel like a bet you set yourself?_
    7h: **mults and automation.** Requests become a stronger nudge, faster staff, and a coach that spends overskudd on levels you switch on.
    _Question: does the game start to play itself in a way that frees you to think?_
+   7i: requests menu with two panes, a one-way coach that keeps overskudd for proposals, and `PACE` 0.7.
 8. **Balance pass.** Tune with `npm run sim`.
    _Question: the 30-minute test._
 

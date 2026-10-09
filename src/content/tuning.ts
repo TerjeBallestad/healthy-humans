@@ -5,6 +5,12 @@ export const SECONDS_PER_WEEK = 24;
 export const SPEEDS = [0, 1, 2, 4] as const;
 export const DEBUG_SPEEDS = [10, 100] as const;
 
+/**
+ * Scales the resident's clock: need decay, omsorg, staff and overskudd per real second.
+ * Activity durations and the calendar stay. Below 1 gives more room to think.
+ */
+export const PACE = 0.7;
+
 export const OMSORG_PER_SECOND = 1.25;
 export const OMSORG_CAP = 40;
 export const OMSORG_START = 20;

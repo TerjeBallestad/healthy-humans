@@ -8,6 +8,8 @@ import {
   NEED_THRESHOLD,
   OVERSKUDD_CAP,
   OVERSKUDD_PER_SECOND,
+  PACE,
+  PROPOSAL_COST_MILESTONE,
   SPIRAL_PER_EMPTY_NEED,
   WAIT_HEALTH_LOSS_PER_WEEK,
   WAIT_STRAIN_FADE_PER_WEEK,
@@ -21,7 +23,7 @@ import {
   omsorgPerSecond,
   staffNudgesPerSecond,
 } from './institution';
-import { maybePropose } from './proposals';
+import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
@@ -89,7 +91,7 @@ function gainOverskudd(r: Resident) {
   const boost = (r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1;
   r.overskudd = Math.min(
     OVERSKUDD_CAP,
-    r.overskudd + (green * boost * OVERSKUDD_PER_SECOND) / TICKS_PER_SECOND,
+    r.overskudd + (green * boost * OVERSKUDD_PER_SECOND * PACE) / TICKS_PER_SECOND,
   );
 }
 
@@ -131,7 +133,7 @@ function decayNeeds(state: GameState, r: Resident) {
     if (current?.refills[id] !== undefined) continue;
     const empty = needs.filter((n) => n !== id && r.needs[n] <= 0).length;
     const base =
-      (NEEDS[id].decayPerSecond * (personal[id] ?? 1) * (trait[id] ?? 1)) / TICKS_PER_SECOND;
+      (NEEDS[id].decayPerSecond * PACE * (personal[id] ?? 1) * (trait[id] ?? 1)) / TICKS_PER_SECOND;
     const rate = base * (1 + r.strain) * (1 + empty * SPIRAL_PER_EMPTY_NEED);
     const before = r.needs[id];
     r.needs[id] = Math.max(0, before - rate);
@@ -156,14 +158,18 @@ function progressActivity(state: GameState, r: Resident) {
 }
 
 /**
- * The coach spends the resident's overskudd on the switched-on levels.
+ * The coach spends the resident's overskudd on the levels it knows.
  * Cheapest level first, then the activity whose need is lowest.
+ * While a milestone is open, it leaves enough for the proposal.
  */
 function coachWork(state: GameState, r: Resident) {
   const steps = coachSteps(state);
   if (steps.length === 0) return;
+  const reserve = eligibleSubjects(r).length > 0 ? PROPOSAL_COST_MILESTONE : 0;
   const next = unlockedActivities(r)
-    .filter((a) => steps.includes(r.skill[a.id] + 1) && r.overskudd >= trainCost(r.skill[a.id]))
+    .filter(
+      (a) => steps.includes(r.skill[a.id] + 1) && r.overskudd - trainCost(r.skill[a.id]) >= reserve,
+    )
     .sort(
       (x, y) =>
         trainCost(r.skill[x.id]) - trainCost(r.skill[y.id]) ||

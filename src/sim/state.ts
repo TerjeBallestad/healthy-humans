@@ -20,7 +20,7 @@ import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { UpgradeId } from '../content/upgrades';
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -116,8 +116,6 @@ export interface GameState {
   /** Whose turn it is to nudge next. */
   staffTurn: number;
   upgrades: UpgradeId[];
-  /** Coach steps the player has switched off. */
-  coachOff: number[];
   /** One slot per bed. Null is an empty bed. */
   beds: (Resident | null)[];
   /** The bed the player looks at. */
@@ -210,7 +208,6 @@ export function newGame(): GameState {
     staffCarry: 0,
     staffTurn: 0,
     upgrades: [],
-    coachOff: [],
     beds: [newResident(ARCHETYPES[0]!.id)],
     selected: 0,
     nextArchetype: 1 + WAITLIST_START,

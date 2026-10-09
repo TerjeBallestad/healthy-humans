@@ -7,6 +7,7 @@ import {
   MAX_BEDS,
   OMSORG_CAP,
   OMSORG_PER_SECOND,
+  PACE,
   STAFF_NUDGES_PER_SECOND,
   STAFF_WAGE_PER_WEEK,
 } from '../content/tuning';
@@ -19,7 +20,7 @@ export function omsorgCap(_s: GameState): number {
 }
 
 export function omsorgPerSecond(_s: GameState): number {
-  return OMSORG_PER_SECOND;
+  return OMSORG_PER_SECOND * PACE;
 }
 
 /** Segments one of the player's nudges fills. */
@@ -34,14 +35,14 @@ export function staffMult(s: GameState): number {
 
 /** Free nudges per real second from all staff at 1x. */
 export function staffNudgesPerSecond(s: GameState): number {
-  return s.staff.length * STAFF_NUDGES_PER_SECOND * staffMult(s);
+  return s.staff.length * STAFF_NUDGES_PER_SECOND * PACE * staffMult(s);
 }
 
-/** Skill levels the coach trains: bought and switched on. */
+/** Skill levels the coach trains. Bought steps stay: there is no way back. */
 export function coachSteps(s: GameState): number[] {
   return s.upgrades
     .map((id) => UPGRADE_BY_ID[id].coachStep)
-    .filter((step): step is number => !!step && !s.coachOff.includes(step));
+    .filter((step): step is number => !!step);
 }
 
 export function wagesPerWeek(s: GameState): number {

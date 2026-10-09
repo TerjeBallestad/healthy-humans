@@ -4,6 +4,7 @@ import { DischargeDialog } from './DischargeDialog';
 import { InstitutionPanel } from './InstitutionPanel';
 import { Log } from './Log';
 import { ProposalDialog } from './ProposalDialog';
+import { RequestsMenu } from './RequestsMenu';
 import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
 import { TopBar } from './TopBar';
@@ -31,6 +32,7 @@ export function App() {
       </div>
       <ProposalDialog />
       <DischargeDialog />
+      <RequestsMenu />
       <DebugPanel />
       <footer class="version">
         {__COMMIT__} · {__BUILD_TIME__}

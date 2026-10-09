@@ -2,11 +2,11 @@ import { describe, expect, test } from 'vitest';
 import {
   GRANT_PER_WEEK,
   HIRE_COST_BASE,
-  STAFF_NUDGES_PER_SECOND,
+  PROPOSAL_COST_MILESTONE,
   STAFF_WAGE_PER_WEEK,
   trainCost,
 } from '../content/tuning';
-import { buyUpgrade, hire, nudge, toggleCoachStep } from './actions';
+import { buyUpgrade, hire, nudge } from './actions';
 import { canHire, hireCost, netIncomePerWeek, staffNudgesPerSecond } from './institution';
 import { newGame } from './state';
 import { tick } from './tick';
@@ -92,8 +92,7 @@ describe('upgrades', () => {
     s.staff = ['Kari'];
     const before = staffNudgesPerSecond(s);
     s.upgrades = ['calendar'];
-    expect(before).toBe(STAFF_NUDGES_PER_SECOND);
-    expect(staffNudgesPerSecond(s)).toBe(STAFF_NUDGES_PER_SECOND * 1.5);
+    expect(staffNudgesPerSecond(s) / before).toBeCloseTo(1.5);
   });
 });
 
@@ -108,16 +107,18 @@ describe('coach', () => {
     expect(Object.values(r.skill).filter((v) => v === 1).length).toBe(2); // laundry started at 1
   });
 
-  test('a switched-off level is left alone', () => {
+  test('keeps enough overskudd for a proposal while a milestone is open', () => {
     const s = newGame();
     const r = s.beds[0]!;
-    s.upgrades = ['coach1', 'coach2'];
-    toggleCoachStep(s, 1);
-    r.overskudd = trainCost(0);
+    s.upgrades = ['coach1'];
+    r.unlockedRung = 7; // NAV is open
+    r.overskudd = PROPOSAL_COST_MILESTONE + trainCost(0) - 1;
     tick(s);
     expect(r.skill.eat).toBe(0);
-    r.overskudd = trainCost(1);
+    r.overskudd = PROPOSAL_COST_MILESTONE + trainCost(0) + 1;
+    r.lastProposalTick = s.tick; // no proposal this tick
     tick(s);
-    expect(r.skill.laundry).toBe(2);
+    expect(r.overskudd).toBeGreaterThanOrEqual(PROPOSAL_COST_MILESTONE);
+    expect(Object.values(r.skill).filter((v) => v === 1).length).toBe(2);
   });
 });

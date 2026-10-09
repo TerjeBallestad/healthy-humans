@@ -38,12 +38,6 @@ export function train(state: GameState, bed: number, id: ActivityId): boolean {
   return true;
 }
 
-export function toggleCoachStep(state: GameState, step: number) {
-  const i = state.coachOff.indexOf(step);
-  if (i >= 0) state.coachOff.splice(i, 1);
-  else state.coachOff.push(step);
-}
-
 export function buyBed(state: GameState): boolean {
   if (!canBuyBed(state)) return false;
   state.budget -= bedCost(state);
