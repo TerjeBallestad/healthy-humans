@@ -1,7 +1,11 @@
 import { signal } from '@preact/signals';
 import { act } from '../store';
 
-export type Modal = { kind: 'requests' } | { kind: 'hire' } | { kind: 'staff'; index: number };
+export type Modal =
+  | { kind: 'requests' }
+  | { kind: 'hire' }
+  | { kind: 'staff'; index: number }
+  | { kind: 'patient'; index: number };
 
 /** The open menu, if any. The game is paused while one is open. */
 export const modal = signal<Modal | null>(null);

@@ -1,5 +1,5 @@
-import { OMSORG_PER_NUDGE, SPEEDS } from '../content/tuning';
-import { netIncomePerWeek, nudgeMult, omsorgCap } from '../sim/institution';
+import { SPEEDS } from '../content/tuning';
+import { netIncomePerWeek, omsorgCap } from '../sim/institution';
 import { formatDate } from '../sim/time';
 import { act, useGame } from '../store';
 
@@ -8,6 +8,7 @@ const SPEED_LABEL: Record<number, string> = { 0: '❚❚', 1: '▶', 2: '▶▶'
 export function TopBar() {
   const s = useGame();
   const cap = omsorgCap(s);
+  const net = netIncomePerWeek(s);
   return (
     <header class="topbar">
       <div class="date chip">{formatDate(s.tick)}</div>
@@ -21,34 +22,27 @@ export function TopBar() {
           </button>
         ))}
       </div>
-      <div class="omsorg">
-        <span class="muted">
-          Omsorg{' '}
-          <span class="hint">
-            · {OMSORG_PER_NUDGE} per nudge
-            {nudgeMult(s) > 1 && `, fills ${nudgeMult(s)}`}
-          </span>
-        </span>
-        <strong>
-          {Math.floor(s.omsorg)} <span class="muted">/ {cap}</span>
-        </strong>
+      <div class="omsorg chip">
+        <span class="label">Omsorg</span>
         <div class="meter">
           <div class="fill" style={{ width: `${(s.omsorg / cap) * 100}%` }} />
         </div>
+        <span class="value">
+          {Math.floor(s.omsorg)}/{cap}
+        </span>
       </div>
-      <div class="budget">
-        <span class="muted">Budget</span>
-        <strong>
-          {Math.floor(s.budget)} kr <span class="muted">+{netIncomePerWeek(s)}/week</span>
-        </strong>
+      <div class="budget chip">
+        {Math.floor(s.budget)} kr{' '}
+        <span class="muted">
+          {net >= 0 ? '+' : ''}
+          {net}/w
+        </span>
       </div>
-      <div class="helped">
-        <span class="muted">Helped</span>
-        <strong>{s.discharged.length}</strong>
+      <div class="chip" title="Helped">
+        👷 {s.discharged.length}
       </div>
-      <div class="helped">
-        <span class="muted">Lost</span>
-        <strong>{s.lost}</strong>
+      <div class="chip" title="Lost">
+        💀 {s.lost}
       </div>
     </header>
   );

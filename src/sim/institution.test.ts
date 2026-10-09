@@ -31,6 +31,16 @@ describe('budget', () => {
     run(s, TICKS_PER_WEEK);
     expect(s.budget).toBeCloseTo(GRANT_PER_WEEK, 5);
   });
+
+  test('the funding line multiplies the grant, in order', () => {
+    const s = newGame();
+    s.budget = 5000;
+    expect(buyUpgrade(s, 'application')).toBe(false);
+    expect(buyUpgrade(s, 'report')).toBe(true);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK * 1.5);
+    expect(buyUpgrade(s, 'application')).toBe(true);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK * 2);
+  });
 });
 
 const worker = (name: string, specialities: NeedId[] = []): Staff => ({

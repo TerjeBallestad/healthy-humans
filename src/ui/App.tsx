@@ -9,7 +9,7 @@ import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
 import { HireMenu, StaffCard } from './StaffMenus';
 import { TopBar } from './TopBar';
-import { WaitingList } from './WaitingList';
+import { PatientCard, WaitingList } from './WaitingList';
 
 export function App() {
   return (
@@ -36,6 +36,7 @@ export function App() {
       <RequestsMenu />
       <HireMenu />
       <StaffCard />
+      <PatientCard />
       <DebugPanel />
       <footer class="version">
         {__COMMIT__} · {__BUILD_TIME__}

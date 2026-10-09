@@ -62,7 +62,7 @@ export function InstitutionPanel() {
         </button>
       )}
       <button class="buy requests-open" onClick={() => openModal({ kind: 'requests' })}>
-        <span>Requests</span>
+        <span>Upgrades</span>
         {affordable > 0 && <span class="badge">{affordable}</span>}
       </button>
     </section>

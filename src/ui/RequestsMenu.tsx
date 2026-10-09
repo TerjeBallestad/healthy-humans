@@ -6,15 +6,16 @@ import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
 
-type Tab = 'you' | 'staff';
+type Tab = 'you' | 'staff' | 'funding';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'you', label: 'Your work' },
   { id: 'staff', label: 'Staff' },
+  { id: 'funding', label: 'Funding' },
 ];
 
 const tab = signal<Tab>('you');
 
-/** Requests the player can buy right now, for the button badge. */
+/** Upgrades the player can buy right now, for the button badge. */
 export function affordableRequests(s: GameState): number {
   return UPGRADES.filter((u) => canBuy(s, u.id)).length;
 }
@@ -24,7 +25,7 @@ export function RequestsMenu() {
   if (modal.value?.kind !== 'requests') return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Requests">
+      <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Upgrades">
         <header>
           <nav class="tabs" role="tablist">
             {TABS.map((t) => {

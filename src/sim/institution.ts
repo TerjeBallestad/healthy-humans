@@ -33,6 +33,15 @@ export function staffMult(s: GameState): number {
   return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].staffMult ?? 1));
 }
 
+/** Multiplies the kommune grant. */
+export function grantMult(s: GameState): number {
+  return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].grantMult ?? 1));
+}
+
+export function grantPerWeek(s: GameState): number {
+  return GRANT_PER_WEEK * grantMult(s);
+}
+
 /** Nudges per real second from one miljøarbeider at 1x. */
 export function workerNudgesPerSecond(s: GameState): number {
   return STAFF_NUDGES_PER_SECOND * PACE * staffMult(s);
@@ -48,7 +57,7 @@ export function wagesPerWeek(s: GameState): number {
 }
 
 export function netIncomePerWeek(s: GameState): number {
-  return GRANT_PER_WEEK + taxPerWeek(s) - wagesPerWeek(s);
+  return grantPerWeek(s) + taxPerWeek(s) - wagesPerWeek(s);
 }
 
 /** The price of a job ad. It rises with each staff member. */

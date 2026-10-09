@@ -1,6 +1,7 @@
-export type LineId = 'nudge' | 'staff';
+export type LineId = 'nudge' | 'staff' | 'grant';
 
-export type UpgradeId = 'course' | 'supervision' | 'calendar' | 'handover';
+export type UpgradeId =
+  'course' | 'supervision' | 'calendar' | 'handover' | 'report' | 'application';
 
 export interface UpgradeDef {
   id: UpgradeId;
@@ -20,9 +21,11 @@ export interface UpgradeDef {
   nudgeMult?: number;
   /** Multiplies staff nudges. The highest bought wins. */
   staffMult?: number;
+  /** Multiplies the kommune grant. The highest bought wins. */
+  grantMult?: number;
 }
 
-// Two ways to grow: make your own click stronger, or build the machine that clicks for you.
+// Ways to grow: make your own click stronger, build the machine that clicks for you, or get more money.
 export const UPGRADES: UpgradeDef[] = [
   {
     id: 'course',
@@ -66,6 +69,27 @@ export const UPGRADES: UpgradeDef[] = [
     after: 'calendar',
     staffMult: 2,
   },
+  {
+    id: 'report',
+    label: 'Annual report',
+    note: 'Forty pages. The kommune reads the summary.',
+    effect: 'Kommune grant ×1.5',
+    icon: '📊',
+    line: 'grant',
+    cost: 800,
+    grantMult: 1.5,
+  },
+  {
+    id: 'application',
+    label: 'Application to Helsedirektoratet',
+    note: 'A pilot project with a logo.',
+    effect: 'Kommune grant ×2',
+    icon: '🏛️',
+    line: 'grant',
+    cost: 2000,
+    after: 'report',
+    grantMult: 2,
+  },
 ];
 
 export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) as Record<
@@ -74,7 +98,8 @@ export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) 
 >;
 
 /** Lines in menu order, with the tab each one sits in. */
-export const LINES: { id: LineId; tab: 'you' | 'staff' }[] = [
+export const LINES: { id: LineId; tab: 'you' | 'staff' | 'funding' }[] = [
   { id: 'nudge', tab: 'you' },
   { id: 'staff', tab: 'staff' },
+  { id: 'grant', tab: 'funding' },
 ];

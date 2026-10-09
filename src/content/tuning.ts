@@ -48,14 +48,14 @@ export const LEARNING_WINDOW = 6;
 export const GRANT_PER_WEEK = 120;
 export const BUDGET_START = 0;
 /** First extra bed. Each bed bought multiplies it. */
-export const BED_COST_BASE = 1500;
+export const BED_COST_BASE = 1000;
 export const BED_COST_GROWTH = 1.6;
 export const MAX_BEDS = 4;
 /** First recruitment fee. Each hire multiplies it. */
 export const HIRE_COST_BASE = 400;
 export const HIRE_COST_GROWTH = 1.5;
 /** Free nudges each staff member gives per real second at 1x. */
-export const STAFF_NUDGES_PER_SECOND = 0.4;
+export const STAFF_NUDGES_PER_SECOND = 0.35;
 
 /** Overskudd per real second at 1x with every active need green. Scales with the green share. */
 export const OVERSKUDD_PER_SECOND = 1;
