@@ -23,13 +23,12 @@ import { log } from './tick';
 const pick = <T>(s: GameState, list: readonly T[]): T => list[Math.floor(random(s) * list.length)]!;
 
 /** A new person for the hiring list, with a role and a rolled sheet. Advances the seed. */
-function rollCandidate(s: GameState, taken: Set<string>): Staff {
+function rollCandidate(s: GameState, taken: Set<string>, role: StaffRole): Staff {
   const name = pick(
     s,
     STAFF_NAMES.filter((n) => !taken.has(n)),
   );
   taken.add(name);
-  const role: StaffRole = random(s) < COACH_SHARE ? 'coach' : 'worker';
   const face = pick(s, STAFF_FACES);
   const staff: Staff = { name, face, role, specialities: [], coaching: {}, carry: 0 };
   if (role === 'worker') {
@@ -45,10 +44,16 @@ function rollCandidate(s: GameState, taken: Set<string>): Staff {
   return staff;
 }
 
-/** The answers to a job ad. Names already in the house are not used again. */
+/**
+ * The answers to a job ad. There is always at least one of each role, and the rest are rolled.
+ * Names already in the house are not used again.
+ */
 export function rollCandidates(s: GameState) {
   const taken = new Set(s.staff.map((x) => x.name));
-  s.candidates = Array.from({ length: CANDIDATES }, () => rollCandidate(s, taken));
+  const roles: StaffRole[] = ['worker', 'coach'];
+  while (roles.length < CANDIDATES) roles.push(random(s) < COACH_SHARE ? 'coach' : 'worker');
+  roles.sort(() => random(s) - 0.5);
+  s.candidates = roles.map((role) => rollCandidate(s, taken, role));
 }
 
 /** A job ad is possible when no other ad is open and there is room in the house. */

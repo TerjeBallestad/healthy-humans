@@ -176,6 +176,19 @@ test('staff cannot make a rested resident sleep again', () => {
   }
 });
 
+describe('job ad', () => {
+  test('every pool has at least one miljøarbeider and one coach', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const s = newGame();
+      s.seed = seed;
+      rollCandidates(s);
+      const roles = s.candidates.map((c) => c.role);
+      expect(roles).toContain('worker');
+      expect(roles).toContain('coach');
+    }
+  });
+});
+
 describe('upgrades', () => {
   test('an upgrade costs budget, is bought once, and the next rung needs the first', () => {
     const s = newGame();
