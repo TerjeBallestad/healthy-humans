@@ -13,7 +13,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 
 ## What the game does now
 
-0. **Onboarding (new games only).** `seen` in the state lists the parts shown and the tips done. Old saves have no list and skip it. The staff panel shows at 400 kr, Upgrades at the first affordable upgrade, the venteliste with "+ Bed" and the 👷/💀 chips when a bed or a discharge is possible, and overskudd at the first skill-up. One "Click here" tip shows at a time, on its element: nudge, omsorg at 0, train, hire, upgrades, bed, admit, discharge. A click on the target or "OK" completes it. A toast that repeats an unseen tip is skipped.
+0. **Onboarding (new games only).** `seen` in the state lists the parts shown and the tips done. Old saves have no list and skip it. The staff panel shows at 400 kr, Upgrades at the first affordable upgrade, the venteliste with "+ Bed" and the 👷/💀 chips when a bed or a discharge is possible, and overskudd at the first skill-up. One "Click here" tip shows at a time, on its element: nudge, omsorg at 0, train, hire, upgrades, bed, admit, discharge. A click on the target or "OK" completes it, but only after 1.5 s (`GRACE_MS`), and clicks pass through the bubble. Terje lost tips to fast clicking before that. A toast that repeats an unseen tip is skipped.
 
 1. Arvid moves in. He learns six rungs at a time (`LEARNING_WINDOW`, was 3), so food, hygiene, energy and home are active from the start.
 2. You spend **omsorg** (1 per nudge) to fill the effort ring on activity cards: a ring of segments around the icon, one per nudge. Staff nudges pop the staff member's initial on the ring. One click is one nudge (press-and-hold was removed after play). A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
@@ -85,6 +85,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 | Discharged list squeezes the venteliste to 0 rows   | Discharged shows a count per tier and the tax, not the names.                                                                              |
 | Skill-up and affordable things are easy to miss    | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
 | The start is overwhelming for new players          | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                          |
+| Tips dismissed by fast clicking before being read   | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                 |
 | HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |

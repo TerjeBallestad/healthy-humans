@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { GRANT_PER_BED } from '../content/tuning';
 import { UPGRADES } from '../content/upgrades';
@@ -120,13 +120,23 @@ function currentTip(s: GameState): Tip | null {
 }
 
 const GAP = 10;
+/** Real milliseconds a new tip ignores clicks, so a fast clicker reads it first. */
+const GRACE_MS = 1500;
 
 /** A "Click here" bubble next to the element it explains. */
 export function Tips() {
   const s = useGame();
   const tip = s.seen && !modal.value && !s.proposal && !s.discharge ? currentTip(s) : null;
   const box = useRef<HTMLDivElement>(null);
-  const done = () => tip && act((g) => markSeen(g, tip.key));
+  const [ready, setReady] = useState(false);
+  const done = () => tip && ready && act((g) => markSeen(g, tip.key));
+
+  useEffect(() => {
+    setReady(false);
+    if (!tip) return;
+    const id = setTimeout(() => setReady(true), GRACE_MS);
+    return () => clearTimeout(id);
+  }, [tip?.key]);
 
   // Light up the target and listen for a click on it.
   useEffect(() => {
@@ -138,7 +148,10 @@ export function Tips() {
     els.forEach((el) => el.classList.add('tip-target'));
     const main = document.querySelector<HTMLElement>(tip.target);
     const key = tip.key;
-    const onClick = () => act((g) => markSeen(g, key));
+    const shown = performance.now();
+    const onClick = () => {
+      if (performance.now() - shown >= GRACE_MS) act((g) => markSeen(g, key));
+    };
     main?.addEventListener('click', onClick);
     return () => {
       els.forEach((el) => el.classList.remove('tip-target'));
@@ -166,7 +179,7 @@ export function Tips() {
     <div class="tip" ref={box} role="note">
       <strong>{tip.title}</strong>
       <span>{tip.text}</span>
-      <button class="tip-ok" onClick={done}>
+      <button class="tip-ok" disabled={!ready} onClick={done}>
         OK
       </button>
     </div>

@@ -1605,7 +1605,14 @@ button:disabled {
   background: var(--gold);
   color: var(--bg);
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  /* Clicks go through to the cards below. Only OK catches them. */
+  pointer-events: none;
+}
+.tip .tip-ok {
   pointer-events: auto;
+}
+.tip .tip-ok:disabled {
+  opacity: 0.4;
 }
 .tip strong {
   font-size: 0.8rem;
