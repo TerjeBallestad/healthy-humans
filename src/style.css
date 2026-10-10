@@ -1119,7 +1119,8 @@ button:disabled {
 /* Activities */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  /* 240 keeps two columns at a 1280 px wide itch.io embed. */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
 }
 .card {
@@ -1643,5 +1644,18 @@ button:disabled {
 @keyframes tip-bounce {
   50% {
     transform: translateY(-6px);
+  }
+}
+
+/* A smaller window, as an itch.io embed: narrower side columns keep two columns of cards. */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .app {
+    grid-template-columns: minmax(200px, 240px) 1fr;
+  }
+  .main-cols {
+    grid-template-columns: minmax(250px, 290px) 1fr;
+  }
+  .cards {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
