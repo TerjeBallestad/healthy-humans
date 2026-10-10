@@ -1,9 +1,9 @@
 import { ACTIVITY_BY_ID } from '../content/activities';
 import { GRANT_PER_BED, MAX_BEDS, NEED_THRESHOLD } from '../content/tuning';
-import { buyBed } from '../sim/actions';
+import { buyBed, canTrain } from '../sim/actions';
 import { bestTier } from '../sim/discharge';
 import { bedCost, canBuyBed, grantMult } from '../sim/institution';
-import { activeNeeds } from '../sim/selectors';
+import { activeNeeds, unlockedActivities } from '../sim/selectors';
 import { act, useGame } from '../store';
 
 /** One small card per bed. Click a card to look at that bed. */
@@ -19,6 +19,9 @@ export function ResidentStrip() {
         >
           {r ? (
             <>
+              {unlockedActivities(r).some((a) => canTrain(s, i, a.id)) && (
+                <span class="skill-pip" title="A skill-up is ready" />
+              )}
               <span class="name">
                 {r.name}
                 {bestTier(r) && <span class="tag">discharge</span>}

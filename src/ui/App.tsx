@@ -8,6 +8,7 @@ import { RequestsMenu } from './RequestsMenu';
 import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
 import { HireMenu, StaffCard, TrainingMenu } from './StaffMenus';
+import { Toasts } from './Toasts';
 import { TopBar } from './TopBar';
 import { PatientCard, WaitingList } from './WaitingList';
 
@@ -38,6 +39,7 @@ export function App() {
       <StaffCard />
       <TrainingMenu />
       <PatientCard />
+      <Toasts />
       <DebugPanel />
       <footer class="version">
         {__COMMIT__} · {__BUILD_TIME__}

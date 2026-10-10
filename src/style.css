@@ -1533,3 +1533,51 @@ button:disabled {
 .discharged .count {
   font-variant-numeric: tabular-nums;
 }
+
+/* A skill-up is ready somewhere on this bed. */
+.bed .skill-pip {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.toasts {
+  position: fixed;
+  right: 16px;
+  /* Above the debug button. */
+  bottom: 64px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+.toast {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gold);
+  background: var(--panel);
+  text-align: left;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+  animation: toast-in 0.2s ease-out;
+}
+.toast strong {
+  color: var(--gold);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
