@@ -1,15 +1,16 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
+Last session: 2026-10-10 (7k). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well", and the søknadsfrist countdown is nice. Worker speed 0.4 helped the lull. After that play: worker 0.35, bed 1000 kr, a funding line (grant mult), a HUD of chips, a venteliste that scrolls on its own with referral cards. On 2026-10-10: the hire menu opens by itself when the candidates arrive, and each extra bed adds 40 kr/week to the grant. Terje played that: bed income works, pacing is good (fine-tune later), and the game is getting tactically interesting with different ways to play. The last tight spot was overskudd. So, also on 2026-10-10: a House tab (common room, garden), a mestring course for staff, and omsorg rate and cap lines. Terje played to Y3 M5 W4 (about 46 min at 1x) before it ran out of fumes: every cap was reached. Then: a skill-up pip on the bed card, toasts (`src/ui/Toasts.tsx`), and onboarding (`src/sim/reveal.ts`, `src/ui/Tips.tsx`). Not yet played.
+- **Steps 1 to 7k are done.** 7k (2026-10-10) is the economy and onboarding pass: bed income, a House tab and a mestring course for overskudd, omsorg rate and cap upgrades, a skill-up pip, toasts, gradual reveal and tips, and one pause/play toggle.
+- **Last play (2026-10-10):** Terje played to Y3 M5 W4 (115 weeks, about 46 min at 1x) and found it "quite interesting tactically", with different ways to play. Pacing is good, not perfect. It ran out of fumes when every cap was reached (4 beds, 6 staff, all upgrades). The onboarding tips work well after two fixes (a 1.5 s click delay, and a pause while a tip shows). Not yet played: the pause/play toggle, omsorg without a box, and the hire pool with one of each role.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
-- **Next candidates:** first check the bed at 1000 kr and the funding line (is the lull still there, is it gone too fast?). Then: glanceable needs on the activity cards, drains and conversions for omsorg, case worker and intake rules, joker cards, roommate traits. See "Automation ladder" under open issues.
+- **Next:** automate the wager (case worker) and admissions (intake rule), then a second facility as a tab. See "Next big step" and "Automation ladder" under open issues. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits.
 
 ## What the game does now
 
@@ -37,7 +38,6 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
    - **Beds:** you start with one. "+ Bed" in the strip buys more (1000 kr, was 1500, ×1.6 each, up to 4). Each extra bed adds `GRANT_PER_BED` (40 kr/week) to the grant, and the funding upgrades multiply it. All beds share omsorg and staff. Miljøarbeidere work across all beds: their speciality first, then the lowest need.
    - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who. The list sorts by health, worst first, and scrolls on its own so the staff panel stays in view. Click a row for the referral card (`PatientCard`): face, intro, trait, health with weeks left and the cost at admission, and a table of start levels and nudges per activity.
-8. **HUD:** chips with an outline, as cold data: `Y1 M7 W2`, `3054 kr +120/w`, `👷 helped`, `💀 lost`. Omsorg (`Omsorg [bar] 40/40`) sits straight on the background, with no box. Time has one pause/play toggle (1x). The debug panel keeps 10x and 100x.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
    - **Traits (7e):** each referral rolls one trait (`src/content/traits.ts`): Cooks (eat and dishes start at lvl 2), Tidy (home decays at half rate), Family visits (overskudd +50%), Rich (double tax). The trait shows on the list and on the resident.
@@ -45,57 +45,61 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
    - **Health (7f, replaced patience from 7e):** each referral rolls health 50 to 90. It drops 3 per week. At 0 the person is lost, and the log line only implies it ("was found by a neighbour. The case is closed."). At admission, each point below 100 costs 0.5 start need and 0.5% decay strain. The referral tempo stays at one each 3 weeks. Terje wants to catch up with it in the long run and watch the list shrink.
    - The waiting list cycles archetypes: Arvid, Maja (23, sleeps all day), Rolf (67, retired, drinks a little). All are grey-boxes in `src/content/archetypes.ts`. With three archetypes, names can repeat across beds and the list.
 7. **Two clocks, as in Game Dev Story.** The calendar shows `Y1 M4 W2`, and one week is 24 s at 1x. Activities last real seconds (eat 2 s, sleep 4 s) and are not tied to the calendar. Everything that was per day is now per week, with the same numbers. The sim counts ticks: 60 per real second (`src/sim/time.ts`).
+8. **HUD:** chips with an outline, as cold data: `Y1 M7 W2`, `3054 kr +120/w`, `👷 helped`, `💀 lost`. Omsorg (`Omsorg [bar] 40/40`) sits straight on the background, with no box. Time has one pause/play toggle (1x). The debug panel keeps 10x and 100x.
 
 ## Feedback from playtests, in order
 
-| Feedback                                            | What we did                                                                                                                                 |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Step 2 felt like "a grind that doesn't go anywhere" | Expected at that stage. Step 3 added skill and the ladder.                                                                                  |
-| Too easy, too slow at 1x, wanted more at once       | Three rungs at once, a faster clock, omsorg as the limit.                                                                                   |
-| "Hard to keep him afloat at the start, but good"    | Kept. Staff and the shop moved before proposals.                                                                                            |
-| Double tap zooms on iOS                             | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                                                             |
-| Frantic and stressful, should be tactical           | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first."                                         |
-| Proposals not hitting right, reward unclear         | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                                                         |
-| Waiting list too hidden, no urgency                 | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.                                              |
-| Staff queue sleep many times, he sleeps when rested | 7a: a full bar is one charge, and it starts only when the need is low.                                                                      |
-| Long narrow list, no overview                       | 7a: three-column landscape layout. Below 900 px it stacks.                                                                                  |
-| Skill should be active, bought with overskudd       | 7c: training with overskudd. No practice XP, no try-alone. Overskudd now grows with the green share of needs.                               |
-| Time for more beds                                  | 7d: beds bought with kroner, a strip of bed cards, Legg inn. Bot with 2 to 3 beds and no staff: needs low 66% of the time.                  |
-| Training panel not needed. Hold-to-nudge unwanted   | Training moved to an arrow on each card. One click is one nudge. Terje trains the cheap levels first, then finishes one activity at a time. |
-| Wants more activities at the same time              | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.                                             |
-| Activities too short to see, clock tied to them     | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.                                          |
-| 7d: picks the top patient, all the same, list grows | 7e: a trait for each referral, and people leave after 10 to 30 weeks. The wait cost had capped, so every row read "−85, +50%".              |
-| 7e: traits help, but identities are weak            | 7f: a skill sheet for each archetype, with strengths and hard activities.                                                                   |
-| 7e: patience bar is weak, wants Papers, Please      | 7f: the bar is health. At 0 the person is lost, implied in the log. Health at admission sets the start.                                     |
-| 7f: can't read "0/24" while clicking fast           | The effort bar is a ring of segments around the icon, one per nudge. 24 thin segments look costly at a glance.                              |
-| Proposals: too much text, overskudd cost unseen     | 7g: scene card with a face and a place, a kroner slider with a sure price, the overskudd bar drains, a marker rolls on the odds bar.        |
-| Requests feel pointless, omsorg is always capped    | 7h: requests are now mults (your nudge ×2/×3, staff ×1.5/×2) and a coach that spends overskudd on levels you switch on.                     |
-| 7h: wants a menu with descriptions, panes           | 7i: requests menu with "Your work" and "Staff" panes and longer descriptions. Pauses the game.                                              |
-| 7i: panes should be tabs, too much text             | Tabs, one card per line with icon, title, effect, price and Buy. Only the next level shows.                                                 |
-| 7i: miljøarbeider and coach are the same mechanic   | 7j: staff are units with a role and a sheet, hired from candidates. Staff cards train specialities and coach levels for omsorg.             |
-| 7j: roles and specialities are a mystery            | Profiles with a role line and a stats table in words, as in Game Dev Story. Training buttons sit in the table rows.                         |
-| Fee + wage at pick felt odd                         | Game Dev Story hiring: pay for a job ad, candidates come a week later, the pick costs only the wage.                                        |
-| Big lull after the first hire, workers too strong   | Worker base rate 0.75 → 0.4 nudges/s. Bot: a need at 0 for 47% of the time (was 25%) at 0.5 taps/s.                                         |
+| Feedback                                              | What we did                                                                                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Step 2 felt like "a grind that doesn't go anywhere"   | Expected at that stage. Step 3 added skill and the ladder.                                                                                  |
+| Too easy, too slow at 1x, wanted more at once         | Three rungs at once, a faster clock, omsorg as the limit.                                                                                   |
+| "Hard to keep him afloat at the start, but good"      | Kept. Staff and the shop moved before proposals.                                                                                            |
+| Double tap zooms on iOS                               | `touch-action: manipulation` on `html`. **Not confirmed on a real device yet.**                                                             |
+| Frantic and stressful, should be tactical             | 3 omsorg per nudge, bars 4/2/1, 18 s days. "Better, could be even slower, but add mechanics first."                                         |
+| Proposals not hitting right, reward unclear           | Support moved to kroner, and the stakes are shown in the dialog. "A little better."                                                         |
+| Waiting list too hidden, no urgency                   | 7a: the venteliste is a panel with the cost of each wait and a countdown to the next referral.                                              |
+| Staff queue sleep many times, he sleeps when rested   | 7a: a full bar is one charge, and it starts only when the need is low.                                                                      |
+| Long narrow list, no overview                         | 7a: three-column landscape layout. Below 900 px it stacks.                                                                                  |
+| Skill should be active, bought with overskudd         | 7c: training with overskudd. No practice XP, no try-alone. Overskudd now grows with the green share of needs.                               |
+| Time for more beds                                    | 7d: beds bought with kroner, a strip of bed cards, Legg inn. Bot with 2 to 3 beds and no staff: needs low 66% of the time.                  |
+| 7d: tactical rhythm is good, wants strategic layer    | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
+| Training panel not needed. Hold-to-nudge unwanted     | Training moved to an arrow on each card. One click is one nudge. Terje trains the cheap levels first, then finishes one activity at a time. |
+| Wants more activities at the same time                | Learning window 3 → 6. Bot: need at 0 for 15% of the time (was 8%). With all 9 open it was 28%.                                             |
+| Activities too short to see, clock tied to them       | Calendar in weeks (Y M W), activities in real seconds. The resident is busy about 78% of the time.                                          |
+| 7d: picks the top patient, all the same, list grows   | 7e: a trait for each referral, and people leave after 10 to 30 weeks. The wait cost had capped, so every row read "−85, +50%".              |
+| 7e: traits help, but identities are weak              | 7f: a skill sheet for each archetype, with strengths and hard activities.                                                                   |
+| 7e: patience bar is weak, wants Papers, Please        | 7f: the bar is health. At 0 the person is lost, implied in the log. Health at admission sets the start.                                     |
+| 7f: can't read "0/24" while clicking fast             | The effort bar is a ring of segments around the icon, one per nudge. 24 thin segments look costly at a glance.                              |
+| Proposals: too much text, overskudd cost unseen       | 7g: scene card with a face and a place, a kroner slider with a sure price, the overskudd bar drains, a marker rolls on the odds bar.        |
+| Requests feel pointless, omsorg is always capped      | 7h: requests are now mults (your nudge ×2/×3, staff ×1.5/×2) and a coach that spends overskudd on levels you switch on.                     |
+| 7h: wants a menu with descriptions, panes             | 7i: requests menu with "Your work" and "Staff" panes and longer descriptions. Pauses the game.                                              |
+| 7h: coach toggles remove the strategy                 | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
+| 7h: needs are a blind spot, game too fast             | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
+| Max level label "alone"                               | Now "independent".                                                                                                                          |
+| 7i: panes should be tabs, too much text               | Tabs, one card per line with icon, title, effect, price and Buy. Only the next level shows.                                                 |
+| 7i: miljøarbeider and coach are the same mechanic     | 7j: staff are units with a role and a sheet, hired from candidates. Staff cards train specialities and coach levels for omsorg.             |
+| 7j: roles and specialities are a mystery              | Profiles with a role line and a stats table in words, as in Game Dev Story. Training buttons sit in the table rows.                         |
+| Fee + wage at pick felt odd                           | Game Dev Story hiring: pay for a job ad, candidates come a week later, the pick costs only the wage.                                        |
+| Big lull after the first hire, workers too strong     | Worker base rate 0.75 → 0.4 nudges/s. Bot: a need at 0 for 47% of the time (was 25%) at 0.5 taps/s.                                         |
 | Venteliste scrolls the staff away, worst cases hidden | The venteliste scrolls on its own, worst health on top. Rows open a referral card.                                                          |
-| Bed at 1500 feels unreasonable, wants money mults   | Bed 1000 kr. Funding tab: grant ×1.5, then ×2. "Requests" is "Upgrades" again.                                                             |
-| Training on the staff card is easy to miss          | A Training button and menu, with courses as cards. The staff card is a profile only.                                                      |
-| Hire menu should pop up, beds should pay          | The hire menu opens when candidates arrive. Each extra bed: +40 kr/week grant.                                                              |
-| Overskudd is the last tight spot                    | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
-| Wants omsorg upgrades, not only nudge upgrades      | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                         |
-| Discharged list squeezes the venteliste to 0 rows   | Discharged shows a count per tier and the tax, not the names.                                                                              |
-| Skill-up and affordable things are easy to miss    | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
-| The start is overwhelming for new players          | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                          |
-| Tips dismissed by fast clicking before being read   | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                 |
-| Too many time controls, omsorg in a box            | One pause/play toggle. Omsorg without background or border.                                                                              |
-| HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
-| 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
-| 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
-| Max level label "alone"                             | Now "independent".                                                                                                                          |
-| 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
+| Bed at 1500 feels unreasonable, wants money mults     | Bed 1000 kr. Funding tab: grant ×1.5, then ×2. "Requests" is "Upgrades" again.                                                              |
+| Training on the staff card is easy to miss            | A Training button and menu, with courses as cards. The staff card is a profile only.                                                        |
+| HUD should be cold data like the date                 | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                             |
+| Hire menu should pop up, beds should pay              | The hire menu opens when candidates arrive. Each extra bed: +40 kr/week grant.                                                              |
+| Overskudd is the last tight spot                      | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
+| Wants omsorg upgrades, not only nudge upgrades        | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                            |
+| Discharged list squeezes the venteliste to 0 rows     | Discharged shows a count per tier and the tax, not the names.                                                                               |
+| Skill-up and affordable things are easy to miss       | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
+| The start is overwhelming for new players             | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                           |
+| Tips dismissed by fast clicking before being read     | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                   |
+| The game should pause while a tip shows               | It pauses, and resumes when the tip is done.                                                                                                |
+| A hire pool can be three coaches                      | Every pool has at least one miljøarbeider and one coach.                                                                                    |
+| The milestone also needs tips                         | Three tips in the proposal: the track, the wager, Go.                                                                                       |
+| Too many time controls, omsorg in a box               | One pause/play toggle. Omsorg without background or border.                                                                                 |
 
 ## Open issues
 
-- **Next big step (Terje, 2026-10-10): several facilities.** In the end it joins the Godot sim in `../lifelines-core-loop`, with facilities as places on a map and residents seen moving and doing activities. In this UI, facilities may be tabs. The top-level play: which staff go to which facility, which patient goes to which bed. Before that, the wager and admission must be automated (case worker, intake rule). Terje's lean: facilities are blank slates, specialised by the furniture and objects the player puts in them, not by named types. Staff are defined by their skills (composable, more player expression), not by fixed roles, though a job specialization that frames 'work with this patient type' is still open. Ideas discussed, none chosen: potential on referrals (the highest tier they can reach), disorders with their own ladder and one new rule each (rus: craving rises and relapse drops a skill; ADHD: the effort ring leaks; angst: locked activities and calm; psychosis: medication only a nurse fills), facility types (akutt, bofellesskap, rusbolig, treningsleilighet, dagsenter: now only as labels that emerge from the furniture), moves that cost something, more activities per need, staff roles for disorders.
+- **Next big step (Terje, 2026-10-10): several facilities.** The direction and the ideas are in `PLAN.md` under "After Act 1". Automate the wager and admissions first.
 
 - **Automation ladder (from 2026-10-09).** Built: nudge mult, staff mult, staff as units with specialities and coach sheets. Not built:
   - **Case worker:** proposals resolve by a rule ("wager up to 300 kr").
@@ -103,12 +107,12 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
   - **Joker cards (Balatro):** rule effects such as "if omsorg is above X, overskudd ×Y". Or things with an omsorg running cost: turn omsorg into overskudd for residents, or into kroner. A staff member who spends omsorg (personal trainer) is odd, because other staff do not.
   - **Roommate traits:** traits that act across beds. Terje likes them. Alumni and outreach: Terje is not convinced.
 - **Resident resources are a blind spot (Terje, 7h).** In the execution phase you only see that needs are red and that you should click. The player has no link to the overskudd bar. Wanted: a glanceable link, such as "hygiene is low, so click shower". The pace slowdown is the first step. Next idea: show each card's trigger need on the card.
-- **Lull after the first hire (Terje, 7j).** Workers were cut to 0.4. The other cause may be money: after a hire the next purchase (a bed at 1500 kr) is many weeks away, and the wage slows it more. Watch for this.
-- **Omsorg is free.** With the nudge mult it is even more free. It needs drains and conversions. The execution phase may also be too short now. Terje wants the player to spend some time there. Tune later.
+- **Lull after the first hire (Terje, 7j).** Workers cut to 0.35, beds to 1000 kr, and each bed pays 40 kr/week. Terje found the pacing good after that (2026-10-10). Watch for it after tuning.
+- **Omsorg is free.** With the nudge mult it is even more free. Staff training (specialities, coach levels, mestring) is now a drain, and the rate and cap upgrades make omsorg grow. Conversions (omsorg into overskudd or kroner) are not built. The execution phase may also be too short now. Terje wants the player to spend some time there. Tune later.
 - **Staff are invisible.** Only their actions show. The initial pop on the ring is the first fix. A 50% upgrade is hard to feel.
 - **Proposal cost, kroner or omsorg:** Terje: kroner feel wrong in theme but work, because they cost something. Omsorg fits the theme better (encouraging the resident), but with stable residents omsorg is always at the cap, so it feels free. Kept kroner for now.
 - **Trait strength:** Terje says double tax and overskudd +50% are good incentives, "perhaps a bit weak".
-- **Tempo:** fine at 24 s weeks (Terje, after 3.5 game years, about 48 min at 1x).
+- **Tempo:** fine at 24 s weeks (Terje, after 3.5 game years, about 48 min at 1x). A full run to the caps was about 46 min (2026-10-10). 2x and 4x are gone. A fast-forward could come back as an upgrade if staff do all the work.
 - **Bot stress numbers:** a need is at 0 about 20 to 30% of the time. The bot plays without strategy, so watch for this in real play. The levers are `SPIRAL_PER_EMPTY_NEED` and the decay rates in `src/content/needs.ts`.
 - **The shop is below the fold on a phone.** Terje plays on a wide screen. Drop this unless phone play comes back.
 - **Activity lines are shared** by all archetypes and are written gender-neutral. Lines for one archetype only go in `src/content/archetypes.ts`.
@@ -120,32 +124,25 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 - Many activities, several for each need (brødskive and dinner for food).
 - ~~Overskudd spent on training.~~ Built in 7c, with one skill for each activity (Terje chose this over categories).
 
-## Earlier: rest of step 6
+## Earlier: step 6
 
-- **Play feedback on 6a:** "discharge now or wait" was not an interesting decision. Waiting cost nothing, so waiting always won. Terje thinks it may need several beds and a waiting list.
-- **6b, the cheap test (live):** one bed, plus a waiting list with a cost. Does a waiting cost alone make the decision interesting?
-  - One person joins the list every 3 weeks. One person waits at the start.
-  - The first in line moves in next. Each week waited takes 2 points from every start need (floor 15) and adds 2% decay (cap 50%). The strain fades by 5% per week.
-  - The top bar shows "Helped" and "Waiting". The vedtak shows what the wait has cost so far.
-  - With one bed, the list always grows. That pressure is part of the test.
-  - Tuning is at the end of `src/content/tuning.ts`.
-- **If the test fails:** two beds that share omsorg and staff. `PLAN.md` puts more than one bed out of scope for Act 1, so that changes the plan. UI idea: tabs, or two compact cards.
-- ~~Third archetype~~: Rolf, added in 7d.
+- 6a play: "discharge now or wait" was not a decision, because waiting cost nothing. 6b added a waiting list with a cost, and 7d to 7f grew it into beds, traits, skill sheets and health.
 
 ## How to work on it
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 66 tests
+npm test           # vitest, 67 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```
 
 - **Code layout:**
-  - `src/sim/` is pure TypeScript with no Preact. One game minute per `tickMinute`.
+  - `src/sim/` is pure TypeScript with no Preact. `tick(state)` advances one tick, 1/60 of a real second at 1x.
+  - `src/sim/reveal.ts` and `src/ui/Tips.tsx` hold the onboarding. `src/ui/Toasts.tsx` holds the toasts.
   - `src/content/` holds the data and all tuning numbers (`tuning.ts`).
   - `src/ui/` holds the components. `src/store.ts` holds the loop and the signals.
-- **Saves:** bump `SAVE_VERSION` in `src/sim/state.ts` when the state shape changes. Old saves reset.
-- **Screenshots:** Playwright is installed globally. Import it from `/Users/godstemning/.nvm/versions/node/v22.22.0/lib/node_modules/playwright/index.mjs`. Run `npx vite build && npx vite preview --port 5180`, then use a 390×844 viewport. The debug panel (⚙ or the backtick key) has 10x and 100x speed, fill omsorg, +1000 kr, proposal now, fill needs, all automatic, next milestone, and reset save.
+- **Saves:** bump `SAVE_VERSION` in `src/sim/state.ts` when the state shape changes. Old saves reset. An optional field (as `seen` and `mestring`) keeps old saves, so Terje keeps his game.
+- **Screenshots:** Playwright is installed globally. Import it from `/Users/godstemning/.nvm/versions/node/v22.22.0/lib/node_modules/playwright/index.mjs`. Run `npx vite build && npx vite preview --port 5180`, then use a 1400×900 viewport (Terje plays on a wide screen). A new game starts with tips, which pause the game and ignore clicks for 1.5 s: wait, then click "OK". To test a late game, read the save from `localStorage` (`healthy-humans-save`), change it, and load it with `addInitScript` in a new page. A plain reload saves over it. The debug panel (⚙ or the backtick key) has 10x and 100x speed, fill omsorg, +1000 kr, proposal now, fill needs, all automatic, next milestone, and reset save.
 - **Signals gotcha:** `@preact/signals` skips a child whose props did not change. The state is one mutable object, so a child that gets `s` as a prop does not re-render. Call `useGame()` in every component that reads the state.
 - **Way of working:** keep the process light. Make one playable change, deploy it, and let Terje play it. Terje's play test is the review. Build nothing deeper than the next play session.
