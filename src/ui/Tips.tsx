@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
+import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
 import { GRANT_PER_BED } from '../content/tuning';
 import { UPGRADES } from '../content/upgrades';
 import { canNudge, canTrain, freeBed } from '../sim/actions';
@@ -7,6 +8,7 @@ import { bestTier } from '../sim/discharge';
 import { canBuy, canBuyBed, grantMult, hireCost } from '../sim/institution';
 import { isSeen, markSeen } from '../sim/reveal';
 import { effort, unlockedActivities } from '../sim/selectors';
+import { proposalCost, surePrice } from '../sim/proposals';
 import { canPostAd } from '../sim/staff';
 import { selectedResident, type GameState } from '../sim/state';
 import { act, useGame } from '../store';
@@ -18,6 +20,8 @@ interface Tip {
   target: string;
   /** More elements to light up. */
   also?: string;
+  /** Where the bubble goes. Below (or above) the target by default. */
+  side?: 'right';
   title: string;
   text: string;
 }
@@ -27,8 +31,55 @@ let firstActivity: ActivityId | null = null;
 
 /** The first tip not done whose moment has come. One at a time. */
 function currentTip(s: GameState): Tip | null {
+  return pick(s, s.proposal ? proposalTips(s) : screenTips(s));
+}
+
+/** Tips inside the milestone proposal, in order. The game is already paused there. */
+function proposalTips(s: GameState): (() => Tip | null)[] {
+  const p = s.proposal!;
+  const r = s.beds[p.bed];
+  if (!r || p.outcome) return [];
+  const m = MILESTONE_BY_ID[p.subject.milestone];
+  return [
+    () => ({
+      key: 'tip:milestone',
+      target: '[data-tip="track"]',
+      title: 'A milestone',
+      side: 'right',
+      text: `${r.name} wants to try something big: ${m.label}. ${MILESTONES.length} milestones lead to a healthy human.`,
+    }),
+    () => ({
+      key: 'tip:wager',
+      target: '[data-tip="wager"]',
+      also: '[data-tip="odds"]',
+      title: 'Drag here',
+      side: 'right',
+      text: `Spend kroner on support to raise the odds. At ${surePrice(p.subject)} kr it is sure to work.`,
+    }),
+    () => ({
+      key: 'tip:go',
+      target: '[data-tip="go"]',
+      also: '[data-tip="drain"]',
+      title: 'Click here',
+      side: 'right',
+      text: `Go costs ${proposalCost(p.subject)} overskudd (striped on the bar) and rolls the odds. "Not now" is free, and ${r.name} asks again later.`,
+    }),
+  ];
+}
+
+function pick(s: GameState, tips: (() => Tip | null)[]): Tip | null {
+  for (const t of tips) {
+    const tip = t();
+    // A tip waits until its target is on screen.
+    if (tip && !isSeen(s, tip.key) && document.querySelector(tip.target)) return tip;
+  }
+  return null;
+}
+
+/** Tips on the main screen, in order. */
+function screenTips(s: GameState): (() => Tip | null)[] {
   const r = selectedResident(s);
-  const tips: (() => Tip | null)[] = [
+  return [
     () => {
       if (!r) return null;
       const open = unlockedActivities(r).filter(
@@ -112,12 +163,6 @@ function currentTip(s: GameState): Tip | null {
           }
         : null,
   ];
-  for (const t of tips) {
-    const tip = t();
-    // A tip waits until its target is on screen.
-    if (tip && !isSeen(s, tip.key) && document.querySelector(tip.target)) return tip;
-  }
-  return null;
 }
 
 const GAP = 10;
@@ -127,7 +172,7 @@ const GRACE_MS = 1500;
 /** A "Click here" bubble next to the element it explains. */
 export function Tips() {
   const s = useGame();
-  const tip = s.seen && !modal.value && !s.proposal && !s.discharge ? currentTip(s) : null;
+  const tip = s.seen && !modal.value && !s.discharge ? currentTip(s) : null;
   const box = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const done = () => tip && ready && act((g) => markSeen(g, tip.key));
@@ -178,6 +223,14 @@ export function Tips() {
     const t = el.getBoundingClientRect();
     const w = b.offsetWidth;
     const h = b.offsetHeight;
+    // To the right of the dialog, so the bubble does not hide what it explains.
+    const edge = el.closest('.dialog')?.getBoundingClientRect().right ?? t.right;
+    if (tip!.side === 'right' && edge + GAP + w < window.innerWidth) {
+      b.style.left = `${edge + GAP}px`;
+      b.style.top = `${Math.max(8, Math.min(t.top + t.height / 2 - h / 2, window.innerHeight - h - 8))}px`;
+      b.dataset.side = 'right';
+      return;
+    }
     const left = Math.min(Math.max(8, t.left + t.width / 2 - w / 2), window.innerWidth - w - 8);
     const below = t.bottom + GAP + h < window.innerHeight;
     b.style.left = `${left}px`;

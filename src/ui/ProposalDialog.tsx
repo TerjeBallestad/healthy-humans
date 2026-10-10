@@ -56,7 +56,7 @@ function SceneCard() {
         <OverskuddDrain before={p.overskuddBefore} cost={proposalCost(p.subject)} paid={rolled} />
         <Track r={r} current={m.id} ticking={p.outcome === 'success'} />
 
-        <div class="odds-bar" aria-label={`Chance ${Math.round(odds * 100)}%`}>
+        <div class="odds-bar" data-tip="odds" aria-label={`Chance ${Math.round(odds * 100)}%`}>
           <span class="zone" style={{ width: `${odds * 100}%` }} />
           {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}
           <span class="odds-label">{Math.round(odds * 100)}%</span>
@@ -65,7 +65,11 @@ function SceneCard() {
         {!p.outcome && (
           <>
             <div class="wager">
-              <div class="slider" style={{ '--val': kr / sure, '--cap': cap / sure }}>
+              <div
+                class="slider"
+                data-tip="wager"
+                style={{ '--val': kr / sure, '--cap': cap / sure }}
+              >
                 {cap < sure && <span class="beyond" aria-hidden="true" />}
                 {cap < sure && <span class="cap-mark" aria-hidden="true" />}
                 <input
@@ -91,6 +95,7 @@ function SceneCard() {
             <div class="choices row">
               <button
                 class="choice"
+                data-tip="go"
                 disabled={!canWager(s, kr)}
                 onClick={() => act((g) => accept(g, kr))}
               >
@@ -123,7 +128,7 @@ function SceneCard() {
 function OverskuddDrain({ before, cost, paid }: { before: number; cost: number; paid: boolean }) {
   const pct = (v: number) => `${(v / OVERSKUDD_CAP) * 100}%`;
   return (
-    <div class="drain">
+    <div class="drain" data-tip="drain">
       <span class="label">Overskudd</span>
       <div class="meter">
         <div
@@ -140,7 +145,7 @@ function OverskuddDrain({ before, cost, paid }: { before: number; cost: number; 
 /** The milestones in order. The current one ticks after the roll when it works. */
 function Track({ r, current, ticking }: { r: Resident; current: string; ticking: boolean }) {
   return (
-    <ol class="track">
+    <ol class="track" data-tip="track">
       {MILESTONES.map((m) => {
         const now = m.id === current;
         const done = r.milestones.includes(m.id) && !now;
