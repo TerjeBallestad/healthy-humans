@@ -16,7 +16,14 @@ import {
   trainCost,
 } from '../content/tuning';
 import { buyBed, buyUpgrade, nudge } from './actions';
-import { hireCost, netIncomePerWeek, overskuddMult, staffNudgesPerSecond } from './institution';
+import {
+  hireCost,
+  netIncomePerWeek,
+  omsorgCap,
+  omsorgPerSecond,
+  overskuddMult,
+  staffNudgesPerSecond,
+} from './institution';
 import {
   hire,
   postAd,
@@ -242,5 +249,22 @@ describe('overskudd', () => {
     expect(trainMestring(s, 1)).toBe(true);
     expect(overskuddMult(s)).toBeCloseTo(1.5 * 1.5);
     expect(s.omsorg).toBe(20);
+  });
+});
+
+describe('omsorg', () => {
+  test('the rate and cap lines raise omsorg, in order', () => {
+    const s = newGame();
+    s.budget = 10000;
+    const rate = omsorgPerSecond(s);
+    expect(buyUpgrade(s, 'avspasering')).toBe(false);
+    expect(buyUpgrade(s, 'lunch')).toBe(true);
+    expect(omsorgPerSecond(s)).toBeCloseTo(rate * 1.5);
+    expect(buyUpgrade(s, 'avspasering')).toBe(true);
+    expect(omsorgPerSecond(s)).toBeCloseTo(rate * 2);
+    expect(buyUpgrade(s, 'office')).toBe(true);
+    expect(omsorgCap(s)).toBe(60);
+    expect(buyUpgrade(s, 'journal')).toBe(true);
+    expect(omsorgCap(s)).toBe(80);
   });
 });

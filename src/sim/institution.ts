@@ -16,12 +16,13 @@ import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
 import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
 
-export function omsorgCap(_s: GameState): number {
-  return OMSORG_CAP;
+export function omsorgCap(s: GameState): number {
+  return Math.max(OMSORG_CAP, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].omsorgCap ?? 0));
 }
 
-export function omsorgPerSecond(_s: GameState): number {
-  return OMSORG_PER_SECOND * PACE;
+export function omsorgPerSecond(s: GameState): number {
+  const mult = Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].omsorgRateMult ?? 1));
+  return OMSORG_PER_SECOND * PACE * mult;
 }
 
 /** Segments one of the player's nudges fills. */

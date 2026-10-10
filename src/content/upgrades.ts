@@ -1,8 +1,12 @@
-export type LineId = 'nudge' | 'staff' | 'grant' | 'house';
+export type LineId = 'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'grant' | 'house';
 
 export type UpgradeId =
   | 'course'
   | 'supervision'
+  | 'lunch'
+  | 'avspasering'
+  | 'office'
+  | 'journal'
   | 'calendar'
   | 'handover'
   | 'report'
@@ -26,6 +30,10 @@ export interface UpgradeDef {
   after?: UpgradeId;
   /** Segments one of your own nudges fills. The highest bought wins. */
   nudgeMult?: number;
+  /** Multiplies how fast omsorg refills. The highest bought wins. */
+  omsorgRateMult?: number;
+  /** The omsorg cap. The highest bought wins. */
+  omsorgCap?: number;
   /** Multiplies staff nudges. The highest bought wins. */
   staffMult?: number;
   /** Multiplies the kommune grant. The highest bought wins. */
@@ -57,6 +65,48 @@ export const UPGRADES: UpgradeDef[] = [
     cost: 1500,
     after: 'course',
     nudgeMult: 3,
+  },
+  {
+    id: 'lunch',
+    label: 'Lunch break',
+    note: 'Thirty minutes. Nobody calls.',
+    effect: 'Omsorg refills 50% faster',
+    icon: '🥪',
+    line: 'omsorgRate',
+    cost: 600,
+    omsorgRateMult: 1.5,
+  },
+  {
+    id: 'avspasering',
+    label: 'Avspasering',
+    note: 'The overtime comes back as days off.',
+    effect: 'Omsorg refills twice as fast',
+    icon: '🏖️',
+    line: 'omsorgRate',
+    cost: 1600,
+    after: 'lunch',
+    omsorgRateMult: 2,
+  },
+  {
+    id: 'office',
+    label: 'Own office',
+    note: 'A door that closes.',
+    effect: 'Omsorg cap 60',
+    icon: '🚪',
+    line: 'omsorgCap',
+    cost: 500,
+    omsorgCap: 60,
+  },
+  {
+    id: 'journal',
+    label: 'Electronic journal',
+    note: 'The notes are in one place, not on napkins.',
+    effect: 'Omsorg cap 80',
+    icon: '💻',
+    line: 'omsorgCap',
+    cost: 1400,
+    after: 'office',
+    omsorgCap: 80,
   },
   {
     id: 'calendar',
@@ -131,6 +181,8 @@ export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) 
 /** Lines in menu order, with the tab each one sits in. */
 export const LINES: { id: LineId; tab: 'you' | 'staff' | 'funding' | 'house' }[] = [
   { id: 'nudge', tab: 'you' },
+  { id: 'omsorgRate', tab: 'you' },
+  { id: 'omsorgCap', tab: 'you' },
   { id: 'staff', tab: 'staff' },
   { id: 'grant', tab: 'funding' },
   { id: 'house', tab: 'house' },
