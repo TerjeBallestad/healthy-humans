@@ -1,13 +1,13 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
+Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 
 ## Where things are
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well", and the søknadsfrist countdown is nice. Worker speed 0.4 helped the lull. After that play: worker 0.35, bed 1000 kr, a funding line (grant mult), a HUD of chips, a venteliste that scrolls on its own with referral cards. Not yet played.
+- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well", and the søknadsfrist countdown is nice. Worker speed 0.4 helped the lull. After that play: worker 0.35, bed 1000 kr, a funding line (grant mult), a HUD of chips, a venteliste that scrolls on its own with referral cards. On 2026-10-10: the hire menu opens by itself when the candidates arrive, and each extra bed adds 40 kr/week to the grant. Not yet played.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
 - **Next candidates:** first check the bed at 1000 kr and the funding line (is the lull still there, is it gone too fast?). Then: glanceable needs on the activity cards, drains and conversions for omsorg, case worker and intake rules, joker cards, roommate traits. See "Automation ladder" under open issues.
 
@@ -18,7 +18,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 3. Skill comes from training with overskudd (item 5). Bars shrink from 12 to 6 to 3 nudges, and at the last level the activity is automatic: the card says "independent", and the next rung opens. There are 9 routine rungs, from eat to calling someone.
 4. **Budget** (120 kr per week, the kommune grant) buys staff and **upgrades** (`src/content/upgrades.ts`). Code still calls the menu `RequestsMenu`.
    - **Upgrades:** your click (course: a nudge fills 2 segments, then supervision: 3), the machine (calendar: staff ×1.5, then handover: ×2) and funding (annual report: grant ×1.5 for 800 kr, then Helsedirektoratet: ×2 for 2000 kr). An "Upgrades" button opens a menu with tabs ("Your work", "Staff", "Funding"). Each line of upgrades is one card with an icon, title, effect, level pips, price and Buy. Only the next level shows. The game pauses while a menu is open (`src/ui/modal.ts`).
-   - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** hiring works as in Game Dev Story. "Hire" pays for a job ad (400 kr ×1.5 for each staff member). The button counts down "Søknadsfrist: 5 dager". One week later 3 candidates answer, each with a name, a face, a role and a rolled sheet. You pick one, and it costs only the wage. Picking closes the ad. "Turn them all down" closes it with no hire, and the fee is lost. Up to 6 staff.
+   - **Staff as units (7j, `src/content/staff.ts`, `src/sim/staff.ts`):** hiring works as in Game Dev Story. "Hire" pays for a job ad (400 kr ×1.5 for each staff member). The button counts down "Søknadsfrist: 5 dager". One week later 3 candidates answer, each with a name, a face, a role and a rolled sheet. The pick menu opens by itself (once per batch, not over a proposal or a vedtak). You pick one, and it costs only the wage. Picking closes the ad. "Turn them all down" closes it with no hire, and the fee is lost. Up to 6 staff.
      - **Miljøarbeider** (40 kr/week, 0.35 nudges/s before `PACE` and the staff upgrades, was 0.75, then 0.4): one speciality (a need: Cooking, Hygiene, Sleep, Housework, Social). They nudge bars of their speciality first, and there a nudge fills 2 segments. Otherwise they help the lowest need.
      - **Coach** (60 kr/week): a sheet of the highest level they can teach for each activity (rolled: three activities at lvl 1, sometimes one at lvl 2 or 3). The coaches spend the residents' overskudd on any level that a coach in the house can teach. The cheapest level goes first, then the lowest need. They keep 20 overskudd for a proposal while a milestone is open. Training is instant, so more coaches only add coverage.
      - **Profiles (Game Dev Story style):** candidates and staff cards share one profile: name, a role button (icon and title; hover or click shows what the role does), a face (rolled per person, `STAFF_FACES`) and a table. The ×2 chip on a speciality explains itself the same way. Miljøarbeider: all five areas with the activities they cover and the nudge (×2 on a speciality). Coach: activities with "lvl 1", "lvl 2" or "independent". Terje found icon + pips too hard to parse.
@@ -33,7 +33,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
    - **Result:** a marker sweeps the odds bar and stops at the roll. The result line appears, and the milestone dot on the three-step track fills in.
 
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
-   - **Beds:** you start with one. "+ Bed" in the strip buys more (1000 kr, was 1500, ×1.6 each, up to 4). All beds share omsorg and staff. Miljøarbeidere work across all beds: their speciality first, then the lowest need.
+   - **Beds:** you start with one. "+ Bed" in the strip buys more (1000 kr, was 1500, ×1.6 each, up to 4). Each extra bed adds `GRANT_PER_BED` (40 kr/week) to the grant, and the funding upgrades multiply it. All beds share omsorg and staff. Miljøarbeidere work across all beds: their speciality first, then the lowest need.
    - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who. The list sorts by health, worst first, and scrolls on its own so the staff panel stays in view. Click a row for the referral card (`PatientCard`): face, intro, trait, health with weeks left and the cost at admission, and a table of start levels and nudges per activity.
 8. **HUD:** chips with an outline, as cold data: `Y1 M7 W2`, `Omsorg [bar] 40/40`, `3054 kr +120/w`, `👷 helped`, `💀 lost`.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
@@ -77,6 +77,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 | Venteliste scrolls the staff away, worst cases hidden | The venteliste scrolls on its own, worst health on top. Rows open a referral card.                                                          |
 | Bed at 1500 feels unreasonable, wants money mults   | Bed 1000 kr. Funding tab: grant ×1.5, then ×2. "Requests" is "Upgrades" again.                                                             |
 | Training on the staff card is easy to miss          | A Training button and menu, with courses as cards. The staff card is a profile only.                                                      |
+| Hire menu should pop up, beds should pay          | The hire menu opens when candidates arrive. Each extra bed: +40 kr/week grant.                                                              |
 | HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
@@ -124,7 +125,7 @@ Last session: 2026-10-09 (7j). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 61 tests
+npm test           # vitest, 62 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```

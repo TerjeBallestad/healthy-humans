@@ -1,6 +1,7 @@
 import {
   BED_COST_BASE,
   BED_COST_GROWTH,
+  GRANT_PER_BED,
   GRANT_PER_WEEK,
   HIRE_COST_BASE,
   HIRE_COST_GROWTH,
@@ -38,8 +39,9 @@ export function grantMult(s: GameState): number {
   return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].grantMult ?? 1));
 }
 
+/** The kommune pays a base sum and a sum for each extra bed. The grant upgrades multiply both. */
 export function grantPerWeek(s: GameState): number {
-  return GRANT_PER_WEEK * grantMult(s);
+  return (GRANT_PER_WEEK + GRANT_PER_BED * (s.beds.length - 1)) * grantMult(s);
 }
 
 /** Nudges per real second from one miljøarbeider at 1x. */

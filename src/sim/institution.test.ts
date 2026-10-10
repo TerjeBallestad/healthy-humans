@@ -9,12 +9,13 @@ import {
   SPECIALITY_TRAIN_COST,
 } from '../content/staff';
 import {
+  GRANT_PER_BED,
   GRANT_PER_WEEK,
   HIRE_COST_BASE,
   PROPOSAL_COST_MILESTONE,
   trainCost,
 } from '../content/tuning';
-import { buyUpgrade, nudge } from './actions';
+import { buyBed, buyUpgrade, nudge } from './actions';
 import { hireCost, netIncomePerWeek, staffNudgesPerSecond } from './institution';
 import { hire, postAd, rollCandidates, trainCoach, trainSpeciality, turnDown } from './staff';
 import { newGame, type Staff } from './state';
@@ -40,6 +41,15 @@ describe('budget', () => {
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK * 1.5);
     expect(buyUpgrade(s, 'application')).toBe(true);
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK * 2);
+  });
+
+  test('each extra bed adds to the grant, and the funding line multiplies it', () => {
+    const s = newGame();
+    s.budget = 10000;
+    expect(buyBed(s)).toBe(true);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK + GRANT_PER_BED);
+    expect(buyUpgrade(s, 'report')).toBe(true);
+    expect(netIncomePerWeek(s)).toBe((GRANT_PER_WEEK + GRANT_PER_BED) * 1.5);
   });
 });
 

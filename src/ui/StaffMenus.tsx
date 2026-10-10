@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
@@ -162,6 +162,16 @@ export function StaffSummary({ x }: { x: Staff }) {
 
 export function HireMenu() {
   const s = useGame();
+  // Open by itself once per batch of candidates, when nothing else is open.
+  const shown = useRef(false);
+  const ready = s.candidates.length > 0;
+  useEffect(() => {
+    if (!ready) shown.current = false;
+    else if (!shown.current && !modal.value && !s.proposal && !s.discharge) {
+      shown.current = true;
+      openModal({ kind: 'hire' });
+    }
+  });
   if (modal.value?.kind !== 'hire') return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
