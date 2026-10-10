@@ -1074,23 +1074,31 @@ button:disabled {
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
-.speeds {
-  display: flex;
-  gap: 4px;
+.play-toggle {
+  min-width: 52px;
+  font-size: 0.9rem;
 }
-.speed {
-  min-width: 44px;
-  font-size: 0.8rem;
-}
-.speed.active {
+/* Paused: the play button stands out, so a stopped clock is easy to see. */
+.play-toggle.paused {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* Omsorg sits straight on the background, with the chip type but no box. */
 .omsorg {
   flex: 1 1 280px;
   display: flex;
   align-items: center;
   gap: 12px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.omsorg .label {
+  font-size: 0.9rem;
+}
+.omsorg .value {
+  font-variant-numeric: tabular-nums;
 }
 .omsorg .meter {
   flex: 1;

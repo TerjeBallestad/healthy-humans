@@ -2,7 +2,6 @@
 
 /** Real seconds per calendar week at 1x speed. Activities have their own durations. */
 export const SECONDS_PER_WEEK = 24;
-export const SPEEDS = [0, 1, 2, 4] as const;
 export const DEBUG_SPEEDS = [10, 100] as const;
 
 /**

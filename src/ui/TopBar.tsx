@@ -1,10 +1,7 @@
-import { SPEEDS } from '../content/tuning';
 import { netIncomePerWeek, omsorgCap } from '../sim/institution';
 import { isSeen } from '../sim/reveal';
 import { formatDate } from '../sim/time';
 import { act, useGame } from '../store';
-
-const SPEED_LABEL: Record<number, string> = { 0: '❚❚', 1: '▶', 2: '▶▶', 4: '▶▶▶' };
 
 export function TopBar() {
   const s = useGame();
@@ -13,17 +10,14 @@ export function TopBar() {
   return (
     <header class="topbar">
       <div class="date chip">{formatDate(s.tick)}</div>
-      <div class="speeds">
-        {SPEEDS.map((sp) => (
-          <button
-            class={s.speed === sp ? 'speed active' : 'speed'}
-            onClick={() => act((g) => (g.speed = sp))}
-          >
-            {SPEED_LABEL[sp]}
-          </button>
-        ))}
-      </div>
-      <div class="omsorg chip" data-tip="omsorg">
+      <button
+        class={s.speed === 0 ? 'play-toggle paused' : 'play-toggle'}
+        aria-label={s.speed === 0 ? 'Play' : 'Pause'}
+        onClick={() => act((g) => (g.speed = g.speed === 0 ? 1 : 0))}
+      >
+        {s.speed === 0 ? '▶' : '❚❚'}
+      </button>
+      <div class="omsorg" data-tip="omsorg">
         <span class="label">Omsorg</span>
         <div class="meter">
           <div class="fill" style={{ width: `${(s.omsorg / cap) * 100}%` }} />

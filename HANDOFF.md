@@ -37,7 +37,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 6. **Discharge:** when a tier opens, a button shows it, and the bed card says "discharge". The vedtak shows the tax, what waiting gives, and who is first in line. Signing shows a two-line glimpse. Then the bed stands empty.
    - **Beds:** you start with one. "+ Bed" in the strip buys more (1000 kr, was 1500, ×1.6 each, up to 4). Each extra bed adds `GRANT_PER_BED` (40 kr/week) to the grant, and the funding upgrades multiply it. All beds share omsorg and staff. Miljøarbeidere work across all beds: their speciality first, then the lowest need.
    - **Admission:** each person on the venteliste has a "Legg inn" button while a bed is free. You choose who. The list sorts by health, worst first, and scrolls on its own so the staff panel stays in view. Click a row for the referral card (`PatientCard`): face, intro, trait, health with weeks left and the cost at admission, and a table of start levels and nudges per activity.
-8. **HUD:** chips with an outline, as cold data: `Y1 M7 W2`, `Omsorg [bar] 40/40`, `3054 kr +120/w`, `👷 helped`, `💀 lost`.
+8. **HUD:** chips with an outline, as cold data: `Y1 M7 W2`, `3054 kr +120/w`, `👷 helped`, `💀 lost`. Omsorg (`Omsorg [bar] 40/40`) sits straight on the background, with no box. Time has one pause/play toggle (1x). The debug panel keeps 10x and 100x.
    - Tiers: fit to live alone (rungs 1 to 6 automatic, +10 kr/week), fit for work (NAV, application, all routines, +30), healthy human (work trial, +100).
    - Budget, staff, upgrades and omsorg carry over. Skills, needs and milestones reset.
    - **Traits (7e):** each referral rolls one trait (`src/content/traits.ts`): Cooks (eat and dishes start at lvl 2), Tidy (home decays at half rate), Family visits (overskudd +50%), Rich (double tax). The trait shows on the list and on the resident.
@@ -86,6 +86,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 | Skill-up and affordable things are easy to miss    | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
 | The start is overwhelming for new players          | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                          |
 | Tips dismissed by fast clicking before being read   | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                 |
+| Too many time controls, omsorg in a box            | One pause/play toggle. Omsorg without background or border.                                                                              |
 | HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
