@@ -114,7 +114,8 @@ function currentTip(s: GameState): Tip | null {
   ];
   for (const t of tips) {
     const tip = t();
-    if (tip && !isSeen(s, tip.key)) return tip;
+    // A tip waits until its target is on screen.
+    if (tip && !isSeen(s, tip.key) && document.querySelector(tip.target)) return tip;
   }
   return null;
 }
@@ -131,11 +132,21 @@ export function Tips() {
   const [ready, setReady] = useState(false);
   const done = () => tip && ready && act((g) => markSeen(g, tip.key));
 
+  // The game pauses while a tip shows. It resumes when the tip goes, unless a dialog took over.
   useEffect(() => {
     setReady(false);
     if (!tip) return;
+    act((g) => {
+      g.resumeSpeed = g.speed || g.resumeSpeed;
+      g.speed = 0;
+    });
     const id = setTimeout(() => setReady(true), GRACE_MS);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      act((g) => {
+        if (!modal.value && !g.proposal && !g.discharge) g.speed = g.resumeSpeed;
+      });
+    };
   }, [tip?.key]);
 
   // Light up the target and listen for a click on it.

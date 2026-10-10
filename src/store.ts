@@ -1,4 +1,5 @@
 import { signal } from '@preact/signals';
+import { updateReveals } from './sim/reveal';
 import { clearSave, loadGame, saveGame } from './sim/save';
 import { newGame, type GameState } from './sim/state';
 import { tick } from './sim/tick';
@@ -22,6 +23,8 @@ export function useGame(): GameState {
 /** Run a mutation on the state and re-render. */
 export function act(fn: (s: GameState) => unknown) {
   fn(state);
+  // The game can be paused, so a reveal cannot wait for the next tick.
+  updateReveals(state);
   version.value++;
 }
 
