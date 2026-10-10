@@ -1,5 +1,5 @@
 import { ROLES } from '../content/staff';
-import { TIER_BY_ID } from '../content/tiers';
+import { TIERS } from '../content/tiers';
 import { taxPerWeek } from '../sim/discharge';
 import { hireCost, staffNudgesPerSecond } from '../sim/institution';
 import { canPostAd, postAd } from '../sim/staff';
@@ -18,12 +18,23 @@ export function InstitutionPanel() {
       {s.discharged.length > 0 && (
         <>
           <h3>Discharged</h3>
-          <p>
-            {s.discharged
-              .map((d) => `${d.name} (${TIER_BY_ID[d.tier].label.toLowerCase()})`)
-              .join(', ')}
-            <span class="muted"> · +{taxPerWeek(s)} kr/week in tax</span>
-          </p>
+          <ul class="discharged">
+            {[...TIERS].reverse().map((t) => {
+              const n = s.discharged.filter((d) => d.tier === t.id).length;
+              return (
+                n > 0 && (
+                  <li>
+                    <span>{t.label}</span>
+                    <span class="count">{n}</span>
+                  </li>
+                )
+              );
+            })}
+            <li class="muted">
+              <span>Tax</span>
+              <span class="count">+{taxPerWeek(s)} kr/w</span>
+            </li>
+          </ul>
         </>
       )}
       <h3>Staff</h3>

@@ -80,6 +80,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 | Hire menu should pop up, beds should pay          | The hire menu opens when candidates arrive. Each extra bed: +40 kr/week grant.                                                              |
 | Overskudd is the last tight spot                    | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
 | Wants omsorg upgrades, not only nudge upgrades      | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                         |
+| Discharged list squeezes the venteliste to 0 rows   | Discharged shows a count per tier and the tax, not the names.                                                                              |
 | HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
