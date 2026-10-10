@@ -1,7 +1,14 @@
-export type LineId = 'nudge' | 'staff' | 'grant';
+export type LineId = 'nudge' | 'staff' | 'grant' | 'house';
 
 export type UpgradeId =
-  'course' | 'supervision' | 'calendar' | 'handover' | 'report' | 'application';
+  | 'course'
+  | 'supervision'
+  | 'calendar'
+  | 'handover'
+  | 'report'
+  | 'application'
+  | 'commonRoom'
+  | 'garden';
 
 export interface UpgradeDef {
   id: UpgradeId;
@@ -23,9 +30,12 @@ export interface UpgradeDef {
   staffMult?: number;
   /** Multiplies the kommune grant. The highest bought wins. */
   grantMult?: number;
+  /** Multiplies overskudd for every resident. The highest bought wins. */
+  overskuddMult?: number;
 }
 
-// Ways to grow: make your own click stronger, build the machine that clicks for you, or get more money.
+// Ways to grow: make your own click stronger, build the machine that clicks for you, get more money,
+// or make the house a better place to get well.
 export const UPGRADES: UpgradeDef[] = [
   {
     id: 'course',
@@ -90,6 +100,27 @@ export const UPGRADES: UpgradeDef[] = [
     after: 'report',
     grantMult: 2,
   },
+  {
+    id: 'commonRoom',
+    label: 'Common room',
+    note: 'A sofa nobody owns, and a coffee machine.',
+    effect: 'Overskudd ×1.5 for everyone',
+    icon: '🛋️',
+    line: 'house',
+    cost: 700,
+    overskuddMult: 1.5,
+  },
+  {
+    id: 'garden',
+    label: 'Garden',
+    note: 'Six raised beds and a bench in the sun.',
+    effect: 'Overskudd ×2 for everyone',
+    icon: '🌻',
+    line: 'house',
+    cost: 1800,
+    after: 'commonRoom',
+    overskuddMult: 2,
+  },
 ];
 
 export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) as Record<
@@ -98,8 +129,9 @@ export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) 
 >;
 
 /** Lines in menu order, with the tab each one sits in. */
-export const LINES: { id: LineId; tab: 'you' | 'staff' | 'funding' }[] = [
+export const LINES: { id: LineId; tab: 'you' | 'staff' | 'funding' | 'house' }[] = [
   { id: 'nudge', tab: 'you' },
   { id: 'staff', tab: 'staff' },
   { id: 'grant', tab: 'funding' },
+  { id: 'house', tab: 'house' },
 ];

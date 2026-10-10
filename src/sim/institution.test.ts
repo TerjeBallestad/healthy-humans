@@ -16,8 +16,16 @@ import {
   trainCost,
 } from '../content/tuning';
 import { buyBed, buyUpgrade, nudge } from './actions';
-import { hireCost, netIncomePerWeek, staffNudgesPerSecond } from './institution';
-import { hire, postAd, rollCandidates, trainCoach, trainSpeciality, turnDown } from './staff';
+import { hireCost, netIncomePerWeek, overskuddMult, staffNudgesPerSecond } from './institution';
+import {
+  hire,
+  postAd,
+  rollCandidates,
+  trainCoach,
+  trainMestring,
+  trainSpeciality,
+  turnDown,
+} from './staff';
 import { newGame, type Staff } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
@@ -216,5 +224,23 @@ describe('coach', () => {
     tick(s);
     expect(r.skill.eat).toBe(1);
     expect(r.overskudd).toBeGreaterThanOrEqual(PROPOSAL_COST_MILESTONE);
+  });
+});
+
+describe('overskudd', () => {
+  test('the house line and the mestring course stack', () => {
+    const s = newGame();
+    s.budget = 5000;
+    s.omsorg = 100;
+    expect(overskuddMult(s)).toBe(1);
+    expect(buyUpgrade(s, 'garden')).toBe(false);
+    expect(buyUpgrade(s, 'commonRoom')).toBe(true);
+    expect(overskuddMult(s)).toBe(1.5);
+    s.staff.push(worker('A'), worker('B'));
+    expect(trainMestring(s, 0)).toBe(true);
+    expect(trainMestring(s, 0)).toBe(false);
+    expect(trainMestring(s, 1)).toBe(true);
+    expect(overskuddMult(s)).toBeCloseTo(1.5 * 1.5);
+    expect(s.omsorg).toBe(20);
   });
 });

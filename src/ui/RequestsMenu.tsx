@@ -6,11 +6,12 @@ import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
 
-type Tab = 'you' | 'staff' | 'funding';
+type Tab = 'you' | 'staff' | 'funding' | 'house';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'you', label: 'Your work' },
   { id: 'staff', label: 'Staff' },
   { id: 'funding', label: 'Funding' },
+  { id: 'house', label: 'House' },
 ];
 
 const tab = signal<Tab>('you');

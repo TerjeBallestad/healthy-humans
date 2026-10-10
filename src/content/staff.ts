@@ -61,6 +61,11 @@ export const SPECIALITY_FILL = 2;
 
 /** Omsorg to teach a miljøarbeider one more speciality. */
 export const SPECIALITY_TRAIN_COST = 30;
+/** Omsorg for the mestring course. Any staff member can take it. */
+export const MESTRING_TRAIN_COST = 40;
+/** Overskudd each staff member with the mestring course adds for every resident. Added, not multiplied. */
+export const MESTRING_BONUS = 0.25;
+
 /** Omsorg to teach a coach the next level of an activity, by the level they know now. */
 export const COACH_TRAIN_COST = [10, 20, 35] as const;
 

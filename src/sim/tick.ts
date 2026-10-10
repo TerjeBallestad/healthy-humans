@@ -17,7 +17,13 @@ import {
   WAITLIST_WEEKS_PER_PERSON,
   trainCost,
 } from '../content/tuning';
-import { netIncomePerWeek, omsorgCap, omsorgPerSecond, workerNudgesPerSecond } from './institution';
+import {
+  netIncomePerWeek,
+  omsorgCap,
+  omsorgPerSecond,
+  overskuddMult,
+  workerNudgesPerSecond,
+} from './institution';
 import { checkAd, coachLevel } from './staff';
 import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
@@ -55,7 +61,7 @@ export function tick(state: GameState) {
     decayNeeds(state, r);
     progressActivity(state, r);
     if (!r.current) startNextActivity(r);
-    gainOverskudd(r);
+    gainOverskudd(r, overskuddMult(state));
     coachWork(state, r);
   }
   maybePropose(state);
@@ -82,10 +88,10 @@ function declineWaiting(state: GameState) {
 }
 
 /** Overskudd builds in proportion to the share of active needs above the threshold. */
-function gainOverskudd(r: Resident) {
+function gainOverskudd(r: Resident, mult: number) {
   const needs = activeNeeds(r);
   const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
-  const boost = (r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1;
+  const boost = ((r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1) * mult;
   r.overskudd = Math.min(
     OVERSKUDD_CAP,
     r.overskudd + (green * boost * OVERSKUDD_PER_SECOND * PACE) / TICKS_PER_SECOND,

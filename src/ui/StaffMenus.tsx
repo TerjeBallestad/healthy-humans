@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
+  MESTRING_BONUS,
+  MESTRING_TRAIN_COST,
   ROLES,
   SPECIALITY_FILL,
   SPECIALITY_ICON,
@@ -15,10 +17,12 @@ import { canAffordWage, omsorgCap } from '../sim/institution';
 import {
   canHire,
   canTrainCoach,
+  canTrainMestring,
   canTrainSpeciality,
   coachTrainCost,
   hire,
   trainCoach,
+  trainMestring,
   trainSpeciality,
   turnDown,
 } from '../sim/staff';
@@ -101,6 +105,17 @@ function Profile({ x }: { x: Staff }) {
                 })}
               </tbody>
             </>
+          )}
+          {x.mestring && (
+            <tfoot>
+              <tr class="strong">
+                <td>
+                  Mestring
+                  <span class="covers">Every resident</span>
+                </td>
+                <td class="value">+{MESTRING_BONUS * 100}% overskudd</td>
+              </tr>
+            </tfoot>
           )}
         </table>
       </div>
@@ -282,6 +297,15 @@ export function TrainingMenu() {
           <RoleTag role={x.role} />
         </p>
         <div class="lines">
+          <Course
+            icon="🌱"
+            title="Mestring course"
+            effect={`Every resident: overskudd +${MESTRING_BONUS * 100}%`}
+            done={!!x.mestring}
+            cost={MESTRING_TRAIN_COST}
+            can={canTrainMestring(s, i)}
+            onTrain={() => act((g) => trainMestring(g, i))}
+          />
           {x.role === 'worker'
             ? NEED_ORDER.map((n) => <SpecialityCourse i={i} x={x} need={n} />)
             : ACTIVITIES.map((a) => <CoachCourse i={i} x={x} id={a.id} />)}

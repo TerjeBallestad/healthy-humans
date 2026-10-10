@@ -6,6 +6,7 @@ import {
   COACH_SHARE,
   COACH_TRAIN_COST,
   MAX_STAFF,
+  MESTRING_TRAIN_COST,
   ROLES,
   SPECIALITY_TRAIN_COST,
   STAFF_FACES,
@@ -119,6 +120,19 @@ export function trainSpeciality(s: GameState, index: number, need: NeedId): bool
   if (!canTrainSpeciality(s, index, need)) return false;
   s.omsorg -= SPECIALITY_TRAIN_COST;
   s.staff[index]!.specialities.push(need);
+  return true;
+}
+
+export function canTrainMestring(s: GameState, index: number): boolean {
+  const x = s.staff[index];
+  return !!x && !x.mestring && s.omsorg >= MESTRING_TRAIN_COST;
+}
+
+/** Spend omsorg on the mestring course: more overskudd for every resident. */
+export function trainMestring(s: GameState, index: number): boolean {
+  if (!canTrainMestring(s, index)) return false;
+  s.omsorg -= MESTRING_TRAIN_COST;
+  s.staff[index]!.mestring = true;
   return true;
 }
 

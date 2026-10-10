@@ -11,7 +11,7 @@ import {
   PACE,
   STAFF_NUDGES_PER_SECOND,
 } from '../content/tuning';
-import { ROLES, type StaffRole } from '../content/staff';
+import { MESTRING_BONUS, ROLES, type StaffRole } from '../content/staff';
 import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
 import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
@@ -40,6 +40,12 @@ export function grantMult(s: GameState): number {
 }
 
 /** The kommune pays a base sum and a sum for each extra bed. The grant upgrades multiply both. */
+/** Multiplies overskudd for every resident: the house upgrades, and each staff member with the mestring course. */
+export function overskuddMult(s: GameState): number {
+  const house = Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].overskuddMult ?? 1));
+  return house * (1 + MESTRING_BONUS * s.staff.filter((x) => x.mestring).length);
+}
+
 export function grantPerWeek(s: GameState): number {
   return (GRANT_PER_WEEK + GRANT_PER_BED * (s.beds.length - 1)) * grantMult(s);
 }
