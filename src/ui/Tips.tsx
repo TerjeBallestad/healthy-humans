@@ -13,6 +13,7 @@ import { canPostAd } from '../sim/staff';
 import { selectedResident, type GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { modal } from './modal';
+import { TIPS } from '../content/text';
 
 interface Tip {
   key: string;
@@ -44,25 +45,25 @@ function proposalTips(s: GameState): (() => Tip | null)[] {
     () => ({
       key: 'tip:milestone',
       target: '[data-tip="track"]',
-      title: 'A milestone',
+      title: TIPS.milestoneTitle,
       side: 'right',
-      text: `${r.name} wants to try something big: ${m.label}. ${MILESTONES.length} milestones lead to a healthy human.`,
+      text: TIPS.milestone(r.name, m.label, MILESTONES.length),
     }),
     () => ({
       key: 'tip:wager',
       target: '[data-tip="wager"]',
       also: '[data-tip="odds"]',
-      title: 'Drag here',
+      title: TIPS.wagerTitle,
       side: 'right',
-      text: `Spend kroner on support to raise the odds. At ${surePrice(p.subject)} kr it is sure to work.`,
+      text: TIPS.wager(surePrice(p.subject)),
     }),
     () => ({
       key: 'tip:go',
       target: '[data-tip="go"]',
       also: '[data-tip="drain"]',
-      title: 'Click here',
+      title: TIPS.clickHere,
       side: 'right',
-      text: `Go costs ${proposalCost(p.subject)} overskudd (striped on the bar) and rolls the odds. "Not now" is free, and ${r.name} asks again later.`,
+      text: TIPS.go(proposalCost(p.subject), r.name),
     }),
   ];
 }
@@ -92,8 +93,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
       return {
         key: 'tip:nudge',
         target: `[data-tip="act-${a.id}"]`,
-        title: 'Click here',
-        text: `${r.name} struggles with ${a.noun}. Use omsorg to nudge ${a.noun}. A full ring means ${r.name} does it when it is needed.`,
+        title: TIPS.clickHere,
+        text: TIPS.nudge(r.name, a.noun),
       };
     },
     () =>
@@ -101,8 +102,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:omsorg',
             target: '[data-tip="omsorg"]',
-            title: 'Omsorg',
-            text: 'Your energy to care. Each nudge costs 1. It refills over time.',
+            title: TIPS.omsorgTitle,
+            text: TIPS.omsorg,
           }
         : null,
     () => {
@@ -113,8 +114,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         key: 'tip:train',
         target: `[data-tip="train-${a.id}"]`,
         also: '[data-tip="overskudd"]',
-        title: 'Click here',
-        text: `Increase the independence of ${a.noun}. Each level halves the nudges required. It costs overskudd, which grows while the needs are green.`,
+        title: TIPS.clickHere,
+        text: TIPS.train(a.noun),
       };
     },
     () =>
@@ -122,8 +123,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:hire',
             target: '[data-tip="hire"]',
-            title: 'Hire staff',
-            text: `A job ad costs ${hireCost(s)} kr. A week later, candidates answer. Staff nudge for you.`,
+            title: TIPS.hireTitle,
+            text: TIPS.hire(hireCost(s)),
           }
         : null,
     () =>
@@ -131,8 +132,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:upgrades',
             target: '[data-tip="upgrades"]',
-            title: 'Upgrades',
-            text: 'Spend kroner to make your work, your staff and the house stronger.',
+            title: TIPS.upgradesTitle,
+            text: TIPS.upgrades,
           }
         : null,
     () =>
@@ -140,8 +141,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:bed',
             target: '[data-tip="bed"]',
-            title: 'One more bed',
-            text: `Room for one more resident. Each bed adds ${GRANT_PER_BED * grantMult(s)} kr/week to the grant.`,
+            title: TIPS.bedTitle,
+            text: TIPS.bed(GRANT_PER_BED * grantMult(s)),
           }
         : null,
     () =>
@@ -149,8 +150,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:admit',
             target: '[data-tip="admit"]',
-            title: 'Click here',
-            text: 'Choose who moves in. The worst health is on top. At 0 health the person is lost.',
+            title: TIPS.clickHere,
+            text: TIPS.admit,
           }
         : null,
     () =>
@@ -158,8 +159,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:discharge',
             target: '[data-tip="discharge"]',
-            title: 'Ready to go home',
-            text: `${r.name} can go home now. A higher tier pays more tax, but the bed stays full while you wait.`,
+            title: TIPS.dischargeTitle,
+            text: TIPS.discharge(r.name),
           }
         : null,
   ];
@@ -244,7 +245,7 @@ export function Tips() {
       <strong>{tip.title}</strong>
       <span>{tip.text}</span>
       <button class="tip-ok" disabled={!ready} onClick={done}>
-        OK
+        {TIPS.ok}
       </button>
     </div>
   );

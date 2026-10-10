@@ -14,6 +14,7 @@ import {
 } from '../sim/proposals';
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
+import { PROPOSAL, UNITS } from '../content/text';
 
 export function ProposalDialog() {
   const s = useGame();
@@ -56,7 +57,7 @@ function SceneCard() {
         <OverskuddDrain before={p.overskuddBefore} cost={proposalCost(p.subject)} paid={rolled} />
         <Track r={r} current={m.id} ticking={p.outcome === 'success'} />
 
-        <div class="odds-bar" data-tip="odds" aria-label={`Chance ${Math.round(odds * 100)}%`}>
+        <div class="odds-bar" data-tip="odds" aria-label={PROPOSAL.chance(Math.round(odds * 100))}>
           <span class="zone" style={{ width: `${odds * 100}%` }} />
           {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}
           <span class="odds-label">{Math.round(odds * 100)}%</span>
@@ -78,7 +79,7 @@ function SceneCard() {
                   max={sure}
                   step={1}
                   value={kr}
-                  aria-label="Kroner to spend"
+                  aria-label={PROPOSAL.krToSpend}
                   onInput={(e) => {
                     // The knob stops at the budget. Reset the input too, so it cannot run past.
                     const v = Math.min(cap, Number(e.currentTarget.value));
@@ -88,8 +89,8 @@ function SceneCard() {
                 />
               </div>
               <span class="wager-ends muted">
-                <span>0 kr</span>
-                <span class={kr >= sure ? 'sure on' : 'sure'}>{sure} kr: sure</span>
+                <span>{UNITS.kr(0)}</span>
+                <span class={kr >= sure ? 'sure on' : 'sure'}>{PROPOSAL.sure(sure)}</span>
               </span>
             </div>
             <div class="choices row">
@@ -99,11 +100,11 @@ function SceneCard() {
                 disabled={!canWager(s, kr)}
                 onClick={() => act((g) => accept(g, kr))}
               >
-                <span>Go</span>
-                <span class="odds">{kr > 0 ? `${kr} kr` : 'alone'}</span>
+                <span>{PROPOSAL.go}</span>
+                <span class="odds">{kr > 0 ? UNITS.kr(kr) : PROPOSAL.alone}</span>
               </button>
               <button class="choice quiet" onClick={() => act(decline)}>
-                Not now
+                {PROPOSAL.notNow}
               </button>
             </div>
           </>
@@ -112,10 +113,10 @@ function SceneCard() {
         {p.outcome && (
           <div class={rolled ? 'result rolled' : 'result'}>
             <p class={`outcome ${p.outcome}`}>
-              {p.outcome === 'declined' ? 'Maybe another time.' : p.result}
+              {p.outcome === 'declined' ? PROPOSAL.declined : p.result}
             </p>
             <button class="choice" onClick={() => act(closeProposal)}>
-              Continue
+              {PROPOSAL.continue}
             </button>
           </div>
         )}
@@ -129,7 +130,7 @@ function OverskuddDrain({ before, cost, paid }: { before: number; cost: number; 
   const pct = (v: number) => `${(v / OVERSKUDD_CAP) * 100}%`;
   return (
     <div class="drain" data-tip="drain">
-      <span class="label">Overskudd</span>
+      <span class="label">{PROPOSAL.overskudd}</span>
       <div class="meter">
         <div
           class={paid ? 'fill paid' : 'fill'}

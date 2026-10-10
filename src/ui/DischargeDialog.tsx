@@ -10,6 +10,7 @@ import {
   waitCost,
 } from '../sim/discharge';
 import { act, useGame } from '../store';
+import { DISCHARGE, UNITS } from '../content/text';
 
 export function DischargeDialog() {
   const s = useGame();
@@ -26,41 +27,46 @@ export function DischargeDialog() {
       <div class="dialog" role="dialog" aria-modal="true">
         {!d.signed && (
           <>
-            <p class="muted vedtak-head">Vedtak om utskriving</p>
+            <p class="muted vedtak-head">{DISCHARGE.heading}</p>
             <dl class="stakes">
-              <dt>Resident</dt>
+              <dt>{DISCHARGE.resident}</dt>
               <dd>{r.name}</dd>
-              <dt>Assessed as</dt>
+              <dt>{DISCHARGE.assessedAs}</dt>
               <dd>{tier.label.toLowerCase()}</dd>
-              <dt>Tax</dt>
-              <dd class="win">+{tierTax(r, tier.id)} kr per week, for the rest of the game</dd>
+              <dt>{DISCHARGE.tax}</dt>
+              <dd class="win">{DISCHARGE.taxValue(tierTax(r, tier.id))}</dd>
               {better && (
                 <>
-                  <dt>If you wait</dt>
+                  <dt>{DISCHARGE.ifYouWait}</dt>
                   <dd>
-                    {better.label.toLowerCase()} pays +{tierTax(r, better.id)} kr per week. Needs{' '}
-                    {tierMissing(r, better.id).join(', ')}.
+                    {DISCHARGE.better(
+                      better.label,
+                      tierTax(r, better.id),
+                      tierMissing(r, better.id),
+                    )}
                   </dd>
                 </>
               )}
               {first && (
                 <>
-                  <dt>First in line</dt>
+                  <dt>{DISCHARGE.firstInLine}</dt>
                   <dd class="warn">
-                    {ARCHETYPE_BY_ID[first.archetype].name}, health {Math.round(first.health)}.{' '}
-                    {cost!.needLoss > 0 &&
-                      `Arrives with needs −${cost!.needLoss} and decay +${cost!.strainPct}%. `}
-                    Every week makes it worse.
+                    {DISCHARGE.firstHealth(
+                      ARCHETYPE_BY_ID[first.archetype].name,
+                      Math.round(first.health),
+                    )}
+                    {cost!.needLoss > 0 && DISCHARGE.firstCost(cost!.needLoss, cost!.strainPct)}
+                    {DISCHARGE.worse}
                   </dd>
                 </>
               )}
             </dl>
             <div class="choices">
               <button class="choice" onClick={() => act(signDischarge)}>
-                <span>Sign</span>
+                <span>{DISCHARGE.sign}</span>
               </button>
               <button class="choice quiet" onClick={() => act(cancelDischarge)}>
-                Not yet
+                {DISCHARGE.notYet}
               </button>
             </div>
           </>
@@ -68,15 +74,15 @@ export function DischargeDialog() {
 
         {d.signed && (
           <>
-            <p class="muted">Some time later.</p>
+            <p class="muted">{DISCHARGE.later}</p>
             <blockquote>
               {ARCHETYPE_BY_ID[r.archetype].glimpse[d.tier].map((line) => (
                 <span class="glimpse">{line}</span>
               ))}
             </blockquote>
-            <p class="gain">+{tierTax(r, tier.id)} kr per week</p>
+            <p class="gain">{UNITS.plusKrPerWeekLong(tierTax(r, tier.id))}</p>
             <button class="choice" onClick={() => act(closeDischarge)}>
-              The bed is free
+              {DISCHARGE.bedFree}
             </button>
           </>
         )}

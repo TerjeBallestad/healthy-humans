@@ -19,6 +19,7 @@ import { random } from './rng';
 import type { GameState, Staff } from './state';
 import { TICKS_PER_WEEK } from './time';
 import { log } from './tick';
+import { LOG } from '../content/text';
 
 const pick = <T>(s: GameState, list: readonly T[]): T => list[Math.floor(random(s) * list.length)]!;
 
@@ -71,7 +72,7 @@ export function postAd(s: GameState): boolean {
   if (!canPostAd(s)) return false;
   s.budget -= hireCost(s);
   s.adReady = s.tick + AD_WEEKS * TICKS_PER_WEEK;
-  log(s, 'The job ad is out.');
+  log(s, LOG.adOut);
   return true;
 }
 
@@ -80,7 +81,7 @@ export function checkAd(s: GameState) {
   if (s.adReady === null || s.tick < s.adReady) return;
   s.adReady = null;
   rollCandidates(s);
-  log(s, `${s.candidates.length} people answered the job ad.`);
+  log(s, LOG.adAnswered(s.candidates.length));
 }
 
 /** Picking a candidate costs no fee, only the wage. The ad closes. */
@@ -94,7 +95,7 @@ export function hire(s: GameState, index: number): boolean {
   const person = s.candidates[index]!;
   s.candidates = [];
   s.staff.push(person);
-  log(s, `${person.name} starts as ${ROLES[person.role].label.toLowerCase()}.`);
+  log(s, LOG.hired(person.name, ROLES[person.role].label));
   return true;
 }
 
@@ -102,7 +103,7 @@ export function hire(s: GameState, index: number): boolean {
 export function turnDown(s: GameState) {
   if (s.candidates.length === 0) return;
   s.candidates = [];
-  log(s, 'Nobody was right for the job.');
+  log(s, LOG.turnedDown);
 }
 
 /** The highest level any coach in the house can train an activity to. */

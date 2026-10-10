@@ -9,6 +9,7 @@ import { openModal } from './modal';
 import { affordableRequests } from './RequestsMenu';
 import { StaffSummary } from './StaffMenus';
 import { act, useGame } from '../store';
+import { INSTITUTION, UNITS } from '../content/text';
 
 export function InstitutionPanel() {
   const s = useGame();
@@ -19,7 +20,7 @@ export function InstitutionPanel() {
     <section class="panel institution">
       {s.discharged.length > 0 && (
         <>
-          <h3>Discharged</h3>
+          <h3>{INSTITUTION.discharged}</h3>
           <ul class="discharged">
             {[...TIERS].reverse().map((t) => {
               const n = s.discharged.filter((d) => d.tier === t.id).length;
@@ -33,13 +34,13 @@ export function InstitutionPanel() {
               );
             })}
             <li class="muted">
-              <span>Tax</span>
-              <span class="count">+{taxPerWeek(s)} kr/w</span>
+              <span>{INSTITUTION.tax}</span>
+              <span class="count">{UNITS.plusKrPerW(taxPerWeek(s))}</span>
             </li>
           </ul>
         </>
       )}
-      <h3>Staff</h3>
+      <h3>{INSTITUTION.staff}</h3>
       {s.staff.length > 0 ? (
         <div class="staff-list">
           {s.staff.map((x, i) => (
@@ -51,32 +52,30 @@ export function InstitutionPanel() {
           ))}
         </div>
       ) : (
-        <p class="muted">Nobody yet. It is just you.</p>
+        <p class="muted">{INSTITUTION.nobody}</p>
       )}
       {staffNudgesPerSecond(s) > 0 && (
-        <p class="muted hint">{staffNudgesPerSecond(s).toFixed(2)} nudges/s in all</p>
+        <p class="muted hint">{INSTITUTION.nudgesInAll(staffNudgesPerSecond(s).toFixed(2))}</p>
       )}
       {s.candidates.length > 0 ? (
         <button class="buy" onClick={() => openModal({ kind: 'hire' })}>
-          <span>Pick a candidate</span>
+          <span>{INSTITUTION.pickCandidate}</span>
           <span class="badge">{s.candidates.length}</span>
         </button>
       ) : s.adReady !== null ? (
         <button class="buy" disabled>
-          <span>Søknadsfrist</span>
-          <span class="price">
-            {daysLeft} {daysLeft === 1 ? 'dag' : 'dager'}
-          </span>
+          <span>{INSTITUTION.deadline}</span>
+          <span class="price">{INSTITUTION.days(daysLeft)}</span>
         </button>
       ) : (
         <button class="buy" data-tip="hire" disabled={!canPostAd(s)} onClick={() => act(postAd)}>
-          <span>Hire</span>
-          <span class="price">{hireCost(s)} kr</span>
+          <span>{INSTITUTION.hire}</span>
+          <span class="price">{UNITS.kr(hireCost(s))}</span>
         </button>
       )}
       {s.staff.length > 0 && (
         <button class="buy requests-open" onClick={() => openModal({ kind: 'training', index: 0 })}>
-          <span>Training</span>
+          <span>{INSTITUTION.training}</span>
         </button>
       )}
       {isSeen(s, 'upgrades') && (
@@ -85,7 +84,7 @@ export function InstitutionPanel() {
           data-tip="upgrades"
           onClick={() => openModal({ kind: 'requests' })}
         >
-          <span>Upgrades</span>
+          <span>{INSTITUTION.upgrades}</span>
           {affordable > 0 && <span class="badge">{affordable}</span>}
         </button>
       )}

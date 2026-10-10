@@ -6,6 +6,7 @@ import { canPostAd } from '../sim/staff';
 import type { GameState } from '../sim/state';
 import { useGame } from '../store';
 import { modal, openModal, type Modal } from './modal';
+import { TOASTS } from '../content/text';
 
 interface Toast {
   key: string;
@@ -27,16 +28,16 @@ function events(s: GameState): Toast[] {
       out.push({
         key: `upgrade-${u.id}`,
         tip: 'tip:upgrades',
-        title: 'Upgrade ready',
-        text: `${u.label}: ${u.effect.toLowerCase()}`,
+        title: TOASTS.upgradeReady,
+        text: TOASTS.upgrade(u.label, u.effect),
         open: { kind: 'requests' },
       });
   if (canPostAd(s))
     out.push({
       key: `hire-${s.staff.length}`,
       tip: 'tip:hire',
-      title: 'You can hire',
-      text: `A job ad costs ${hireCost(s)} kr.`,
+      title: TOASTS.canHire,
+      text: TOASTS.adCost(hireCost(s)),
     });
   return out;
 }
@@ -49,8 +50,8 @@ function merge(fresh: Toast[]): Toast[] {
     ...fresh.filter((t) => !ups.includes(t)),
     {
       key: ups.map((t) => t.key).join('+'),
-      title: 'Upgrades ready',
-      text: `${ups.length} upgrades you can buy.`,
+      title: TOASTS.upgradesReady,
+      text: TOASTS.upgrades(ups.length),
       open: { kind: 'requests' },
     },
   ];

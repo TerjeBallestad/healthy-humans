@@ -7,6 +7,7 @@ import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { log, trainResident } from './tick';
+import { LOG } from '../content/text';
 
 export function canNudge(state: GameState, bed: number, id: ActivityId): boolean {
   const r = state.beds[bed];
@@ -43,7 +44,7 @@ export function buyBed(state: GameState): boolean {
   state.budget -= bedCost(state);
   state.beds.push(null);
   state.selected = state.beds.length - 1;
-  log(state, 'A new bed is made up. It is empty.');
+  log(state, LOG.bedBought);
   return true;
 }
 
@@ -69,6 +70,6 @@ export function buyUpgrade(state: GameState, id: UpgradeId): boolean {
   const u = UPGRADE_BY_ID[id];
   state.budget -= u.cost;
   state.upgrades.push(id);
-  log(state, u.note ? `${u.label}. ${u.note}` : `${u.label}.`);
+  log(state, LOG.upgradeBought(u.label, u.note));
   return true;
 }

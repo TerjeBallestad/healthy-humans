@@ -8,6 +8,7 @@ import { NEEDS, NEED_ORDER, type NeedId } from '../content/needs';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { HARD_EFFORT, NEED_THRESHOLD, barSize } from '../content/tuning';
 import type { Resident } from './state';
+import { IDLE_LINE } from '../content/text';
 
 export function unlockedActivities(r: Resident): ActivityDef[] {
   return ACTIVITIES.filter((a) => a.rung <= r.unlockedRung);
@@ -48,5 +49,5 @@ export function statusLine(r: Resident): string {
   if (r.current) return ACTIVITY_BY_ID[r.current.id].doing;
   const worst = activeNeeds(r).sort((a, b) => r.needs[a] - r.needs[b])[0];
   if (worst && r.needs[worst] < NEED_THRESHOLD) return NEEDS[worst].idleLine;
-  return 'Sitting on the sofa, phone in hand.';
+  return IDLE_LINE;
 }

@@ -7,6 +7,7 @@ import { isSeen } from '../sim/reveal';
 import { activeNeeds, statusLine } from '../sim/selectors';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
+import { RESIDENT, UNITS } from '../content/text';
 
 export function ResidentPanel() {
   const s = useGame();
@@ -14,7 +15,7 @@ export function ResidentPanel() {
   if (!r)
     return (
       <section class="panel resident">
-        <h2>Empty bed</h2>
+        <h2>{RESIDENT.emptyBed}</h2>
       </section>
     );
   const best = bestTier(r);
@@ -30,8 +31,7 @@ export function ResidentPanel() {
       <p class="muted intro">{r.intro}</p>
       {r.strain > 0.005 && (
         <p class="strain">
-          Arrived at health {Math.round(r.arrivalHealth)}. Needs drop {Math.round(r.strain * 100)}%
-          faster for now.
+          {RESIDENT.strain(Math.round(r.arrivalHealth), Math.round(r.strain * 100))}
         </p>
       )}
       <p class="status">{statusLine(r)}</p>
@@ -54,20 +54,20 @@ export function ResidentPanel() {
 
       {isSeen(s, 'overskudd') && (
         <div class="overskudd" data-tip="overskudd">
-          <span class="label">Overskudd</span>
+          <span class="label">{RESIDENT.overskudd}</span>
           <div class="meter">
             <div class="fill" style={{ width: `${(r.overskudd / OVERSKUDD_CAP) * 100}%` }} />
           </div>
           <span class="state">
             {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
-            {green < 1 && ` · growing at ${Math.round(green * 100)}% while a need is low`}
+            {green < 1 && RESIDENT.growing(Math.round(green * 100))}
           </span>
         </div>
       )}
 
       {r.milestones.length > 0 && (
         <p class="alone">
-          <span class="muted">Milestones: </span>
+          <span class="muted">{RESIDENT.milestones}</span>
           {r.milestones.map((id) => MILESTONE_BY_ID[id].label).join(', ')}
         </p>
       )}
@@ -79,14 +79,13 @@ export function ResidentPanel() {
             data-tip="discharge"
             onClick={() => act((g) => openDischarge(g, g.selected))}
           >
-            <span>Discharge: {best.label.toLowerCase()}</span>
-            <span class="price">+{tierTax(r, best.id)} kr/week</span>
+            <span>{RESIDENT.discharge(best.label)}</span>
+            <span class="price">{UNITS.plusKrPerWeek(tierTax(r, best.id))}</span>
           </button>
         )}
         {better && (
           <p class="muted hint">
-            {better.label} (+{tierTax(r, better.id)} kr/week) needs{' '}
-            {tierMissing(r, better.id).join(', ')}.
+            {RESIDENT.nextTier(better.label, tierTax(r, better.id), tierMissing(r, better.id))}
           </p>
         )}
       </div>

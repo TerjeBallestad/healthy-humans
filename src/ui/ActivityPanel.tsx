@@ -5,6 +5,7 @@ import { effort, readyQueue, unlockedActivities } from '../sim/selectors';
 import { TICKS_PER_SECOND } from '../sim/time';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
+import { ACTIVITY_PANEL, UNITS } from '../content/text';
 
 export function ActivityPanel() {
   const s = useGame();
@@ -13,7 +14,7 @@ export function ActivityPanel() {
   const queue = readyQueue(r);
   return (
     <section class="panel activities">
-      <h3>Activities</h3>
+      <h3>{ACTIVITY_PANEL.heading}</h3>
       <div class="cards">
         {unlockedActivities(r).map((a) => (
           <ActivityCard activity={a} priority={queue.indexOf(a) + 1} />
@@ -67,11 +68,11 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
             {a.icon}
           </span>
         </span>
-        <span class="nudge-label">{auto ? 'independent' : `${filled}/${size}`}</span>
+        <span class="nudge-label">{auto ? UNITS.independent : `${filled}/${size}`}</span>
       </span>
       <span class="body">
         <span class="title">{a.label}</span>
-        <span class="meter progress" title="The activity in progress">
+        <span class="meter progress" title={ACTIVITY_PANEL.inProgress}>
           <span class="fill" style={{ width: `${progress * 100}%` }} />
         </span>
         <span class="foot">{!auto && <TrainButton activity={a} />}</span>
@@ -118,17 +119,17 @@ function TrainButton({ activity: a }: { activity: ActivityDef }) {
   const next = skill + 1;
   const effect =
     next >= MAX_SKILL
-      ? 'becomes automatic'
-      : `${effort(r, a.id)} → ${effort(r, a.id, next)} nudges`;
+      ? ACTIVITY_PANEL.becomesAutomatic
+      : ACTIVITY_PANEL.nudges(effort(r, a.id), effort(r, a.id, next));
   return (
     <span class="level">
-      <span class="lvl">lvl {next}</span>
+      <span class="lvl">{UNITS.level(next)}</span>
       <button
         class="train"
         data-tip={`train-${a.id}`}
         disabled={!canTrain(s, bed, a.id)}
-        title={`Train for ${trainCost(skill)} overskudd: ${effect}`}
-        aria-label={`Train ${a.label} for ${trainCost(skill)} overskudd: ${effect}`}
+        title={ACTIVITY_PANEL.trainTitle(trainCost(skill), effect)}
+        aria-label={ACTIVITY_PANEL.trainLabel(a.label, trainCost(skill), effect)}
         onClick={(e) => {
           // Keep the click from nudging the card.
           e.stopPropagation();

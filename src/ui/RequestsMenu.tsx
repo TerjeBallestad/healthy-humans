@@ -5,14 +5,12 @@ import { canBuy } from '../sim/institution';
 import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
+import { UNITS, UPGRADES_MENU } from '../content/text';
 
 type Tab = 'you' | 'staff' | 'funding' | 'house';
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'you', label: 'Your work' },
-  { id: 'staff', label: 'Staff' },
-  { id: 'funding', label: 'Funding' },
-  { id: 'house', label: 'House' },
-];
+const TABS: { id: Tab; label: string }[] = (['you', 'staff', 'funding', 'house'] as const).map(
+  (id) => ({ id, label: UPGRADES_MENU.tabs[id] }),
+);
 
 const tab = signal<Tab>('you');
 
@@ -26,7 +24,7 @@ export function RequestsMenu() {
   if (modal.value?.kind !== 'requests') return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog requests" role="dialog" aria-modal="true" aria-label="Upgrades">
+      <div class="dialog requests" role="dialog" aria-modal="true" aria-label={UPGRADES_MENU.title}>
         <header>
           <nav class="tabs" role="tablist">
             {TABS.map((t) => {
@@ -46,7 +44,7 @@ export function RequestsMenu() {
               );
             })}
           </nav>
-          <button class="close" onClick={closeModal} aria-label="Close">
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
         </header>
@@ -76,7 +74,7 @@ function LineCard({ line }: { line: LineId }) {
         <strong class="title">{shown.label}</strong>
         <span class="effect">{shown.effect}</span>
         {levels.length > 1 && (
-          <span class="pips" aria-label={`Level ${bought} of ${levels.length}`}>
+          <span class="pips" aria-label={UNITS.levelOf(bought, levels.length)}>
             {levels.map((_, i) => (
               <span class={i < bought ? 'pip on' : 'pip'} />
             ))}
@@ -86,17 +84,17 @@ function LineCard({ line }: { line: LineId }) {
       <div class="buy-col">
         {next ? (
           <>
-            <span class="price">{next.cost} kr</span>
+            <span class="price">{UNITS.kr(next.cost)}</span>
             <button
               class="buy-request"
               disabled={!canBuy(s, next.id)}
               onClick={() => act((g) => buyUpgrade(g, next.id))}
             >
-              Buy
+              {UPGRADES_MENU.buy}
             </button>
           </>
         ) : (
-          <span class="tick" aria-label="Done">
+          <span class="tick" aria-label={UNITS.done}>
             ✓
           </span>
         )}

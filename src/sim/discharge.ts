@@ -10,6 +10,7 @@ import {
 } from '../content/tuning';
 import type { GameState, Resident } from './state';
 import { log } from './tick';
+import { LOG } from '../content/text';
 
 const automatic = (r: Resident, upToRung: number) =>
   ACTIVITIES.filter((a) => a.rung <= upToRung).every((a) => r.skill[a.id] >= MAX_SKILL);
@@ -92,7 +93,7 @@ export function signDischarge(s: GameState): boolean {
   if (!d || d.signed || !r) return false;
   s.discharged.push({ name: r.name, tier: d.tier, tax: tierTax(r, d.tier), tick: s.tick });
   d.signed = true;
-  log(s, `Discharged: ${TIER_BY_ID[d.tier].label.toLowerCase()}.`, r.name);
+  log(s, LOG.discharged(TIER_BY_ID[d.tier].label), r.name);
   return true;
 }
 

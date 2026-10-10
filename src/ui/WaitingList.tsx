@@ -16,6 +16,7 @@ import { isSeen } from '../sim/reveal';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 import { closeModal, modal, openModal } from './modal';
+import { PATIENT, UNITS, WAITING } from '../content/text';
 
 const healthLevel = (p: WaitingPerson) =>
   p.health < WAIT_URGENT_HEALTH ? 'bad' : p.health < 40 ? 'worse' : '';
@@ -33,9 +34,9 @@ export function WaitingList() {
   return (
     <section class="panel waitlist">
       <h3>
-        Venteliste <span class="count">{s.waiting.length}</span>
+        {WAITING.heading} <span class="count">{s.waiting.length}</span>
       </h3>
-      {s.waiting.length === 0 && <p class="muted">Nobody is waiting.</p>}
+      {s.waiting.length === 0 && <p class="muted">{WAITING.nobody}</p>}
       <ol>
         {byHealth(s.waiting).map((i) => {
           const p = s.waiting[i]!;
@@ -47,7 +48,7 @@ export function WaitingList() {
                   {ARCHETYPE_BY_ID[p.archetype].name}
                   <span class="tag">{trait.label}</span>
                 </span>
-                <span class="meter" title="Health">
+                <span class="meter" title={WAITING.health}>
                   <span class="fill" style={{ width: `${p.health}%` }} />
                 </span>
                 <SkillSheet archetype={p.archetype} trait={p.trait} />
@@ -56,7 +57,7 @@ export function WaitingList() {
                 <span class="cost">{trait.effect}</span>
                 {bedFree && (
                   <button class="admit" data-tip="admit" onClick={() => act((g) => admit(g, i))}>
-                    Legg inn →
+                    {WAITING.admit}
                   </button>
                 )}
               </span>
@@ -64,7 +65,7 @@ export function WaitingList() {
           );
         })}
       </ol>
-      <p class="muted hint">New referral in {nextIn.toFixed(1)} weeks.</p>
+      <p class="muted hint">{WAITING.nextReferral(nextIn.toFixed(1))}</p>
     </section>
   );
 }
@@ -82,7 +83,7 @@ function SkillSheet({ archetype, trait }: { archetype: ArchetypeId; trait: Trait
         return (
           <span
             class={hard ? 'skill hard' : 'skill'}
-            title={`${act.label}: ${level ? `lvl ${level}` : ''}${level && hard ? ', ' : ''}${hard ? `${HARD_EFFORT}× effort` : ''}`}
+            title={WAITING.skillTitle(act.label, level, hard ? HARD_EFFORT : null)}
           >
             {act.icon}
             {level > 0 && <span class="dots">{'●'.repeat(level)}</span>}
@@ -111,8 +112,8 @@ export function PatientCard() {
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog patient-card" role="dialog" aria-modal="true" aria-label={a.name}>
         <header>
-          <span class="muted">Henvisning</span>
-          <button class="close" onClick={closeModal} aria-label="Close">
+          <span class="muted">{PATIENT.heading}</span>
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
         </header>
@@ -132,27 +133,28 @@ export function PatientCard() {
           </div>
           <div class={`health ${healthLevel(p)}`}>
             <div class="health-head">
-              <span>Health</span>
+              <span>{PATIENT.health}</span>
               <strong>{Math.ceil(p.health)}</strong>
             </div>
             <span class="meter">
               <span class="fill" style={{ width: `${p.health}%` }} />
             </span>
             <p class="muted">
-              Drops {WAIT_HEALTH_LOSS_PER_WEEK} a week.{' '}
-              {weeksLeft < 1
-                ? 'Less than a week left.'
-                : `About ${Math.floor(weeksLeft)} weeks left.`}
+              {PATIENT.drops(WAIT_HEALTH_LOSS_PER_WEEK)}
+              {weeksLeft < 1 ? PATIENT.lessThanAWeek : PATIENT.weeksLeft(Math.floor(weeksLeft))}
               {missing > 0 &&
-                ` Moves in with needs ${Math.round(missing * WAIT_NEED_LOSS_PER_HEALTH)} lower and ${Math.round(missing * WAIT_STRAIN_PER_HEALTH * 100)}% faster decay.`}
+                PATIENT.arrivalCost(
+                  Math.round(missing * WAIT_NEED_LOSS_PER_HEALTH),
+                  Math.round(missing * WAIT_STRAIN_PER_HEALTH * 100),
+                )}
             </p>
           </div>
           <table class="stats">
             <thead>
               <tr>
                 <th />
-                <th>Starts at</th>
-                <th>Nudges</th>
+                <th>{PATIENT.startsAt}</th>
+                <th>{PATIENT.nudges}</th>
               </tr>
             </thead>
             <tbody>
@@ -163,9 +165,9 @@ export function PatientCard() {
                 return (
                   <tr class={level > 0 ? 'strong' : hard ? 'hard' : ''}>
                     <td>{act.label}</td>
-                    <td class="value">{level > 0 ? `lvl ${level}` : '–'}</td>
+                    <td class="value">{level > 0 ? UNITS.level(level) : UNITS.none}</td>
                     <td class="value">
-                      {nudges === 0 ? 'independent' : nudges}
+                      {nudges === 0 ? UNITS.independent : nudges}
                       {hard && <span class="hard-mark"> ×{HARD_EFFORT}</span>}
                     </td>
                   </tr>
@@ -182,7 +184,7 @@ export function PatientCard() {
               closeModal();
             }}
           >
-            Legg inn →
+            {WAITING.admit}
           </button>
         )}
       </div>

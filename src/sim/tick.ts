@@ -30,6 +30,7 @@ import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
+import { LOG } from '../content/text';
 
 const LOG_LIMIT = 30;
 
@@ -70,12 +71,6 @@ export function tick(state: GameState) {
 }
 
 // Never said out loud. The player can guess.
-const LOST_LINES = [
-  'was taken in by the emergency ward. The case is closed.',
-  'stopped answering the phone. The case is closed.',
-  'was found by a neighbour. The case is closed.',
-];
-
 /** Health drops for everyone on the waiting list. At 0 they are lost. */
 function declineWaiting(state: GameState) {
   for (let i = state.waiting.length - 1; i >= 0; i--) {
@@ -84,7 +79,7 @@ function declineWaiting(state: GameState) {
     if (p.health > 0) continue;
     state.waiting.splice(i, 1);
     state.lost += 1;
-    const line = LOST_LINES[state.lost % LOST_LINES.length]!;
+    const line = LOG.lost[state.lost % LOG.lost.length]!;
     log(state, `${ARCHETYPE_BY_ID[p.archetype].name} ${line}`);
   }
 }
@@ -205,7 +200,7 @@ export function levelUp(state: GameState, r: Resident, a: ActivityDef) {
   // Clicks already in the bar carry over, capped at the new size.
   r.bars[a.id] = Math.min(r.bars[a.id], effort(r, a.id));
   if (r.skill[a.id] < MAX_SKILL) {
-    log(state, `${a.label}: a little easier now.`, r.name);
+    log(state, LOG.easier(a.label), r.name);
     return;
   }
   log(state, a.independent, r.name);

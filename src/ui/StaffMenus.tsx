@@ -29,6 +29,7 @@ import {
 import type { Staff } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal, openModal } from './modal';
+import { STAFF_TEXT, UNITS } from '../content/text';
 
 /** The activities a speciality covers, in plain words. */
 const covers = (need: NeedId) =>
@@ -37,7 +38,7 @@ const covers = (need: NeedId) =>
     .join(', ');
 
 const levelText = (level: number) =>
-  level >= MAX_SKILL ? 'independent' : level > 0 ? `lvl ${level}` : '–';
+  level >= MAX_SKILL ? UNITS.independent : level > 0 ? UNITS.level(level) : UNITS.none;
 
 /** Name, role, face and a table of stats. */
 function Profile({ x }: { x: Staff }) {
@@ -57,7 +58,7 @@ function Profile({ x }: { x: Staff }) {
               <thead>
                 <tr>
                   <th />
-                  <th>Nudge</th>
+                  <th>{STAFF_TEXT.nudge}</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,11 +74,15 @@ function Profile({ x }: { x: Staff }) {
                         {has ? (
                           <Explain
                             cls="speciality"
-                            label={`×${SPECIALITY_FILL}`}
-                            text={`${x.name} works on ${SPECIALITY_LABEL[n].toLowerCase()} first, and does ${SPECIALITY_LABEL[n].toLowerCase()} activities at ${SPECIALITY_FILL}× speed.`}
+                            label={STAFF_TEXT.times(SPECIALITY_FILL)}
+                            text={STAFF_TEXT.specialityExplain(
+                              x.name,
+                              SPECIALITY_LABEL[n],
+                              SPECIALITY_FILL,
+                            )}
                           />
                         ) : (
-                          '×1'
+                          STAFF_TEXT.times(1)
                         )}
                       </td>
                     </tr>
@@ -90,7 +95,7 @@ function Profile({ x }: { x: Staff }) {
               <thead>
                 <tr>
                   <th />
-                  <th>Trains to</th>
+                  <th>{STAFF_TEXT.trainsTo}</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,10 +115,10 @@ function Profile({ x }: { x: Staff }) {
             <tfoot>
               <tr class="strong">
                 <td>
-                  Mestring
-                  <span class="covers">Every resident</span>
+                  {STAFF_TEXT.mestring}
+                  <span class="covers">{STAFF_TEXT.everyResident}</span>
                 </td>
-                <td class="value">+{MESTRING_BONUS * 100}% overskudd</td>
+                <td class="value">{STAFF_TEXT.mestringValue(MESTRING_BONUS * 100)}</td>
               </tr>
             </tfoot>
           )}
@@ -170,7 +175,7 @@ export function StaffSummary({ x }: { x: Staff }) {
   const n = Object.values(x.coaching).filter(Boolean).length;
   return (
     <span class="sheet">
-      {ROLES.coach.label} · {n} {n === 1 ? 'activity' : 'activities'}
+      {ROLES.coach.label} · {STAFF_TEXT.activities(n)}
     </span>
   );
 }
@@ -190,10 +195,10 @@ export function HireMenu() {
   if (modal.value?.kind !== 'hire') return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog hire" role="dialog" aria-modal="true" aria-label="Hire">
+      <div class="dialog hire" role="dialog" aria-modal="true" aria-label={STAFF_TEXT.hireTitle}>
         <header>
-          <h2>Pick one</h2>
-          <button class="close" onClick={closeModal} aria-label="Close">
+          <h2>{STAFF_TEXT.pickOne}</h2>
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
         </header>
@@ -203,7 +208,7 @@ export function HireMenu() {
               <Profile x={c} />
               <div class="hire-foot">
                 <span class={canAffordWage(s, c.role) ? 'wage' : 'wage short'}>
-                  {ROLES[c.role].wage} kr/week
+                  {UNITS.krPerWeek(ROLES[c.role].wage)}
                 </span>
                 <button
                   class="buy-request"
@@ -213,7 +218,7 @@ export function HireMenu() {
                     closeModal();
                   }}
                 >
-                  Hire
+                  {STAFF_TEXT.hire}
                 </button>
               </div>
             </article>
@@ -226,7 +231,7 @@ export function HireMenu() {
             closeModal();
           }}
         >
-          Turn them all down
+          {STAFF_TEXT.turnDown}
         </button>
       </div>
     </div>
@@ -243,8 +248,8 @@ export function StaffCard() {
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog staff-card" role="dialog" aria-modal="true" aria-label={x.name}>
         <header>
-          <span class="muted">{ROLES[x.role].wage} kr/week</span>
-          <button class="close" onClick={closeModal} aria-label="Close">
+          <span class="muted">{UNITS.krPerWeek(ROLES[x.role].wage)}</span>
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
         </header>
@@ -253,7 +258,7 @@ export function StaffCard() {
           class="buy-request wide"
           onClick={() => openModal({ kind: 'training', index: m.index })}
         >
-          Training →
+          {STAFF_TEXT.trainingLink}
         </button>
       </div>
     </div>
@@ -270,7 +275,12 @@ export function TrainingMenu() {
   if (!x) return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog requests training" role="dialog" aria-modal="true" aria-label="Training">
+      <div
+        class="dialog requests training"
+        role="dialog"
+        aria-modal="true"
+        aria-label={STAFF_TEXT.trainingTitle}
+      >
         <header>
           <nav class="tabs" role="tablist">
             {s.staff.map((y, j) => (
@@ -286,10 +296,10 @@ export function TrainingMenu() {
             ))}
           </nav>
           <span class="omsorg-left">
-            Omsorg <strong>{Math.floor(s.omsorg)}</strong>
+            {STAFF_TEXT.omsorg} <strong>{Math.floor(s.omsorg)}</strong>
             <span class="muted">/{omsorgCap(s)}</span>
           </span>
-          <button class="close" onClick={closeModal} aria-label="Close">
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
         </header>
@@ -299,8 +309,8 @@ export function TrainingMenu() {
         <div class="lines">
           <Course
             icon="🌱"
-            title="Mestring course"
-            effect={`Every resident: overskudd +${MESTRING_BONUS * 100}%`}
+            title={STAFF_TEXT.mestringCourse}
+            effect={STAFF_TEXT.mestringEffect(MESTRING_BONUS * 100)}
             done={!!x.mestring}
             cost={MESTRING_TRAIN_COST}
             can={canTrainMestring(s, i)}
@@ -321,8 +331,8 @@ function SpecialityCourse({ i, x, need }: { i: number; x: Staff; need: NeedId })
   return (
     <Course
       icon={SPECIALITY_ICON[need]}
-      title={`${SPECIALITY_LABEL[need]} course`}
-      effect={`${covers(need)}: ×${SPECIALITY_FILL} nudge, and first in line`}
+      title={STAFF_TEXT.specialityCourse(SPECIALITY_LABEL[need])}
+      effect={STAFF_TEXT.specialityEffect(covers(need), SPECIALITY_FILL)}
       done={has}
       cost={SPECIALITY_TRAIN_COST}
       can={canTrainSpeciality(s, i, need)}
@@ -339,8 +349,8 @@ function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
   return (
     <Course
       icon={a.icon}
-      title={`Teach ${a.label.toLowerCase()}`}
-      effect={done ? 'Up to independent' : `Up to ${levelText(level + 1)}`}
+      title={STAFF_TEXT.teach(a.label)}
+      effect={done ? STAFF_TEXT.upToIndependent : STAFF_TEXT.upTo(levelText(level + 1))}
       level={level}
       done={done}
       cost={coachTrainCost(x, id)}
@@ -370,7 +380,7 @@ function Course(p: {
         <strong class="title">{p.title}</strong>
         <span class="effect">{p.effect}</span>
         {p.level !== undefined && (
-          <span class="pips" aria-label={`Level ${p.level} of ${MAX_SKILL}`}>
+          <span class="pips" aria-label={UNITS.levelOf(p.level, MAX_SKILL)}>
             {Array.from({ length: MAX_SKILL }, (_, k) => (
               <span class={k < p.level! ? 'pip on' : 'pip'} />
             ))}
@@ -379,14 +389,14 @@ function Course(p: {
       </div>
       <div class="buy-col">
         {p.done ? (
-          <span class="tick" aria-label="Done">
+          <span class="tick" aria-label={UNITS.done}>
             ✓
           </span>
         ) : (
           <>
-            <span class="price">{p.cost} omsorg</span>
+            <span class="price">{UNITS.omsorg(p.cost)}</span>
             <button class="buy-request" disabled={!p.can} onClick={p.onTrain}>
-              Train
+              {STAFF_TEXT.train}
             </button>
           </>
         )}

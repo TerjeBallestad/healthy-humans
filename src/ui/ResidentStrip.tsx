@@ -6,6 +6,7 @@ import { bedCost, canBuyBed, grantMult } from '../sim/institution';
 import { isSeen } from '../sim/reveal';
 import { activeNeeds, unlockedActivities } from '../sim/selectors';
 import { act, useGame } from '../store';
+import { STRIP, UNITS } from '../content/text';
 
 /** One small card per bed. Click a card to look at that bed. */
 export function ResidentStrip() {
@@ -21,11 +22,11 @@ export function ResidentStrip() {
           {r ? (
             <>
               {unlockedActivities(r).some((a) => canTrain(s, i, a.id)) && (
-                <span class="skill-pip" title="A skill-up is ready" />
+                <span class="skill-pip" title={STRIP.skillUpReady} />
               )}
               <span class="name">
                 {r.name}
-                {bestTier(r) && <span class="tag">discharge</span>}
+                {bestTier(r) && <span class="tag">{STRIP.discharge}</span>}
               </span>
               <span class="now" aria-hidden="true">
                 {r.current ? ACTIVITY_BY_ID[r.current.id].icon : ''}
@@ -39,7 +40,7 @@ export function ResidentStrip() {
               </span>
             </>
           ) : (
-            <span class="name muted">Empty bed</span>
+            <span class="name muted">{STRIP.emptyBed}</span>
           )}
         </button>
       ))}
@@ -50,9 +51,9 @@ export function ResidentStrip() {
           disabled={!canBuyBed(s)}
           onClick={() => act(buyBed)}
         >
-          <span class="name">+ Bed</span>
-          <span class="price">{bedCost(s)} kr</span>
-          <span class="muted">+{GRANT_PER_BED * grantMult(s)} kr/w</span>
+          <span class="name">{STRIP.addBed}</span>
+          <span class="price">{UNITS.kr(bedCost(s))}</span>
+          <span class="muted">{UNITS.plusKrPerW(GRANT_PER_BED * grantMult(s))}</span>
         </button>
       )}
     </nav>
