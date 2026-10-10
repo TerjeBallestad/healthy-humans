@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { UPGRADES } from '../content/upgrades';
 import { canBuy, hireCost } from '../sim/institution';
+import { isSeen } from '../sim/reveal';
 import { canPostAd } from '../sim/staff';
 import type { GameState } from '../sim/state';
 import { useGame } from '../store';
@@ -8,6 +9,8 @@ import { modal, openModal, type Modal } from './modal';
 
 interface Toast {
   key: string;
+  /** The onboarding tip that says the same. No toast while that tip is not done. */
+  tip?: string;
   title: string;
   text: string;
   open?: Modal;
@@ -23,6 +26,7 @@ function events(s: GameState): Toast[] {
     if (canBuy(s, u.id))
       out.push({
         key: `upgrade-${u.id}`,
+        tip: 'tip:upgrades',
         title: 'Upgrade ready',
         text: `${u.label}: ${u.effect.toLowerCase()}`,
         open: { kind: 'requests' },
@@ -30,6 +34,7 @@ function events(s: GameState): Toast[] {
   if (canPostAd(s))
     out.push({
       key: `hire-${s.staff.length}`,
+      tip: 'tip:hire',
       title: 'You can hire',
       text: `A job ad costs ${hireCost(s)} kr.`,
     });
@@ -66,7 +71,7 @@ export function Toasts() {
     const fresh = now.filter((t) => !seen.current!.has(t.key));
     if (fresh.length === 0) return;
     fresh.forEach((t) => seen.current!.add(t.key));
-    const shown = merge(fresh);
+    const shown = merge(fresh.filter((t) => !t.tip || isSeen(s, t.tip)));
     setToasts((old) => [...old, ...shown]);
     for (const t of shown)
       setTimeout(() => setToasts((old) => old.filter((x) => x.key !== t.key)), TOAST_MS);

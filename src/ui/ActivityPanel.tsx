@@ -43,6 +43,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
   return (
     <div
       class={classes}
+      data-tip={`act-${a.id}`}
       role="button"
       tabIndex={auto ? -1 : 0}
       aria-disabled={!nudgeable}
@@ -124,6 +125,7 @@ function TrainButton({ activity: a }: { activity: ActivityDef }) {
       <span class="lvl">lvl {next}</span>
       <button
         class="train"
+        data-tip={`train-${a.id}`}
         disabled={!canTrain(s, bed, a.id)}
         title={`Train for ${trainCost(skill)} overskudd: ${effect}`}
         aria-label={`Train ${a.label} for ${trainCost(skill)} overskudd: ${effect}`}

@@ -3,6 +3,7 @@ import { GRANT_PER_BED, MAX_BEDS, NEED_THRESHOLD } from '../content/tuning';
 import { buyBed, canTrain } from '../sim/actions';
 import { bestTier } from '../sim/discharge';
 import { bedCost, canBuyBed, grantMult } from '../sim/institution';
+import { isSeen } from '../sim/reveal';
 import { activeNeeds, unlockedActivities } from '../sim/selectors';
 import { act, useGame } from '../store';
 
@@ -42,8 +43,13 @@ export function ResidentStrip() {
           )}
         </button>
       ))}
-      {s.beds.length < MAX_BEDS && (
-        <button class="bed buy-bed" disabled={!canBuyBed(s)} onClick={() => act(buyBed)}>
+      {s.beds.length < MAX_BEDS && isSeen(s, 'beds') && (
+        <button
+          class="bed buy-bed"
+          data-tip="bed"
+          disabled={!canBuyBed(s)}
+          onClick={() => act(buyBed)}
+        >
           <span class="name">+ Bed</span>
           <span class="price">{bedCost(s)} kr</span>
           <span class="muted">+{GRANT_PER_BED * grantMult(s)} kr/w</span>

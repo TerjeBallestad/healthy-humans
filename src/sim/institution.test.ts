@@ -34,6 +34,7 @@ import {
   turnDown,
 } from './staff';
 import { newGame, type Staff } from './state';
+import { isSeen } from './reveal';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
 
@@ -266,5 +267,26 @@ describe('omsorg', () => {
     expect(omsorgCap(s)).toBe(60);
     expect(buyUpgrade(s, 'journal')).toBe(true);
     expect(omsorgCap(s)).toBe(80);
+  });
+});
+
+describe('reveal', () => {
+  test('a new game hides the staff panel until a job ad is affordable', () => {
+    const s = newGame();
+    tick(s);
+    expect(isSeen(s, 'staff')).toBe(false);
+    s.budget = 400;
+    tick(s);
+    expect(isSeen(s, 'staff')).toBe(true);
+    s.budget = 0;
+    tick(s);
+    expect(isSeen(s, 'staff')).toBe(true);
+  });
+
+  test('an old save without the list sees everything', () => {
+    const s = newGame();
+    delete s.seen;
+    expect(isSeen(s, 'staff')).toBe(true);
+    expect(isSeen(s, 'tip:nudge')).toBe(true);
   });
 });

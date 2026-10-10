@@ -2,6 +2,7 @@ import { ROLES } from '../content/staff';
 import { TIERS } from '../content/tiers';
 import { taxPerWeek } from '../sim/discharge';
 import { hireCost, staffNudgesPerSecond } from '../sim/institution';
+import { isSeen } from '../sim/reveal';
 import { canPostAd, postAd } from '../sim/staff';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { openModal } from './modal';
@@ -13,6 +14,7 @@ export function InstitutionPanel() {
   const s = useGame();
   const affordable = affordableRequests(s);
   const daysLeft = s.adReady === null ? 0 : Math.ceil(((s.adReady - s.tick) / TICKS_PER_WEEK) * 7);
+  if (!isSeen(s, 'staff')) return null;
   return (
     <section class="panel institution">
       {s.discharged.length > 0 && (
@@ -67,22 +69,26 @@ export function InstitutionPanel() {
           </span>
         </button>
       ) : (
-        <button class="buy" disabled={!canPostAd(s)} onClick={() => act(postAd)}>
+        <button class="buy" data-tip="hire" disabled={!canPostAd(s)} onClick={() => act(postAd)}>
           <span>Hire</span>
           <span class="price">{hireCost(s)} kr</span>
         </button>
       )}
-      <button
-        class="buy requests-open"
-        disabled={s.staff.length === 0}
-        onClick={() => openModal({ kind: 'training', index: 0 })}
-      >
-        <span>Training</span>
-      </button>
-      <button class="buy requests-open" onClick={() => openModal({ kind: 'requests' })}>
-        <span>Upgrades</span>
-        {affordable > 0 && <span class="badge">{affordable}</span>}
-      </button>
+      {s.staff.length > 0 && (
+        <button class="buy requests-open" onClick={() => openModal({ kind: 'training', index: 0 })}>
+          <span>Training</span>
+        </button>
+      )}
+      {isSeen(s, 'upgrades') && (
+        <button
+          class="buy requests-open"
+          data-tip="upgrades"
+          onClick={() => openModal({ kind: 'requests' })}
+        >
+          <span>Upgrades</span>
+          {affordable > 0 && <span class="badge">{affordable}</span>}
+        </button>
+      )}
     </section>
   );
 }

@@ -3,6 +3,7 @@ import { MILESTONE_BY_ID } from '../content/milestones';
 import { TRAIT_BY_ID } from '../content/traits';
 import { NEED_THRESHOLD, OVERSKUDD_CAP } from '../content/tuning';
 import { bestTier, nextTier, openDischarge, tierMissing, tierTax } from '../sim/discharge';
+import { isSeen } from '../sim/reveal';
 import { activeNeeds, statusLine } from '../sim/selectors';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
@@ -51,16 +52,18 @@ export function ResidentPanel() {
         })}
       </ul>
 
-      <div class="overskudd">
-        <span class="label">Overskudd</span>
-        <div class="meter">
-          <div class="fill" style={{ width: `${(r.overskudd / OVERSKUDD_CAP) * 100}%` }} />
+      {isSeen(s, 'overskudd') && (
+        <div class="overskudd" data-tip="overskudd">
+          <span class="label">Overskudd</span>
+          <div class="meter">
+            <div class="fill" style={{ width: `${(r.overskudd / OVERSKUDD_CAP) * 100}%` }} />
+          </div>
+          <span class="state">
+            {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
+            {green < 1 && ` · growing at ${Math.round(green * 100)}% while a need is low`}
+          </span>
         </div>
-        <span class="state">
-          {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
-          {green < 1 && ` · growing at ${Math.round(green * 100)}% while a need is low`}
-        </span>
-      </div>
+      )}
 
       {r.milestones.length > 0 && (
         <p class="alone">
@@ -71,7 +74,11 @@ export function ResidentPanel() {
 
       <div class="discharge">
         {best && (
-          <button class="buy" onClick={() => act((g) => openDischarge(g, g.selected))}>
+          <button
+            class="buy"
+            data-tip="discharge"
+            onClick={() => act((g) => openDischarge(g, g.selected))}
+          >
             <span>Discharge: {best.label.toLowerCase()}</span>
             <span class="price">+{tierTax(r, best.id)} kr/week</span>
           </button>

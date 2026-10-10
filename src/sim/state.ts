@@ -150,6 +150,8 @@ export interface GameState {
   /** Speed to return to when a dialog closes. */
   resumeSpeed: number;
   seed: number;
+  /** Parts of the screen shown and tips done, for the onboarding. Missing in old saves: no onboarding. */
+  seen?: string[];
 }
 
 const perActivity = (value: number) =>
@@ -234,6 +236,7 @@ export function newGame(): GameState {
     proposal: null,
     resumeSpeed: 1,
     seed: (Math.random() * 2 ** 32) | 0,
+    seen: [],
   };
   for (let i = 0; i < WAITLIST_START; i++)
     s.waiting.push(newReferral(s, ARCHETYPES[(1 + i) % ARCHETYPES.length]!.id));

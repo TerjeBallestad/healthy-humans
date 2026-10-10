@@ -24,6 +24,7 @@ import {
   overskuddMult,
   workerNudgesPerSecond,
 } from './institution';
+import { updateReveals } from './reveal';
 import { checkAd, coachLevel } from './staff';
 import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
@@ -54,6 +55,7 @@ export function tick(state: GameState) {
   }
   declineWaiting(state);
   checkAd(state);
+  updateReveals(state);
 
   staffWork(state);
   for (const [, r] of occupied(state)) {

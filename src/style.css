@@ -1581,3 +1581,52 @@ button:disabled {
     transform: translateY(8px);
   }
 }
+
+/* Onboarding: one tip at a time, next to the element it explains. */
+.tip-target {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  animation: tip-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tip-pulse {
+  50% {
+    outline-color: transparent;
+  }
+}
+.tip {
+  position: fixed;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 280px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--gold);
+  color: var(--bg);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  pointer-events: auto;
+}
+.tip strong {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tip-ok {
+  align-self: flex-end;
+  padding: 2px 12px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+/* The arrow is clipped, so an outline would not show. It bounces instead. */
+.train.tip-target {
+  outline: none;
+  animation: tip-bounce 0.9s ease-in-out infinite;
+}
+@keyframes tip-bounce {
+  50% {
+    transform: translateY(-6px);
+  }
+}

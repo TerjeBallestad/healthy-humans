@@ -7,11 +7,13 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
-- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well", and the søknadsfrist countdown is nice. Worker speed 0.4 helped the lull. After that play: worker 0.35, bed 1000 kr, a funding line (grant mult), a HUD of chips, a venteliste that scrolls on its own with referral cards. On 2026-10-10: the hire menu opens by itself when the candidates arrive, and each extra bed adds 40 kr/week to the grant. Terje played that: bed income works, pacing is good (fine-tune later), and the game is getting tactically interesting with different ways to play. The last tight spot was overskudd. So, also on 2026-10-10: a House tab (common room, garden), a mestring course for staff, and omsorg rate and cap lines. Not yet played.
+- **Steps 1 to 7j are done.** 7j (staff as units: job ads, candidates, profiles, omsorg training) is live. Terje played it on 2026-10-09: the hiring flow "works really well", and the søknadsfrist countdown is nice. Worker speed 0.4 helped the lull. After that play: worker 0.35, bed 1000 kr, a funding line (grant mult), a HUD of chips, a venteliste that scrolls on its own with referral cards. On 2026-10-10: the hire menu opens by itself when the candidates arrive, and each extra bed adds 40 kr/week to the grant. Terje played that: bed income works, pacing is good (fine-tune later), and the game is getting tactically interesting with different ways to play. The last tight spot was overskudd. So, also on 2026-10-10: a House tab (common room, garden), a mestring course for staff, and omsorg rate and cap lines. Terje played to Y3 M5 W4 (about 46 min at 1x) before it ran out of fumes: every cap was reached. Then: a skill-up pip on the bed card, toasts (`src/ui/Toasts.tsx`), and onboarding (`src/sim/reveal.ts`, `src/ui/Tips.tsx`). Not yet played.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
 - **Next candidates:** first check the bed at 1000 kr and the funding line (is the lull still there, is it gone too fast?). Then: glanceable needs on the activity cards, drains and conversions for omsorg, case worker and intake rules, joker cards, roommate traits. See "Automation ladder" under open issues.
 
 ## What the game does now
+
+0. **Onboarding (new games only).** `seen` in the state lists the parts shown and the tips done. Old saves have no list and skip it. The staff panel shows at 400 kr, Upgrades at the first affordable upgrade, the venteliste with "+ Bed" and the 👷/💀 chips when a bed or a discharge is possible, and overskudd at the first skill-up. One "Click here" tip shows at a time, on its element: nudge, omsorg at 0, train, hire, upgrades, bed, admit, discharge. A click on the target or "OK" completes it. A toast that repeats an unseen tip is skipped.
 
 1. Arvid moves in. He learns six rungs at a time (`LEARNING_WINDOW`, was 3), so food, hygiene, energy and home are active from the start.
 2. You spend **omsorg** (1 per nudge) to fill the effort ring on activity cards: a ring of segments around the icon, one per nudge. Staff nudges pop the staff member's initial on the ring. One click is one nudge (press-and-hold was removed after play). A full bar makes the activity **ready**. It starts when its need drops below 50. Ready activities go lowest need first, and the cards show #1, #2.
@@ -81,6 +83,8 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 | Overskudd is the last tight spot                    | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
 | Wants omsorg upgrades, not only nudge upgrades      | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                         |
 | Discharged list squeezes the venteliste to 0 rows   | Discharged shows a count per tier and the tax, not the names.                                                                              |
+| Skill-up and affordable things are easy to miss    | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
+| The start is overwhelming for new players          | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                          |
 | HUD should be cold data like the date               | Chips with outlines. No "Budget", "Helped", "per nudge" labels.                                                                            |
 | 7h: coach toggles remove the strategy               | 7i: coach steps are one-way. The coach keeps 20 overskudd for a proposal while a milestone is open.                                         |
 | 7h: needs are a blind spot, game too fast           | 7i: `PACE` 0.7 on decay, omsorg, staff and overskudd. Glanceable needs not built yet.                                                       |
@@ -88,6 +92,8 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 | 7d: tactical rhythm is good, wants strategic layer  | Not built. A new patient is hard for a while, two at once is too much. Full omsorg or more staff makes it fine. Tempo at 24 s is fine.      |
 
 ## Open issues
+
+- **Next big step (Terje, 2026-10-10): several facilities.** In the end it joins the Godot sim in `../lifelines-core-loop`, with facilities as places on a map and residents seen moving and doing activities. In this UI, facilities may be tabs. The top-level play: which staff go to which facility, which patient goes to which bed. Before that, the wager and admission must be automated (case worker, intake rule). Ideas discussed, none chosen: potential on referrals (the highest tier they can reach), disorders with their own ladder and one new rule each (rus: craving rises and relapse drops a skill; ADHD: the effort ring leaks; angst: locked activities and calm; psychosis: medication only a nurse fills), facility types (akutt, bofellesskap, rusbolig, treningsleilighet, dagsenter), moves that cost something, more activities per need, staff roles for disorders.
 
 - **Automation ladder (from 2026-10-09).** Built: nudge mult, staff mult, staff as units with specialities and coach sheets. Not built:
   - **Case worker:** proposals resolve by a rule ("wager up to 300 kr").
@@ -128,7 +134,7 @@ Last session: 2026-10-10 (7j). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 64 tests
+npm test           # vitest, 66 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 ```

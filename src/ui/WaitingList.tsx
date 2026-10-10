@@ -12,6 +12,7 @@ import {
 } from '../content/tuning';
 import { admit, freeBed } from '../sim/actions';
 import type { WaitingPerson } from '../sim/state';
+import { isSeen } from '../sim/reveal';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 import { closeModal, modal, openModal } from './modal';
@@ -28,6 +29,7 @@ export function WaitingList() {
   const period = WAITLIST_WEEKS_PER_PERSON * TICKS_PER_WEEK;
   const nextIn = (period - (s.tick % period)) / TICKS_PER_WEEK;
   const bedFree = freeBed(s) >= 0;
+  if (!isSeen(s, 'beds')) return null;
   return (
     <section class="panel waitlist">
       <h3>
@@ -53,7 +55,7 @@ export function WaitingList() {
               <span class="row">
                 <span class="cost">{trait.effect}</span>
                 {bedFree && (
-                  <button class="admit" onClick={() => act((g) => admit(g, i))}>
+                  <button class="admit" data-tip="admit" onClick={() => act((g) => admit(g, i))}>
                     Legg inn →
                   </button>
                 )}
