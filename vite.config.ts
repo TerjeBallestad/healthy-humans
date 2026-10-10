@@ -11,8 +11,9 @@ const osloTime = new Intl.DateTimeFormat('sv-SE', {
 });
 
 export default defineConfig({
-  // GitHub Pages serves the site under /healthy-humans/.
-  base: process.env.GITHUB_ACTIONS ? '/healthy-humans/' : '/',
+  // GitHub Pages serves the site under /healthy-humans/. itch.io serves it from a CDN path we
+  // do not know, so the itch build uses relative paths.
+  base: process.env.ITCH ? './' : process.env.GITHUB_ACTIONS ? '/healthy-humans/' : '/',
   plugins: [preact()],
   define: {
     __BUILD_TIME__: JSON.stringify(osloTime.format(new Date())),

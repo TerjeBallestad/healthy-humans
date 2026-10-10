@@ -6,6 +6,7 @@ Last session: 2026-10-10 (7k). Read this first, then `PLAN.md`.
 
 - **Live:** https://terjeballestad.github.io/healthy-humans/
 - **Repo:** https://github.com/TerjeBallestad/healthy-humans (public, `main`). Each push runs the tests, builds and deploys to Pages.
+- **itch.io (set up 2026-10-10, not published):** `npm run build:itch` builds into `dist-itch/` with relative paths. `npm run deploy:itch` builds and pushes it with butler (`~/.local/bin/butler`) to `terjeballestad/healthy-humans:html5`, with the commit as the version. The page needs custom art before it goes public (about 30 emoji icons and faces, a 630×500 cover, screenshots).
 - **Plan:** `PLAN.md` holds the spec, the glossary, the tuning and the build order. `lifelines-incremental-onepager.md` is the original pitch.
 - **Steps 1 to 7k are done.** 7k (2026-10-10) is the economy and onboarding pass: bed income, a House tab and a mestring course for overskudd, omsorg rate and cap upgrades, a skill-up pip, toasts, gradual reveal and tips, and one pause/play toggle.
 - **Last play (2026-10-10):** Terje played to Y3 M5 W4 (115 weeks, about 46 min at 1x) and found it "quite interesting tactically", with different ways to play. Pacing is good, not perfect. It ran out of fumes when every cap was reached (4 beds, 6 staff, all upgrades). The onboarding tips work well after two fixes (a 1.5 s click delay, and a pause while a tip shows). Not yet played: the pause/play toggle, omsorg without a box, and the hire pool with one of each role.
@@ -135,6 +136,7 @@ npm run dev        # local dev server
 npm test           # vitest, 67 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
+npm run deploy:itch  # build for itch.io and push with butler
 ```
 
 - **Code layout:**

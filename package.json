@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:itch": "tsc --noEmit && ITCH=1 vite build --outDir dist-itch --emptyOutDir",
+    "deploy:itch": "npm run build:itch && butler push dist-itch terjeballestad/healthy-humans:html5 --userversion $(git rev-parse --short HEAD)",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
