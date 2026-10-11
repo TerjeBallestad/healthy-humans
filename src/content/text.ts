@@ -125,22 +125,16 @@ export const UPGRADES_MENU = {
   title: 'Upgrades',
   tabs: { you: 'Your work', staff: 'Staff', funding: 'Funding', house: 'House' },
   buy: 'Buy',
-  level: (n: number) => `lvl ${n}`,
-  /** One nudge's fill: whole segments, and a chance of one more. */
-  fill: (whole: number, chance: number) =>
-    chance > 0
-      ? `${whole}, ${Math.round(chance * 100)}% chance of ${whole + 1}`
-      : `${whole} ${plural(whole, 'segment', 'segments')}`,
-  /** What the next level does: the value now, then the value after. */
+  /** What the next step gives. */
   effect: {
-    nudge: (now: string, next: string) => `Each nudge: ${now} → ${next}`,
-    omsorgRate: (now: string, next: string) => `Omsorg refills ×${now} → ×${next}`,
-    omsorgCap: (now: string, next: string) => `Omsorg cap ${now} → ${next}`,
-    staff: (now: string, next: string) => `Staff nudge ×${now} → ×${next}`,
-    grant: (now: string, next: string) => `Kommune grant ×${now} → ×${next}`,
-    house: (now: string, next: string) => `Overskudd ×${now} → ×${next} for everyone`,
+    nudge: (n: number) => `Each nudge fills ${n} segments`,
+    omsorgRate: (x: string) => `Omsorg refills ×${x}`,
+    omsorgCap: (n: number) => `Omsorg cap ${n}`,
+    staff: (x: string) => `Staff nudge ×${x}`,
+    grant: (x: string) => `Kommune grant ×${x}`,
+    house: (x: string) => `Overskudd ×${x} for everyone`,
   },
-  // TODO(Terje): placeholder names for milestones past the written ones, as "Garden III".
+  // TODO(Terje): placeholder names for steps past the written ones, as "Garden III".
   repeatName: (label: string, n: number) => `${label} ${roman(n)}`,
 };
 
@@ -227,7 +221,7 @@ export const PROPOSAL = {
 
 export const TOASTS = {
   upgradeReady: 'Upgrade ready',
-  upgrade: (label: string, level: string) => `${label}: ${level}`,
+  upgrade: (label: string, effect: string) => `${label}: ${effect.toLowerCase()}`,
   canHire: 'You can hire',
   adCost: (kr: number) => `A job ad costs ${kr} kr.`,
   upgradesReady: 'Upgrades ready',

@@ -7,11 +7,10 @@ import {
   canBuy,
   canBuyBed,
   lineLevel,
-  nextMilestone,
-  nudgeFill,
+  nextStep,
+  nudgeMult,
   upgradeCost,
 } from './institution';
-import { random } from './rng';
 import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
@@ -30,9 +29,7 @@ export function nudge(state: GameState, bed: number, id: ActivityId): boolean {
   if (!canNudge(state, bed, id)) return false;
   const r = state.beds[bed]!;
   state.omsorg -= OMSORG_PER_NUDGE;
-  const { whole, chance } = nudgeFill(state);
-  const fill = whole + (chance > 0 && random(state) < chance ? 1 : 0);
-  r.bars[id] = Math.min(effort(r, id), r.bars[id] + fill);
+  r.bars[id] = Math.min(effort(r, id), r.bars[id] + nudgeMult(state));
   return true;
 }
 
@@ -78,10 +75,9 @@ export function admit(state: GameState, index: number): boolean {
 
 export function buyUpgrade(state: GameState, line: LineId): boolean {
   if (!canBuy(state, line)) return false;
-  const m = nextMilestone(state, line);
+  const step = nextStep(state, line);
   state.budget -= upgradeCost(state, line);
   state.levels[line] = lineLevel(state, line) + 1;
-  // Only the named milestones go in the log. Plain levels would flood it.
-  if (state.levels[line] === m.level) log(state, LOG.upgradeBought(m.label, m.note || undefined));
+  log(state, LOG.upgradeBought(step.label, step.note || undefined));
   return true;
 }

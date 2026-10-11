@@ -19,9 +19,8 @@ import { buyBed, buyUpgrade, nudge } from './actions';
 import {
   hireCost,
   lineLevel,
-  multAt,
-  nextMilestone,
-  splitFill,
+  lineValue,
+  nextStep,
   upgradeCost,
   netIncomePerWeek,
   omsorgCap,
@@ -58,9 +57,9 @@ describe('budget', () => {
     const s = newGame();
     s.budget = 5000;
     expect(buyUpgrade(s, 'grant')).toBe(true);
-    expect(netIncomePerWeek(s)).toBeCloseTo(GRANT_PER_WEEK * 1.1);
-    s.levels.grant = 10;
-    expect(netIncomePerWeek(s)).toBeCloseTo(GRANT_PER_WEEK * 4);
+    expect(netIncomePerWeek(s)).toBeCloseTo(GRANT_PER_WEEK * 1.5);
+    s.levels.grant = 2;
+    expect(netIncomePerWeek(s)).toBeCloseTo(GRANT_PER_WEEK * 2.25);
   });
 
   test('each extra bed adds to the grant, and the funding line multiplies it', () => {
@@ -68,7 +67,7 @@ describe('budget', () => {
     s.budget = 10000;
     expect(buyBed(s)).toBe(true);
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK + GRANT_PER_BED);
-    s.levels.grant = 5;
+    s.levels.grant = 1;
     expect(netIncomePerWeek(s)).toBeCloseTo((GRANT_PER_WEEK + GRANT_PER_BED) * 1.5);
   });
 });
@@ -194,56 +193,45 @@ describe('job ad', () => {
 });
 
 describe('upgrades', () => {
-  test('a level costs budget, and each level costs more than the last', () => {
+  test('a step costs budget, and each step costs more than the last', () => {
     const s = newGame();
     s.budget = 5000;
-    const first = upgradeCost(s, 'nudge');
     expect(buyUpgrade(s, 'nudge')).toBe(true);
-    expect(s.budget).toBe(5000 - first);
+    expect(s.budget).toBe(4500);
     expect(lineLevel(s, 'nudge')).toBe(1);
-    expect(upgradeCost(s, 'nudge')).toBeGreaterThan(first);
+    expect(upgradeCost(s, 'nudge')).toBe(1100);
     s.budget = 0;
     expect(buyUpgrade(s, 'nudge')).toBe(false);
   });
 
-  test('each level adds a step, and every 10th level doubles the line', () => {
-    expect(multAt(0)).toBe(1);
-    expect(multAt(5)).toBeCloseTo(1.5);
-    expect(multAt(9)).toBeCloseTo(1.9);
-    expect(multAt(10)).toBeCloseTo(4);
-    expect(multAt(20)).toBeCloseTo(12);
+  test('rate lines multiply by 1.5 each step, and the cap adds 20', () => {
+    expect(lineValue('staff', 2)).toBeCloseTo(2.25);
+    expect(lineValue('omsorgCap', 3)).toBe(100);
   });
 
-  test('the line has no end, and milestones past the written ones get a number', () => {
+  test('the nudge line ends at 4 segments', () => {
     const s = newGame();
-    expect(nextMilestone(s, 'house').label).toBe('Common room');
-    s.levels.house = 10;
-    expect(nextMilestone(s, 'house').label).toBe('Garden');
-    s.levels.house = 25;
-    expect(nextMilestone(s, 'house')).toMatchObject({ label: 'Garden III', level: 30 });
+    s.budget = 1e6;
+    for (let i = 0; i < 3; i++) expect(buyUpgrade(s, 'nudge')).toBe(true);
+    expect(buyUpgrade(s, 'nudge')).toBe(false);
+    expect(nudgeMultOf(s)).toBe(4);
   });
 
-  test('a nudge fills whole segments, with a chance of one more', () => {
-    expect(splitFill(multAt(1))).toEqual({ whole: 1, chance: 0.1 });
-    expect(splitFill(multAt(10))).toEqual({ whole: 4, chance: 0 });
+  test('rate lines have no end, and steps past the written ones get a number', () => {
     const s = newGame();
-    s.levels.nudge = 3;
-    const fills = new Set<number>();
-    for (let i = 0; i < 200; i++) {
-      s.omsorg = 40;
-      s.beds[0]!.bars.eat = 0;
-      nudge(s, 0, 'eat');
-      fills.add(s.beds[0]!.bars.eat);
-    }
-    expect([...fills].sort()).toEqual([1, 2]);
+    expect(nextStep(s, 'house').label).toBe('Common room');
+    s.levels.house = 1;
+    expect(nextStep(s, 'house').label).toBe('Garden');
+    s.levels.house = 2;
+    expect(nextStep(s, 'house').label).toBe('Garden III');
   });
 
   test('the nudge line makes one nudge fill more segments, never past the bar', () => {
     const s = newGame();
-    s.levels.nudge = 10;
+    s.levels.nudge = 1;
     s.omsorg = 40;
     nudge(s, 0, 'eat');
-    expect(s.beds[0]!.bars.eat).toBe(4);
+    expect(s.beds[0]!.bars.eat).toBe(2);
     s.beds[0]!.bars.eat = 11;
     nudge(s, 0, 'eat');
     expect(s.beds[0]!.bars.eat).toBe(12);
@@ -253,10 +241,12 @@ describe('upgrades', () => {
     const s = newGame();
     s.staff = [worker('Kari')];
     const before = staffNudgesPerSecond(s);
-    s.levels.staff = 5;
+    s.levels.staff = 1;
     expect(staffNudgesPerSecond(s) / before).toBeCloseTo(1.5);
   });
 });
+
+const nudgeMultOf = (s: ReturnType<typeof newGame>) => lineValue('nudge', lineLevel(s, 'nudge'));
 
 describe('coach', () => {
   test('spends overskudd only on levels a coach can teach', () => {
@@ -292,7 +282,7 @@ describe('overskudd', () => {
     s.budget = 5000;
     s.omsorg = 100;
     expect(overskuddMult(s)).toBe(1);
-    s.levels.house = 5;
+    s.levels.house = 1;
     expect(overskuddMult(s)).toBeCloseTo(1.5);
     s.staff.push(worker('A'), worker('B'));
     expect(trainMestring(s, 0)).toBe(true);
@@ -307,13 +297,13 @@ describe('omsorg', () => {
   test('the rate and cap lines raise omsorg', () => {
     const s = newGame();
     const rate = omsorgPerSecond(s);
-    s.levels.omsorgRate = 5;
+    s.levels.omsorgRate = 1;
     expect(omsorgPerSecond(s)).toBeCloseTo(rate * 1.5);
     expect(omsorgCap(s)).toBe(40);
-    s.levels.omsorgCap = 5;
+    s.levels.omsorgCap = 1;
     expect(omsorgCap(s)).toBe(60);
-    s.levels.omsorgCap = 10;
-    expect(omsorgCap(s)).toBe(160);
+    s.levels.omsorgCap = 2;
+    expect(omsorgCap(s)).toBe(80);
   });
 });
 

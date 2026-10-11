@@ -11,7 +11,7 @@ import {
 import { LINES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, nudge, train } from '../src/sim/actions';
 import { canHire, hire, postAd, turnDown } from '../src/sim/staff';
-import { bedCost, canAffordWage, hireCost, upgradeCost } from '../src/sim/institution';
+import { bedCost, canAffordWage, canBuy, hireCost, upgradeCost } from '../src/sim/institution';
 import { MAX_STAFF } from '../src/content/staff';
 import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
@@ -87,14 +87,14 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
       const x = s.staff.at(-1)!;
       purchases.push({ what: `hire ${x.name} (${x.role})`, tick: s.tick - start });
     }
-    // The cheapest level first, across all lines.
+    // The cheapest step first, across all lines.
     // Keep enough for the next job ad and the next bed, or the cheap levels eat everything.
     const reserve =
       (s.staff.length < MAX_STAFF && canAffordWage(s, 'worker') ? hireCost(s) : 0) +
       (BEDS && s.beds.length < MAX_BEDS ? bedCost(s) : 0);
-    const u = LINES.filter((x) => s.budget - upgradeCost(s, x.id) >= reserve).sort(
-      (a, b) => upgradeCost(s, a.id) - upgradeCost(s, b.id),
-    )[0];
+    const u = LINES.filter(
+      (x) => canBuy(s, x.id) && s.budget - upgradeCost(s, x.id) >= reserve,
+    ).sort((a, b) => upgradeCost(s, a.id) - upgradeCost(s, b.id))[0];
     if (u && !pick && !posted && s.adReady === null) {
       buyUpgrade(s, u.id);
       purchases.push({ what: `${u.id} ${s.levels[u.id]}`, tick: s.tick - start });

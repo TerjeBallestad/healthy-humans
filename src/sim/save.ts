@@ -1,4 +1,4 @@
-import { MILESTONE_EVERY, type LineId } from '../content/upgrades';
+import { LINE_BY_ID, type LineId } from '../content/upgrades';
 import { SAVE_VERSION, newGame, type GameState } from './state';
 
 const KEY = 'healthy-humans-save';
@@ -9,6 +9,7 @@ export function loadGame(): GameState {
     if (raw) {
       const parsed = JSON.parse(raw) as GameState;
       if (parsed.version === 22) migrateUpgrades(parsed);
+      if (parsed.version === 23) migrateLevels(parsed);
       if (parsed.version === SAVE_VERSION) return parsed;
     }
   } catch {
@@ -49,7 +50,7 @@ const OLD_LINES: Record<string, LineId> = {
   garden: 'house',
 };
 
-/** Version 22 had two fixed upgrades per line. One bought is about level 5, two are the first milestone. */
+/** Version 22 had two fixed upgrades per line. They are the first two steps. */
 function migrateUpgrades(s: GameState) {
   const old = (s as unknown as { upgrades?: string[] }).upgrades ?? [];
   const count: Partial<Record<LineId, number>> = {};
@@ -58,8 +59,14 @@ function migrateUpgrades(s: GameState) {
     if (line) count[line] = (count[line] ?? 0) + 1;
   }
   s.levels = {};
-  for (const [line, n] of Object.entries(count) as [LineId, number][])
-    s.levels[line] = (n * MILESTONE_EVERY) / 2;
+  for (const [line, n] of Object.entries(count) as [LineId, number][]) s.levels[line] = n;
   delete (s as unknown as { upgrades?: string[] }).upgrades;
-  s.version = 23;
+  s.version = 24;
+}
+
+/** Version 23 had ten small levels to each step. */
+function migrateLevels(s: GameState) {
+  for (const [line, n] of Object.entries(s.levels) as [LineId, number][])
+    s.levels[line] = Math.min(Math.round(n / 5), LINE_BY_ID[line].max ?? Infinity);
+  s.version = 24;
 }

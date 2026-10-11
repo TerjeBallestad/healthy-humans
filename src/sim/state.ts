@@ -21,7 +21,7 @@ import type { TierId } from '../content/tiers';
 import type { StaffRole } from '../content/staff';
 import type { LineId } from '../content/upgrades';
 
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -130,7 +130,7 @@ export interface GameState {
   adReady: number | null;
   /** People who answered the job ad. The player picks one. */
   candidates: Staff[];
-  /** Levels bought in each upgrade line. A line that is not here is at 0. */
+  /** Steps bought in each upgrade line. A line that is not here is at 0. */
   levels: Partial<Record<LineId, number>>;
   /** One slot per bed. Null is an empty bed. */
   beds: (Resident | null)[];

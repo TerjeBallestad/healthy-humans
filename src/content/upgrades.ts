@@ -2,8 +2,8 @@ export type LineId = 'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'grant' | 
 
 export type UpgradeTab = 'you' | 'staff' | 'funding' | 'house';
 
-/** A named level with a big bonus. One comes every `MILESTONE_EVERY` levels. */
-export interface UpgradeMilestone {
+/** A named step in a line. */
+export interface UpgradeStep {
   label: string;
   /** One dry line under the name. */
   note: string;
@@ -14,29 +14,30 @@ export interface UpgradeMilestone {
 export interface LineDef {
   id: LineId;
   tab: UpgradeTab;
-  /** Kroner for level 1. Each level after costs `UPGRADE_COST_GROWTH` times more. */
+  /** Kroner for step 1. Each step after costs `UPGRADE_COST_GROWTH` times more. */
   baseCost: number;
-  /** Named milestones in order. Past the last one, the names repeat with a number (see text.ts). */
-  milestones: UpgradeMilestone[];
+  /** What each step does: multiply the value, or add to it. */
+  grow: { times: number } | { plus: number };
+  /** Steps the line has. No number means no end. */
+  max?: number;
+  /** Named steps in order. Past the last one, the names repeat with a number (see text.ts). */
+  steps: UpgradeStep[];
 }
 
-/** Levels between named milestones. */
-export const MILESTONE_EVERY = 10;
-/** Each plain level adds this much to the line's multiplier. */
-export const UPGRADE_STEP = 0.1;
-/** Each named milestone multiplies the line by this. */
-export const MILESTONE_BONUS = 2;
-/** Each level costs this many times the one before. */
-export const UPGRADE_COST_GROWTH = 1.15;
+/** Each step costs this many times the one before. */
+export const UPGRADE_COST_GROWTH = 2.2;
 
 // Ways to grow: make your own click stronger, build the machine that clicks for you, get more money,
-// or make the house a better place to get well. Every line has levels with no end, as in AdVenture Capitalist.
+// or make the house a better place to get well. Lines of rates have no end. The nudge line ends where a
+// bigger nudge adds nothing.
 export const LINES: LineDef[] = [
   {
     id: 'nudge',
     tab: 'you',
-    baseCost: 75,
-    milestones: [
+    baseCost: 500,
+    grow: { plus: 1 },
+    max: 3,
+    steps: [
       {
         label: 'Course in motivational interviewing',
         note: 'Two days at a hotel in Lillestrøm.',
@@ -48,8 +49,9 @@ export const LINES: LineDef[] = [
   {
     id: 'omsorgRate',
     tab: 'you',
-    baseCost: 90,
-    milestones: [
+    baseCost: 600,
+    grow: { times: 1.5 },
+    steps: [
       { label: 'Lunch break', note: 'Thirty minutes. Nobody calls.', icon: '🥪' },
       { label: 'Avspasering', note: 'The overtime comes back as days off.', icon: '🏖️' },
     ],
@@ -57,8 +59,9 @@ export const LINES: LineDef[] = [
   {
     id: 'omsorgCap',
     tab: 'you',
-    baseCost: 75,
-    milestones: [
+    baseCost: 500,
+    grow: { plus: 20 },
+    steps: [
       { label: 'Own office', note: 'A door that closes.', icon: '🚪' },
       {
         label: 'Electronic journal',
@@ -70,8 +73,9 @@ export const LINES: LineDef[] = [
   {
     id: 'staff',
     tab: 'staff',
-    baseCost: 90,
-    milestones: [
+    baseCost: 600,
+    grow: { times: 1.5 },
+    steps: [
       { label: 'Shared calendar', note: 'Nobody books the same room twice.', icon: '📅' },
       {
         label: 'Handover routine',
@@ -83,8 +87,9 @@ export const LINES: LineDef[] = [
   {
     id: 'grant',
     tab: 'funding',
-    baseCost: 120,
-    milestones: [
+    baseCost: 800,
+    grow: { times: 1.5 },
+    steps: [
       { label: 'Annual report', note: 'Forty pages. The kommune reads the summary.', icon: '📊' },
       {
         label: 'Application to Helsedirektoratet',
@@ -96,8 +101,9 @@ export const LINES: LineDef[] = [
   {
     id: 'house',
     tab: 'house',
-    baseCost: 105,
-    milestones: [
+    baseCost: 700,
+    grow: { times: 1.5 },
+    steps: [
       { label: 'Common room', note: 'A sofa nobody owns, and a coffee machine.', icon: '🛋️' },
       { label: 'Garden', note: 'Six raised beds and a bench in the sun.', icon: '🌻' },
     ],

@@ -14,64 +14,57 @@ import {
 import { MESTRING_BONUS, ROLES, type StaffRole } from '../content/staff';
 import {
   LINE_BY_ID,
-  MILESTONE_BONUS,
-  MILESTONE_EVERY,
   UPGRADE_COST_GROWTH,
-  UPGRADE_STEP,
   type LineId,
-  type UpgradeMilestone,
+  type UpgradeStep,
 } from '../content/upgrades';
 import { UPGRADES_MENU } from '../content/text';
 import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
 
-/** Levels bought in one upgrade line. */
+/** Steps bought in one upgrade line. */
 export function lineLevel(s: GameState, line: LineId): number {
   return s.levels[line] ?? 0;
 }
 
-/** A line's multiplier at a level: each level adds a step, and each named milestone doubles it. */
-export function multAt(level: number): number {
-  return (1 + UPGRADE_STEP * level) * MILESTONE_BONUS ** Math.floor(level / MILESTONE_EVERY);
+/** A line's value after some steps. Multiplier lines start at 1. Others start at their base. */
+export function lineValue(line: LineId, steps: number): number {
+  const grow = LINE_BY_ID[line].grow;
+  const base = line === 'omsorgCap' ? OMSORG_CAP : 1;
+  return 'times' in grow ? base * grow.times ** steps : base + grow.plus * steps;
 }
 
-function lineMult(s: GameState, line: LineId): number {
-  return multAt(lineLevel(s, line));
+function value(s: GameState, line: LineId): number {
+  return lineValue(line, lineLevel(s, line));
 }
 
 export function omsorgCap(s: GameState): number {
-  return Math.round(OMSORG_CAP * lineMult(s, 'omsorgCap'));
+  return value(s, 'omsorgCap');
 }
 
 export function omsorgPerSecond(s: GameState): number {
-  return OMSORG_PER_SECOND * PACE * lineMult(s, 'omsorgRate');
+  return OMSORG_PER_SECOND * PACE * value(s, 'omsorgRate');
 }
 
-/** Segments one of the player's nudges fills: always the whole part, and one more by chance. */
-export function nudgeFill(s: GameState): { whole: number; chance: number } {
-  return splitFill(lineMult(s, 'nudge'));
-}
-
-/** 1.3 segments is 1 segment and a 30% chance of 2. Segments are never split. */
-export function splitFill(mult: number): { whole: number; chance: number } {
-  const whole = Math.floor(mult + 1e-9);
-  return { whole, chance: Math.round((mult - whole) * 100) / 100 };
+/** Segments one of the player's nudges fills. */
+export function nudgeMult(s: GameState): number {
+  return value(s, 'nudge');
 }
 
 /** Multiplies staff nudges. */
 export function staffMult(s: GameState): number {
-  return lineMult(s, 'staff');
+  return value(s, 'staff');
 }
 
 /** Multiplies the kommune grant. */
 export function grantMult(s: GameState): number {
-  return lineMult(s, 'grant');
+  return value(s, 'grant');
 }
 
 /** The kommune pays a base sum and a sum for each extra bed. The grant upgrades multiply both. */
 /** Multiplies overskudd for every resident: the house upgrades, and each staff member with the mestring course. */
 export function overskuddMult(s: GameState): number {
-  const house = lineMult(s, 'house');
+  const house = value(s, 'house');
   return house * (1 + MESTRING_BONUS * s.staff.filter((x) => x.mestring).length);
 }
 
@@ -107,25 +100,28 @@ export function canAffordWage(s: GameState, role: StaffRole): boolean {
   return netIncomePerWeek(s) - ROLES[role].wage >= 0;
 }
 
-/** The price of the next level in a line. */
+/** The price of the next step in a line. */
 export function upgradeCost(s: GameState, line: LineId): number {
   return Math.round(LINE_BY_ID[line].baseCost * UPGRADE_COST_GROWTH ** lineLevel(s, line));
 }
 
-export function canBuy(s: GameState, line: LineId): boolean {
-  return s.budget >= upgradeCost(s, line);
+/** False when a line with an end has every step. */
+export function lineOpen(s: GameState, line: LineId): boolean {
+  const max = LINE_BY_ID[line].max;
+  return max === undefined || lineLevel(s, line) < max;
 }
 
-/** The named milestone a line works toward: the one at the end of its current run of levels. */
-export function nextMilestone(s: GameState, line: LineId): UpgradeMilestone & { level: number } {
-  const n = Math.floor(lineLevel(s, line) / MILESTONE_EVERY) + 1;
-  const written = LINE_BY_ID[line].milestones;
-  const m = written[n - 1] ?? {
-    ...written[written.length - 1]!,
-    label: UPGRADES_MENU.repeatName(written[written.length - 1]!.label, n),
-    note: '',
-  };
-  return { ...m, level: n * MILESTONE_EVERY };
+export function canBuy(s: GameState, line: LineId): boolean {
+  return lineOpen(s, line) && s.budget >= upgradeCost(s, line);
+}
+
+/** The next step in a line, or the last one when the line is done. */
+export function nextStep(s: GameState, line: LineId): UpgradeStep {
+  const max = LINE_BY_ID[line].max;
+  const n = Math.min(lineLevel(s, line) + 1, max ?? Infinity);
+  const written = LINE_BY_ID[line].steps;
+  const last = written[written.length - 1]!;
+  return written[n - 1] ?? { ...last, label: UPGRADES_MENU.repeatName(last.label, n), note: '' };
 }
 
 export function bedCost(s: GameState): number {

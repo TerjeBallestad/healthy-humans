@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { LINES, MILESTONE_EVERY } from '../content/upgrades';
-import { canBuy, hireCost, lineLevel, nextMilestone } from '../sim/institution';
+import { LINES } from '../content/upgrades';
+import { canBuy, hireCost, lineLevel, nextStep } from '../sim/institution';
+import { stepEffect } from './RequestsMenu';
 import { isSeen } from '../sim/reveal';
 import { canPostAd } from '../sim/staff';
 import type { GameState } from '../sim/state';
 import { useGame } from '../store';
 import { modal, openModal, type Modal } from './modal';
-import { TOASTS, UPGRADES_MENU } from '../content/text';
+import { TOASTS } from '../content/text';
 
 interface Toast {
   key: string;
@@ -23,19 +24,15 @@ const TOAST_MS = 5000;
 /** Things that just became possible. Each key toasts once a session. */
 function events(s: GameState): Toast[] {
   const out: Toast[] = [];
-  // Plain levels are not news. The first level of a line and each named milestone are.
-  for (const l of LINES) {
-    const level = lineLevel(s, l.id);
-    if (!canBuy(s, l.id) || (level > 0 && (level + 1) % MILESTONE_EVERY !== 0)) continue;
-    const m = nextMilestone(s, l.id);
-    out.push({
-      key: `upgrade-${l.id}-${level}`,
-      tip: 'tip:upgrades',
-      title: TOASTS.upgradeReady,
-      text: TOASTS.upgrade(m.label, UPGRADES_MENU.level(level + 1)),
-      open: { kind: 'requests' },
-    });
-  }
+  for (const l of LINES)
+    if (canBuy(s, l.id))
+      out.push({
+        key: `upgrade-${l.id}-${lineLevel(s, l.id)}`,
+        tip: 'tip:upgrades',
+        title: TOASTS.upgradeReady,
+        text: TOASTS.upgrade(nextStep(s, l.id).label, stepEffect(s, l.id)),
+        open: { kind: 'requests' },
+      });
   if (canPostAd(s))
     out.push({
       key: `hire-${s.staff.length}`,
