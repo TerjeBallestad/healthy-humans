@@ -211,6 +211,7 @@ describe('case worker', () => {
     s.staff = [{ ...coach({}), role: 'caseworker', level: 1 }];
     s.budget = 1e9;
     s.levels.grant = 20;
+    s.levels.payGrade = 10;
     const first = caseworkCost(s.staff[0]!);
     const before = wage(s.staff[0]!);
     expect(trainCasework(s, 0)).toBe(true);
@@ -232,6 +233,19 @@ describe('wages', () => {
     s.staff.push(...Array.from({ length: 2 }, () => coach({ eat: 1, shower: 1, sleep: 1 })));
     expect(netIncomePerWeek(s)).toBeLessThan(WAGE_PER_LEVEL.worker);
     expect(trainSpeciality(s, 0, 'hygiene')).toBe(false);
+  });
+
+  test('courses stop at the pay grade, and the pay grade line raises it', () => {
+    const s = newGame();
+    s.staff = [worker('Kari', ['food'])];
+    s.levels.grant = 20;
+    s.omsorg = 1000;
+    // +20 kr/week to start: two courses for a miljøarbeider.
+    expect(trainSpeciality(s, 0, 'hygiene')).toBe(true);
+    expect(trainSpeciality(s, 0, 'energy')).toBe(true);
+    expect(trainSpeciality(s, 0, 'home')).toBe(false);
+    s.levels.payGrade = 1;
+    expect(trainSpeciality(s, 0, 'home')).toBe(true);
   });
 
   test('a candidate with a better sheet asks for more', () => {

@@ -89,6 +89,8 @@ export const CASEWORK_COST = [400, 750, 1400, 2600] as const;
 
 /** Each course a staff member has (or came with) adds this to the wage, by role. */
 export const WAGE_PER_LEVEL: Record<StaffRole, number> = { worker: 10, coach: 5, caseworker: 15 };
+/** Kroner per week a wage can rise through courses before any pay grade upgrade. */
+export const PAY_RAISE_START = 20;
 /** Coaching levels a coach has before the wage goes up. Every coach rolls at least this. */
 export const COACH_BASE_LEVELS = 3;
 

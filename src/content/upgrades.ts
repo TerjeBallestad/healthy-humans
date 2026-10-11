@@ -1,4 +1,5 @@
-export type LineId = 'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'grant' | 'house';
+export type LineId =
+  'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'payGrade' | 'grant' | 'house';
 
 export type UpgradeTab = 'you' | 'staff' | 'funding' | 'house';
 
@@ -83,6 +84,14 @@ export const LINES: LineDef[] = [
         icon: '📋',
       },
     ],
+  },
+  {
+    id: 'payGrade',
+    tab: 'staff',
+    baseCost: 500,
+    grow: { plus: 20 },
+    // TODO(Terje): placeholder name and note for the pay grade line.
+    steps: [{ label: 'Pay grade', note: '', icon: '💰' }],
   },
   {
     id: 'grant',

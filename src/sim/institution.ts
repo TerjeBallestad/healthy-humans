@@ -11,7 +11,13 @@ import {
   PACE,
   STAFF_NUDGES_PER_SECOND,
 } from '../content/tuning';
-import { COACH_BASE_LEVELS, MESTRING_BONUS, ROLES, WAGE_PER_LEVEL } from '../content/staff';
+import {
+  COACH_BASE_LEVELS,
+  MESTRING_BONUS,
+  PAY_RAISE_START,
+  ROLES,
+  WAGE_PER_LEVEL,
+} from '../content/staff';
 import {
   LINE_BY_ID,
   UPGRADE_COST_GROWTH,
@@ -30,7 +36,7 @@ export function lineLevel(s: GameState, line: LineId): number {
 /** A line's value after some steps. Multiplier lines start at 1. Others start at their base. */
 export function lineValue(line: LineId, steps: number): number {
   const grow = LINE_BY_ID[line].grow;
-  const base = line === 'omsorgCap' ? OMSORG_CAP : 1;
+  const base = line === 'omsorgCap' ? OMSORG_CAP : line === 'payGrade' ? PAY_RAISE_START : 1;
   return 'times' in grow ? base * grow.times ** steps : base + grow.plus * steps;
 }
 
@@ -94,6 +100,21 @@ export function courses(x: Staff): number {
 /** Kroner per week: the role's wage, and more for each course. */
 export function wage(x: Staff): number {
   return ROLES[x.role].wage + WAGE_PER_LEVEL[x.role] * courses(x);
+}
+
+/** The most kroner per week a wage can rise through courses. The pay grade line raises it. */
+export function payCap(s: GameState): number {
+  return value(s, 'payGrade');
+}
+
+/** One more course stays inside the pay grade. */
+export function inPayGrade(s: GameState, x: Staff): boolean {
+  return WAGE_PER_LEVEL[x.role] * (courses(x) + 1) <= payCap(s);
+}
+
+/** One more course for this staff member: inside the pay grade, and the income can pay the raise. */
+export function canRaise(s: GameState, x: Staff): boolean {
+  return inPayGrade(s, x) && canAffordWage(s, WAGE_PER_LEVEL[x.role]);
 }
 
 export function wagesPerWeek(s: GameState): number {

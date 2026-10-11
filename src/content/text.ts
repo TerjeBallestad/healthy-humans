@@ -132,6 +132,8 @@ export const UPGRADES_MENU = {
     staff: (x: string) => `Staff nudge ×${x}`,
     grant: (x: string) => `Kommune grant ×${x}`,
     house: (x: string) => `Overskudd ×${x} for everyone`,
+    // TODO(Terje): placeholder effect for the pay grade line.
+    payGrade: (n: number) => `Wages can rise up to +${n} kr/week`,
   },
   // TODO(Terje): placeholder names for steps past the written ones, as "Garden III".
   repeatName: (label: string, n: number) => `${label} ${roman(n)}`,
@@ -191,6 +193,7 @@ export const STAFF_TEXT = {
   reduced: (from: number, to: number) => `${from} → ${to}`,
   caseworkEffect: (from: number, to: number) => `Milestone difficulty ÷${from} → ÷${to}`,
   wageRaise: (kr: number) => `wage +${kr} kr/week`,
+  payGradeFull: 'Pay grade full',
 };
 
 export const DISCHARGE = {

@@ -63,6 +63,7 @@ export function stepEffect(s: GameState, line: LineId): string {
   const e = UPGRADES_MENU.effect;
   if (line === 'nudge') return e.nudge(v);
   if (line === 'omsorgCap') return e.omsorgCap(v);
+  if (line === 'payGrade') return e.payGrade(v);
   return e[line](x);
 }
 

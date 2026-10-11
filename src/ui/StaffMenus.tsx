@@ -17,7 +17,7 @@ import {
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost, omsorgCap, wage } from '../sim/institution';
+import { canAffordWage, hireCost, inPayGrade, omsorgCap, wage } from '../sim/institution';
 import { caseWorkerSupport, difficulty } from '../sim/proposals';
 import {
   canHire,
@@ -419,6 +419,7 @@ export function TrainingMenu() {
             price={UNITS.omsorg(MESTRING_TRAIN_COST)}
             raise={WAGE_PER_LEVEL[x.role]}
             wageShort={!canAffordWage(s, WAGE_PER_LEVEL[x.role])}
+            payFull={!inPayGrade(s, x)}
             can={canTrainMestring(s, i)}
             onTrain={() => act((g) => trainMestring(g, i))}
           />
@@ -447,6 +448,7 @@ function SpecialityCourse({ i, x, need }: { i: number; x: Staff; need: NeedId })
       price={UNITS.omsorg(SPECIALITY_TRAIN_COST)}
       raise={WAGE_PER_LEVEL.worker}
       wageShort={!canAffordWage(s, WAGE_PER_LEVEL.worker)}
+      payFull={!inPayGrade(s, x)}
       can={canTrainSpeciality(s, i, need)}
       onTrain={() => act((g) => trainSpeciality(g, i, need))}
     />
@@ -468,6 +470,7 @@ function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
       price={UNITS.omsorg(coachTrainCost(x, id))}
       raise={WAGE_PER_LEVEL.coach}
       wageShort={!canAffordWage(s, WAGE_PER_LEVEL.coach)}
+      payFull={!inPayGrade(s, x)}
       can={canTrainCoach(s, i, id)}
       onTrain={() => act((g) => trainCoach(g, i, id))}
     />
@@ -491,6 +494,7 @@ function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
       price={UNITS.kr(caseworkCost(x))}
       raise={WAGE_PER_LEVEL.caseworker}
       wageShort={!canAffordWage(s, WAGE_PER_LEVEL.caseworker)}
+      payFull={!inPayGrade(s, x)}
       can={canTrainCasework(s, i)}
       onTrain={() => act((g) => trainCasework(g, i))}
     />
@@ -511,6 +515,8 @@ function Course(p: {
   raise: number;
   /** The income cannot pay the raise. */
   wageShort?: boolean;
+  /** The raise would pass the pay grade. */
+  payFull?: boolean;
   can: boolean;
   onTrain: () => void;
 }) {
@@ -538,8 +544,8 @@ function Course(p: {
         ) : (
           <>
             <span class="price">{p.price}</span>
-            <span class={p.wageShort ? 'raise short' : 'raise'}>
-              {STAFF_TEXT.wageRaise(p.raise)}
+            <span class={p.wageShort || p.payFull ? 'raise short' : 'raise'}>
+              {p.payFull ? STAFF_TEXT.payGradeFull : STAFF_TEXT.wageRaise(p.raise)}
             </span>
             <button class="buy-request" disabled={!p.can} onClick={p.onTrain}>
               {STAFF_TEXT.train}

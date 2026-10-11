@@ -11,13 +11,12 @@ import {
   MESTRING_TRAIN_COST,
   ROLES,
   SPECIALITY_TRAIN_COST,
-  WAGE_PER_LEVEL,
   STAFF_FACES,
   STAFF_NAMES,
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost, wage } from './institution';
+import { canAffordWage, canRaise, hireCost, wage } from './institution';
 import { random } from './rng';
 import type { GameState, Staff } from './state';
 import { TICKS_PER_WEEK } from './time';
@@ -120,7 +119,7 @@ export function canTrainSpeciality(s: GameState, index: number, need: NeedId): b
     x.role === 'worker' &&
     !x.specialities.includes(need) &&
     s.omsorg >= SPECIALITY_TRAIN_COST &&
-    canAffordWage(s, WAGE_PER_LEVEL.worker)
+    canRaise(s, x)
   );
 }
 
@@ -134,12 +133,7 @@ export function trainSpeciality(s: GameState, index: number, need: NeedId): bool
 
 export function canTrainMestring(s: GameState, index: number): boolean {
   const x = s.staff[index];
-  return (
-    !!x &&
-    !x.mestring &&
-    s.omsorg >= MESTRING_TRAIN_COST &&
-    canAffordWage(s, WAGE_PER_LEVEL[x.role])
-  );
+  return !!x && !x.mestring && s.omsorg >= MESTRING_TRAIN_COST && canRaise(s, x);
 }
 
 /** Spend omsorg on the mestring course: more overskudd for every resident. */
@@ -162,7 +156,7 @@ export function canTrainCoach(s: GameState, index: number, id: ActivityId): bool
     x.role === 'coach' &&
     (x.coaching[id] ?? 0) < MAX_SKILL &&
     s.omsorg >= coachTrainCost(x, id) &&
-    canAffordWage(s, WAGE_PER_LEVEL.coach)
+    canRaise(s, x)
   );
 }
 
@@ -194,7 +188,7 @@ export function canTrainCasework(s: GameState, index: number): boolean {
     x.role === 'caseworker' &&
     (x.level ?? 1) < CASEWORKER_MAX_LEVEL &&
     s.budget >= caseworkCost(x) &&
-    canAffordWage(s, WAGE_PER_LEVEL.caseworker)
+    canRaise(s, x)
   );
 }
 
