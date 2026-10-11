@@ -23,5 +23,6 @@ export function openModal(m: Modal) {
 
 export function closeModal() {
   modal.value = null;
-  act((g) => (g.speed = g.resumeSpeed));
+  // A proposal or a vedtak under the menu keeps the game paused.
+  act((g) => (g.speed = g.proposal || g.discharge ? 0 : g.resumeSpeed));
 }

@@ -91,7 +91,7 @@ Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
 | Overskudd is the last tight spot                      | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
 | Wants omsorg upgrades, not only nudge upgrades        | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                            |
 | Discharged list squeezes the venteliste to 0 rows     | Discharged shows a count per tier and the tax, not the names.                                                                               |
-| Skill-up and affordable things are easy to miss       | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each.                          |
+| Skill-up and affordable things are easy to miss       | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each, beside the button.                          |
 | The start is overwhelming for new players             | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                           |
 | Tips dismissed by fast clicking before being read     | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                   |
 | The game should pause while a tip shows               | It pauses, and resumes when the tip is done.                                                                                                |
@@ -100,6 +100,8 @@ Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
 | Too many time controls, omsorg in a box               | One pause/play toggle. Omsorg without background or border.                                                                                 |
 | Venteliste collapses when the staff list grows        | The venteliste keeps up to 45% of the left column. The staff panel scrolls on its own below it.                                            |
 | Milestone dialog dismissed by fast clicking           | The proposal buttons ignore clicks for 1.5 s (`GRACE_MS`, shared with the tips), on open and again when the result shows.                  |
+| Milestone stuck after an upgrade menu opened on it    | Closing a menu no longer restarts the clock under a proposal or a vedtak. The scene card is keyed by the tick the proposal opened.        |
+| Toasts bottom right, unreadable in play               | Each toast sits beside its button (Upgrades, or the Hire slot) with an arrow and the upgrade's icon. Bottom right if the button is gone.  |
 
 ## Open issues
 

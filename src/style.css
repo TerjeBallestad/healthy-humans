@@ -1608,7 +1608,7 @@ button:disabled {
 .toasts {
   position: fixed;
   right: 16px;
-  /* Above the debug button. */
+  /* Above the debug button, when the button it points at is not on screen. */
   bottom: 64px;
   z-index: 30;
   display: flex;
@@ -1616,10 +1616,28 @@ button:disabled {
   gap: 8px;
   max-width: 320px;
 }
+/* Beside its button, with an arrow to it. */
+.toasts[data-anchored='true'] {
+  right: auto;
+  bottom: auto;
+}
+.toasts[data-anchored='true'] .toast:first-child::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-left: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  background: var(--panel);
+  transform: translateY(-50%) rotate(45deg);
+}
 .toast {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid var(--gold);
@@ -1627,6 +1645,14 @@ button:disabled {
   text-align: left;
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
   animation: toast-in 0.2s ease-out;
+}
+.toast-icon {
+  font-size: 1.8rem;
+}
+.toast-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .toast strong {
   color: var(--gold);
@@ -1637,7 +1663,7 @@ button:disabled {
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(-8px);
   }
 }
 

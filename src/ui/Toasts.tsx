@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { LINES } from '../content/upgrades';
 import { canBuy, hireCost, lineLevel, nextStep } from '../sim/institution';
 import { stepEffect } from './RequestsMenu';
@@ -13,6 +13,9 @@ interface Toast {
   key: string;
   /** The onboarding tip that says the same. No toast while that tip is not done. */
   tip?: string;
+  /** The button the toast points at. */
+  target: string;
+  icon?: string;
   title: string;
   text: string;
   open?: Modal;
@@ -29,6 +32,8 @@ function events(s: GameState): Toast[] {
       out.push({
         key: `upgrade-${l.id}-${lineLevel(s, l.id)}`,
         tip: 'tip:upgrades',
+        target: '[data-tip="upgrades"]',
+        icon: nextStep(s, l.id).icon,
         title: TOASTS.upgradeReady,
         text: TOASTS.upgrade(nextStep(s, l.id).label, stepEffect(s, l.id)),
         open: { kind: 'requests' },
@@ -37,6 +42,7 @@ function events(s: GameState): Toast[] {
     out.push({
       key: `hire-${s.staff.length}`,
       tip: 'tip:hire',
+      target: '[data-tip="hire"]',
       title: TOASTS.canHire,
       text: TOASTS.adCost(hireCost(s)),
     });
@@ -51,6 +57,8 @@ function merge(fresh: Toast[]): Toast[] {
     ...fresh.filter((t) => !ups.includes(t)),
     {
       key: ups.map((t) => t.key).join('+'),
+      target: '[data-tip="upgrades"]',
+      icon: ups[0]!.icon,
       title: TOASTS.upgradesReady,
       text: TOASTS.upgrades(ups.length),
       open: { kind: 'requests' },
@@ -79,18 +87,56 @@ export function Toasts() {
       setTimeout(() => setToasts((old) => old.filter((x) => x.key !== t.key)), TOAST_MS);
   });
 
+  const close = (t: Toast) => {
+    setToasts((old) => old.filter((x) => x.key !== t.key));
+    if (t.open && !modal.value) openModal(t.open);
+  };
+  // One stack per button, beside it.
+  const targets = [...new Set(toasts.map((t) => t.target))];
   return (
-    <div class="toasts" aria-live="polite">
-      {toasts.map((t) => (
-        <button
-          class="toast"
-          onClick={() => {
-            setToasts((old) => old.filter((x) => x.key !== t.key));
-            if (t.open && !modal.value) openModal(t.open);
-          }}
-        >
-          <strong>{t.title}</strong>
-          <span>{t.text}</span>
+    <>
+      {targets.map((target) => (
+        <ToastStack
+          target={target}
+          toasts={toasts.filter((t) => t.target === target)}
+          onClick={close}
+        />
+      ))}
+    </>
+  );
+}
+
+/** Toasts to the right of their button, pointing at it. Bottom right when the button is not on screen. */
+function ToastStack(p: { target: string; toasts: Toast[]; onClick: (t: Toast) => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const b = box.current;
+    const el = document.querySelector<HTMLElement>(p.target);
+    if (!b) return;
+    const r = el?.getBoundingClientRect();
+    if (!r || r.height === 0) {
+      b.removeAttribute('style');
+      b.dataset.anchored = 'false';
+      return;
+    }
+    const h = b.offsetHeight;
+    b.style.left = `${r.right + 12}px`;
+    b.style.top = `${Math.max(8, Math.min(r.top + r.height / 2 - h / 2, window.innerHeight - h - 8))}px`;
+    b.dataset.anchored = 'true';
+  });
+  return (
+    <div class="toasts" ref={box} aria-live="polite">
+      {p.toasts.map((t) => (
+        <button class="toast" onClick={() => p.onClick(t)}>
+          {t.icon && (
+            <span class="toast-icon" aria-hidden="true">
+              {t.icon}
+            </span>
+          )}
+          <span class="toast-text">
+            <strong>{t.title}</strong>
+            <span>{t.text}</span>
+          </span>
         </button>
       ))}
     </div>

@@ -23,8 +23,8 @@ export function ProposalDialog() {
   const p = s.proposal;
   const r = p && s.beds[p.bed];
   if (!p || !r) return null;
-  // The game is paused, so the tick names this proposal. A new one starts with a fresh wager.
-  return <SceneCard key={`${p.bed}-${s.tick}`} />;
+  // The tick the proposal opened names it. A new one starts with a fresh wager.
+  return <SceneCard key={`${p.bed}-${r.lastProposalTick}`} />;
 }
 
 function SceneCard() {
