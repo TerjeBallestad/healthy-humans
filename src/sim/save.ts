@@ -10,12 +10,25 @@ export function loadGame(): GameState {
       const parsed = JSON.parse(raw) as GameState;
       if (parsed.version === 22) migrateUpgrades(parsed);
       if (parsed.version === 23) migrateLevels(parsed);
-      if (parsed.version === SAVE_VERSION) return parsed;
+      if (parsed.version === SAVE_VERSION) {
+        migrateCaseWorkers(parsed);
+        return parsed;
+      }
     }
   } catch {
     // Storage blocked or corrupt. Start fresh.
   }
   return newGame();
+}
+
+/** The first 9b build gave case workers a skill from 40 to 100. Now they have a level. */
+function migrateCaseWorkers(s: GameState) {
+  for (const x of [...s.staff, ...s.candidates]) {
+    const old = x as { skill?: number };
+    if (x.role !== 'caseworker' || x.level !== undefined) continue;
+    x.level = Math.max(1, Math.min(5, Math.round(((old.skill ?? 50) - 40) / 10)));
+    delete old.skill;
+  }
 }
 
 export function saveGame(state: GameState) {

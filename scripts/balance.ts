@@ -12,7 +12,7 @@ import { LINES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, nudge, train } from '../src/sim/actions';
 import { canHire, hire, postAd, turnDown } from '../src/sim/staff';
 import { bedCost, canAffordWage, canBuy, hireCost, upgradeCost } from '../src/sim/institution';
-import { MAX_STAFF, type StaffRole } from '../src/content/staff';
+import { MAX_STAFF, ROLES, type StaffRole } from '../src/content/staff';
 
 const HIRE_ORDER: StaffRole[] = ['worker', 'coach', 'caseworker', 'worker'];
 import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
@@ -89,7 +89,7 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
     // The cheapest step first, across all lines.
     // Keep enough for the next job ad and the next bed, or the cheap levels eat everything.
     const reserve =
-      (s.staff.length < MAX_STAFF && canAffordWage(s, 'worker') ? hireCost(s) : 0) +
+      (s.staff.length < MAX_STAFF && canAffordWage(s, ROLES.worker.wage) ? hireCost(s) : 0) +
       (BEDS && s.beds.length < MAX_BEDS ? bedCost(s) : 0);
     const u = LINES.filter(
       (x) => canBuy(s, x.id) && s.budget - upgradeCost(s, x.id) >= reserve,

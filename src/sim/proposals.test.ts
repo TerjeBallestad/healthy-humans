@@ -39,16 +39,24 @@ describe('overskudd', () => {
 });
 
 describe('case worker', () => {
-  const withCaseWorker = (skill: number) => {
+  const withCaseWorker = (level: number) => {
     const s = ready();
     s.staff = [
-      { name: 'Kari', face: '🧑', role: 'caseworker', skill, specialities: [], coaching: {}, carry: 0 },
+      {
+        name: 'Kari',
+        face: '🧑',
+        role: 'caseworker',
+        level,
+        specialities: [],
+        coaching: {},
+        carry: 0,
+      },
     ];
     return s;
   };
 
   test('takes the milestone at once, with no wager', () => {
-    const s = withCaseWorker(60);
+    const s = withCaseWorker(2); // skill 60
     s.budget = 500;
     maybePropose(s);
     expect(s.proposal?.caseWorker).toBe('Kari');

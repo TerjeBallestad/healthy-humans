@@ -3,12 +3,10 @@ import type { NeedId } from '../content/needs';
 import {
   AD_WEEKS,
   CANDIDATES,
-  CASEWORK_STEP,
-  CASEWORKER_SKILL_MAX,
-  CASEWORKER_SKILL_MIN,
+  CASEWORKER_MAX_LEVEL,
+  WAGE_PER_LEVEL,
   COACH_TRAIN_COST,
   MAX_STAFF,
-  ROLES,
   SPECIALITY_FILL,
   SPECIALITY_TRAIN_COST,
 } from '../content/staff';
@@ -22,6 +20,7 @@ import {
 import { buyBed, buyUpgrade, nudge } from './actions';
 import {
   hireCost,
+  wage,
   lineLevel,
   lineValue,
   nextStep,
@@ -115,7 +114,7 @@ describe('staff', () => {
     const budget = s.budget;
     expect(hire(s, 0)).toBe(true);
     expect(s.budget).toBe(budget);
-    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - ROLES.coach.wage);
+    expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - wage(s.staff[0]!));
     expect(s.candidates).toHaveLength(0);
     expect(hireCost(s)).toBeGreaterThan(HIRE_COST_BASE);
   });
@@ -198,28 +197,47 @@ test('staff cannot make a rested resident sleep again', () => {
 });
 
 describe('case worker', () => {
-  test('candidates roll a skill in the range', () => {
+  test('candidates start at lvl 1 or 2', () => {
     for (let seed = 1; seed <= 100; seed++) {
       const s = newGame();
       s.seed = seed;
       rollCandidates(s, 'caseworker');
-      for (const c of s.candidates) {
-        expect(c.skill).toBeGreaterThanOrEqual(CASEWORKER_SKILL_MIN);
-        expect(c.skill).toBeLessThanOrEqual(CASEWORKER_SKILL_MAX);
-      }
+      for (const c of s.candidates) expect([1, 2]).toContain(c.level);
     }
   });
 
-  test('the casework course costs kroner, more each step, up to 100', () => {
+  test('the casework course costs kroner, more each level, and raises the wage', () => {
     const s = newGame();
-    s.staff = [{ ...coach({}), role: 'caseworker', skill: 50 }];
+    s.staff = [{ ...coach({}), role: 'caseworker', level: 1 }];
     s.budget = 1e9;
+    s.levels.grant = 20;
     const first = caseworkCost(s.staff[0]!);
+    const before = wage(s.staff[0]!);
     expect(trainCasework(s, 0)).toBe(true);
-    expect(s.staff[0]!.skill).toBe(50 + CASEWORK_STEP);
+    expect(s.staff[0]!.level).toBe(2);
+    expect(wage(s.staff[0]!)).toBe(before + WAGE_PER_LEVEL.caseworker);
     expect(caseworkCost(s.staff[0]!)).toBeGreaterThan(first);
     while (trainCasework(s, 0));
-    expect(s.staff[0]!.skill).toBe(100);
+    expect(s.staff[0]!.level).toBe(CASEWORKER_MAX_LEVEL);
+  });
+});
+
+describe('wages', () => {
+  test('a course may not push wages past the income', () => {
+    const s = newGame();
+    s.staff = [worker('Kari', ['food'])];
+    s.omsorg = 40;
+    s.budget = 0;
+    // The base grant pays the wage, with less than one raise to spare.
+    s.staff.push(...Array.from({ length: 2 }, () => coach({ eat: 1, shower: 1, sleep: 1 })));
+    expect(netIncomePerWeek(s)).toBeLessThan(WAGE_PER_LEVEL.worker);
+    expect(trainSpeciality(s, 0, 'hygiene')).toBe(false);
+  });
+
+  test('a candidate with a better sheet asks for more', () => {
+    const plain = coach({ eat: 1, shower: 1, sleep: 1 });
+    const strong = coach({ eat: 3, shower: 1, sleep: 1 });
+    expect(wage(strong)).toBe(wage(plain) + 2 * WAGE_PER_LEVEL.coach);
   });
 });
 

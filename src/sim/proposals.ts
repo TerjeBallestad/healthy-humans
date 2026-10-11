@@ -6,6 +6,7 @@ import {
   PROPOSAL_COST_MILESTONE,
 } from '../content/tuning';
 import { random } from './rng';
+import { caseWorkerSkill } from './institution';
 import { bestCaseWorker } from './staff';
 import { unlockedActivities } from './selectors';
 import { occupied, type GameState, type ProposalSubject, type Resident } from './state';
@@ -70,7 +71,7 @@ export function maybePropose(state: GameState) {
     const cw = bestCaseWorker(state);
     if (cw) {
       state.proposal.caseWorker = cw.name;
-      resolve(state, caseWorkerChance(cw.skill ?? 0, subject), 0);
+      resolve(state, caseWorkerChance(caseWorkerSkill(cw), subject), 0);
     }
     return;
   }

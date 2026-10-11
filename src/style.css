@@ -424,6 +424,14 @@ button:disabled {
   color: var(--gold);
   font-variant-numeric: tabular-nums;
 }
+.request .raise {
+  margin-top: -4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.request .raise.short {
+  color: var(--warn);
+}
 .buy-request {
   min-width: 84px;
   padding: 8px 16px;

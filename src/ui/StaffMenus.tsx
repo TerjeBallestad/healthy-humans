@@ -4,7 +4,8 @@ import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activiti
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import { MILESTONES } from '../content/milestones';
 import {
-  CASEWORK_STEP,
+  CASEWORKER_MAX_LEVEL,
+  CASEWORKER_SKILL,
   MESTRING_BONUS,
   MESTRING_TRAIN_COST,
   ROLE_ORDER,
@@ -13,10 +14,11 @@ import {
   SPECIALITY_ICON,
   SPECIALITY_LABEL,
   SPECIALITY_TRAIN_COST,
+  WAGE_PER_LEVEL,
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost, omsorgCap } from '../sim/institution';
+import { canAffordWage, caseWorkerSkill, hireCost, omsorgCap, wage } from '../sim/institution';
 import { caseWorkerChance } from '../sim/proposals';
 import {
   canHire,
@@ -63,7 +65,7 @@ function Profile({ x }: { x: Staff }) {
         </span>
         <table class="stats">
           {x.role === 'caseworker' ? (
-            <CaseWorkerStats skill={x.skill ?? 0} />
+            <CaseWorkerStats x={x} />
           ) : x.role === 'worker' ? (
             <>
               <thead>
@@ -139,8 +141,9 @@ function Profile({ x }: { x: Staff }) {
   );
 }
 
-/** The skill, and the odds it gives on each milestone. */
-function CaseWorkerStats({ skill }: { skill: number }) {
+/** The level, and the odds it gives on each milestone. */
+function CaseWorkerStats({ x }: { x: Staff }) {
+  const skill = caseWorkerSkill(x);
   return (
     <>
       <thead>
@@ -151,17 +154,15 @@ function CaseWorkerStats({ skill }: { skill: number }) {
       </thead>
       <tbody>
         <tr class="strong">
-          <td>{STAFF_TEXT.skill}</td>
-          <td class="value">{skill}</td>
+          <td>{STAFF_TEXT.level}</td>
+          <td class="value">{UNITS.level(x.level ?? 1)}</td>
         </tr>
         {MILESTONES.map((m) => (
           <tr>
             <td>{m.label}</td>
             <td class="value">
               {STAFF_TEXT.pct(
-                Math.round(
-                  caseWorkerChance(skill, { kind: 'milestone', milestone: m.id }) * 100,
-                ),
+                Math.round(caseWorkerChance(skill, { kind: 'milestone', milestone: m.id }) * 100),
               )}
             </td>
           </tr>
@@ -212,7 +213,7 @@ export function StaffSummary({ x }: { x: Staff }) {
   if (x.role === 'caseworker')
     return (
       <span class="sheet">
-        {ROLES.caseworker.label} · {STAFF_TEXT.skillShort(x.skill ?? 0)}
+        {ROLES.caseworker.label} · {UNITS.level(x.level ?? 1)}
       </span>
     );
   if (x.role === 'worker')
@@ -256,8 +257,8 @@ export function HireMenu() {
             <article class="candidate">
               <Profile x={c} />
               <div class="hire-foot">
-                <span class={canAffordWage(s, c.role) ? 'wage' : 'wage short'}>
-                  {UNITS.krPerWeek(ROLES[c.role].wage)}
+                <span class={canAffordWage(s, wage(c)) ? 'wage' : 'wage short'}>
+                  {UNITS.krPerWeek(wage(c))}
                 </span>
                 <button
                   class="buy-request"
@@ -293,7 +294,12 @@ export function PostAdMenu() {
   if (modal.value?.kind !== 'post') return null;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-      <div class="dialog hire post" role="dialog" aria-modal="true" aria-label={STAFF_TEXT.hireTitle}>
+      <div
+        class="dialog hire post"
+        role="dialog"
+        aria-modal="true"
+        aria-label={STAFF_TEXT.hireTitle}
+      >
         <header>
           <h2>{STAFF_TEXT.hireTitle}</h2>
           <span class="price">{UNITS.kr(hireCost(s))}</span>
@@ -318,7 +324,7 @@ export function PostAdMenu() {
                 </span>
                 <strong>{r.label}</strong>
                 <span class="does">{r.does}</span>
-                <span class={canAffordWage(s, role) ? 'wage' : 'wage short'}>
+                <span class={canAffordWage(s, r.wage) ? 'wage' : 'wage short'}>
                   {UNITS.krPerWeek(r.wage)}
                 </span>
               </button>
@@ -340,7 +346,7 @@ export function StaffCard() {
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
       <div class="dialog staff-card" role="dialog" aria-modal="true" aria-label={x.name}>
         <header>
-          <span class="muted">{UNITS.krPerWeek(ROLES[x.role].wage)}</span>
+          <span class="muted">{UNITS.krPerWeek(wage(x))}</span>
           <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
@@ -411,6 +417,8 @@ export function TrainingMenu() {
             effect={STAFF_TEXT.mestringEffect(MESTRING_BONUS * 100)}
             done={!!x.mestring}
             price={UNITS.omsorg(MESTRING_TRAIN_COST)}
+            raise={WAGE_PER_LEVEL[x.role]}
+            wageShort={!canAffordWage(s, WAGE_PER_LEVEL[x.role])}
             can={canTrainMestring(s, i)}
             onTrain={() => act((g) => trainMestring(g, i))}
           />
@@ -437,6 +445,8 @@ function SpecialityCourse({ i, x, need }: { i: number; x: Staff; need: NeedId })
       effect={STAFF_TEXT.specialityEffect(covers(need), SPECIALITY_FILL)}
       done={has}
       price={UNITS.omsorg(SPECIALITY_TRAIN_COST)}
+      raise={WAGE_PER_LEVEL.worker}
+      wageShort={!canAffordWage(s, WAGE_PER_LEVEL.worker)}
       can={canTrainSpeciality(s, i, need)}
       onTrain={() => act((g) => trainSpeciality(g, i, need))}
     />
@@ -456,6 +466,8 @@ function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
       level={level}
       done={done}
       price={UNITS.omsorg(coachTrainCost(x, id))}
+      raise={WAGE_PER_LEVEL.coach}
+      wageShort={!canAffordWage(s, WAGE_PER_LEVEL.coach)}
       can={canTrainCoach(s, i, id)}
       onTrain={() => act((g) => trainCoach(g, i, id))}
     />
@@ -465,14 +477,20 @@ function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
 /** Casework is paid with kroner, not omsorg. Each step costs more than the last. */
 function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
   const s = useGame();
-  const skill = x.skill ?? 0;
+  const level = x.level ?? 1;
+  const done = level >= CASEWORKER_MAX_LEVEL;
+  const step = done ? 0 : CASEWORKER_SKILL[level]! - CASEWORKER_SKILL[level - 1]!;
   return (
     <Course
       icon={ROLES.caseworker.icon}
       title={STAFF_TEXT.caseworkCourse}
-      effect={STAFF_TEXT.caseworkEffect(skill, Math.min(100, skill + CASEWORK_STEP))}
-      done={skill >= 100}
+      effect={STAFF_TEXT.caseworkEffect(step)}
+      level={level}
+      max={CASEWORKER_MAX_LEVEL}
+      done={done}
       price={UNITS.kr(caseworkCost(x))}
+      raise={WAGE_PER_LEVEL.caseworker}
+      wageShort={!canAffordWage(s, WAGE_PER_LEVEL.caseworker)}
       can={canTrainCasework(s, i)}
       onTrain={() => act((g) => trainCasework(g, i))}
     />
@@ -485,8 +503,14 @@ function Course(p: {
   title: string;
   effect: string;
   level?: number;
+  /** Pips to show. MAX_SKILL when missing. */
+  max?: number;
   done: boolean;
   price: string;
+  /** Kroner per week the course adds to the wage. */
+  raise: number;
+  /** The income cannot pay the raise. */
+  wageShort?: boolean;
   can: boolean;
   onTrain: () => void;
 }) {
@@ -499,8 +523,8 @@ function Course(p: {
         <strong class="title">{p.title}</strong>
         <span class="effect">{p.effect}</span>
         {p.level !== undefined && (
-          <span class="pips" aria-label={UNITS.levelOf(p.level, MAX_SKILL)}>
-            {Array.from({ length: MAX_SKILL }, (_, k) => (
+          <span class="pips" aria-label={UNITS.levelOf(p.level, p.max ?? MAX_SKILL)}>
+            {Array.from({ length: p.max ?? MAX_SKILL }, (_, k) => (
               <span class={k < p.level! ? 'pip on' : 'pip'} />
             ))}
           </span>
@@ -514,6 +538,9 @@ function Course(p: {
         ) : (
           <>
             <span class="price">{p.price}</span>
+            <span class={p.wageShort ? 'raise short' : 'raise'}>
+              {STAFF_TEXT.wageRaise(p.raise)}
+            </span>
             <button class="buy-request" disabled={!p.can} onClick={p.onTrain}>
               {STAFF_TEXT.train}
             </button>

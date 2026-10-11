@@ -62,8 +62,8 @@ export interface Staff {
   specialities: NeedId[];
   /** Highest level a coach can train, per activity. Missing means none. */
   coaching: Partial<Record<ActivityId, number>>;
-  /** A case worker's skill, 0 to 100. Missing for other roles. */
-  skill?: number;
+  /** A case worker's level, 1 to CASEWORKER_MAX_LEVEL. Missing for other roles. */
+  level?: number;
   /** Took the mestring course: more overskudd for every resident. Missing in old saves. */
   mestring?: boolean;
   /** Nudges not yet given, carried between ticks. */

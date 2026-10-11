@@ -185,12 +185,12 @@ export const STAFF_TEXT = {
   upTo: (level: string) => `Up to ${level}`,
   train: 'Train',
   // TODO(Terje): placeholder labels for the case worker.
-  skill: 'Skill',
-  skillShort: (n: number) => `skill ${n}`,
+  level: 'Level',
   odds: 'Odds',
   pct: (n: number) => `${n}%`,
   caseworkCourse: 'Casework course',
-  caseworkEffect: (from: number, to: number) => `Skill ${from} → ${to}`,
+  caseworkEffect: (pts: number) => `Odds +${pts}% on every milestone`,
+  wageRaise: (kr: number) => `wage +${kr} kr/week`,
 };
 
 export const DISCHARGE = {

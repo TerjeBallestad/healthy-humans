@@ -79,14 +79,18 @@ export const MESTRING_BONUS = 0.25;
 /** Omsorg to teach a coach the next level of an activity, by the level they know now. */
 export const COACH_TRAIN_COST = [10, 20, 35] as const;
 
-/** Skill a case worker candidate rolls, from 0 to 100. */
-export const CASEWORKER_SKILL_MIN = 40;
-export const CASEWORKER_SKILL_MAX = 60;
-/** Skill one casework course adds. */
-export const CASEWORK_STEP = 5;
-/** Kroner for the casework course at skill 50. Each step up costs CASEWORK_COST_GROWTH times more. */
-export const CASEWORK_COST_AT_50 = 400;
-export const CASEWORK_COST_GROWTH = 1.35;
+/** A case worker's skill by level (lvl 1 first), in points out of 100. The odds are skill minus difficulty. */
+export const CASEWORKER_SKILL = [50, 60, 70, 80, 90] as const;
+export const CASEWORKER_MAX_LEVEL = CASEWORKER_SKILL.length;
+/** A chance for a case worker candidate to start at lvl 2. The others start at lvl 1. */
+export const CASEWORKER_LVL2_SHARE = 0.3;
+/** Kroner for the casework course, by the level the case worker has now. */
+export const CASEWORK_COST = [400, 750, 1400, 2600] as const;
+
+/** Each course a staff member has (or came with) adds this to the wage, by role. */
+export const WAGE_PER_LEVEL: Record<StaffRole, number> = { worker: 10, coach: 5, caseworker: 15 };
+/** Coaching levels a coach has before the wage goes up. Every coach rolls at least this. */
+export const COACH_BASE_LEVELS = 3;
 
 /** Placeholder faces until there are sprites. Each person rolls one. */
 export const STAFF_FACES = ['🧑', '👩', '👨', '🧔', '👱', '👩‍🦱', '👨‍🦰', '👩‍🦳', '🧑‍🦱', '👨‍🦲'];

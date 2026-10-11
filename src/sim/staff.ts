@@ -3,22 +3,21 @@ import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
   AD_WEEKS,
   CANDIDATES,
-  CASEWORK_COST_AT_50,
-  CASEWORK_COST_GROWTH,
-  CASEWORK_STEP,
-  CASEWORKER_SKILL_MAX,
-  CASEWORKER_SKILL_MIN,
+  CASEWORK_COST,
+  CASEWORKER_LVL2_SHARE,
+  CASEWORKER_MAX_LEVEL,
   COACH_TRAIN_COST,
   MAX_STAFF,
   MESTRING_TRAIN_COST,
   ROLES,
   SPECIALITY_TRAIN_COST,
+  WAGE_PER_LEVEL,
   STAFF_FACES,
   STAFF_NAMES,
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, hireCost } from './institution';
+import { canAffordWage, caseWorkerSkill, hireCost, wage } from './institution';
 import { random } from './rng';
 import type { GameState, Staff } from './state';
 import { TICKS_PER_WEEK } from './time';
@@ -41,8 +40,7 @@ function rollCandidate(s: GameState, taken: Set<string>, role: StaffRole): Staff
     return staff;
   }
   if (role === 'caseworker') {
-    const span = CASEWORKER_SKILL_MAX - CASEWORKER_SKILL_MIN;
-    staff.skill = CASEWORKER_SKILL_MIN + Math.round(random(s) * span);
+    staff.level = random(s) < CASEWORKER_LVL2_SHARE ? 2 : 1;
     return staff;
   }
   // Three activities at lvl 1. Sometimes one goes higher.
@@ -91,7 +89,7 @@ export function checkAd(s: GameState) {
 /** Picking a candidate costs no fee, only the wage. The ad closes. */
 export function canHire(s: GameState, index: number): boolean {
   const c = s.candidates[index];
-  return !!c && s.staff.length < MAX_STAFF && canAffordWage(s, c.role);
+  return !!c && s.staff.length < MAX_STAFF && canAffordWage(s, wage(c));
 }
 
 export function hire(s: GameState, index: number): boolean {
@@ -121,7 +119,8 @@ export function canTrainSpeciality(s: GameState, index: number, need: NeedId): b
     !!x &&
     x.role === 'worker' &&
     !x.specialities.includes(need) &&
-    s.omsorg >= SPECIALITY_TRAIN_COST
+    s.omsorg >= SPECIALITY_TRAIN_COST &&
+    canAffordWage(s, WAGE_PER_LEVEL.worker)
   );
 }
 
@@ -135,7 +134,12 @@ export function trainSpeciality(s: GameState, index: number, need: NeedId): bool
 
 export function canTrainMestring(s: GameState, index: number): boolean {
   const x = s.staff[index];
-  return !!x && !x.mestring && s.omsorg >= MESTRING_TRAIN_COST;
+  return (
+    !!x &&
+    !x.mestring &&
+    s.omsorg >= MESTRING_TRAIN_COST &&
+    canAffordWage(s, WAGE_PER_LEVEL[x.role])
+  );
 }
 
 /** Spend omsorg on the mestring course: more overskudd for every resident. */
@@ -157,7 +161,8 @@ export function canTrainCoach(s: GameState, index: number, id: ActivityId): bool
     !!x &&
     x.role === 'coach' &&
     (x.coaching[id] ?? 0) < MAX_SKILL &&
-    s.omsorg >= coachTrainCost(x, id)
+    s.omsorg >= coachTrainCost(x, id) &&
+    canAffordWage(s, WAGE_PER_LEVEL.coach)
   );
 }
 
@@ -174,26 +179,30 @@ export function trainCoach(s: GameState, index: number, id: ActivityId): boolean
 export function bestCaseWorker(s: GameState): Staff | undefined {
   return s.staff
     .filter((x) => x.role === 'caseworker')
-    .sort((a, b) => (b.skill ?? 0) - (a.skill ?? 0))[0];
+    .sort((a, b) => caseWorkerSkill(b) - caseWorkerSkill(a))[0];
 }
 
-/** Kroner for the next casework course. Infinity at 100. */
+/** Kroner for the next casework course. Infinity at the top level. */
 export function caseworkCost(x: Staff): number {
-  const skill = x.skill ?? 0;
-  if (skill >= 100) return Infinity;
-  return Math.round(CASEWORK_COST_AT_50 * CASEWORK_COST_GROWTH ** ((skill - 50) / CASEWORK_STEP));
+  return CASEWORK_COST[(x.level ?? 1) - 1] ?? Infinity;
 }
 
 export function canTrainCasework(s: GameState, index: number): boolean {
   const x = s.staff[index];
-  return !!x && x.role === 'caseworker' && s.budget >= caseworkCost(x);
+  return (
+    !!x &&
+    x.role === 'caseworker' &&
+    (x.level ?? 1) < CASEWORKER_MAX_LEVEL &&
+    s.budget >= caseworkCost(x) &&
+    canAffordWage(s, WAGE_PER_LEVEL.caseworker)
+  );
 }
 
-/** Spend kroner on the casework course: CASEWORK_STEP more skill, up to 100. */
+/** Spend kroner on the casework course: one level up. */
 export function trainCasework(s: GameState, index: number): boolean {
   if (!canTrainCasework(s, index)) return false;
   const x = s.staff[index]!;
   s.budget -= caseworkCost(x);
-  x.skill = Math.min(100, (x.skill ?? 0) + CASEWORK_STEP);
+  x.level = (x.level ?? 1) + 1;
   return true;
 }

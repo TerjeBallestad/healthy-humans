@@ -11,7 +11,13 @@ import {
   PACE,
   STAFF_NUDGES_PER_SECOND,
 } from '../content/tuning';
-import { MESTRING_BONUS, ROLES, type StaffRole } from '../content/staff';
+import {
+  CASEWORKER_SKILL,
+  COACH_BASE_LEVELS,
+  MESTRING_BONUS,
+  ROLES,
+  WAGE_PER_LEVEL,
+} from '../content/staff';
 import {
   LINE_BY_ID,
   UPGRADE_COST_GROWTH,
@@ -20,7 +26,7 @@ import {
 } from '../content/upgrades';
 import { UPGRADES_MENU } from '../content/text';
 import { taxPerWeek } from './discharge';
-import type { GameState } from './state';
+import type { GameState, Staff } from './state';
 
 /** Steps bought in one upgrade line. */
 export function lineLevel(s: GameState, line: LineId): number {
@@ -82,8 +88,27 @@ export function staffNudgesPerSecond(s: GameState): number {
   return s.staff.filter((x) => x.role === 'worker').length * workerNudgesPerSecond(s);
 }
 
+/** Courses a staff member has, past what every new hire of the role has. Each one raises the wage. */
+export function courses(x: Staff): number {
+  const mestring = x.mestring ? 1 : 0;
+  if (x.role === 'worker') return mestring + Math.max(0, x.specialities.length - 1);
+  if (x.role === 'caseworker') return mestring + (x.level ?? 1) - 1;
+  const levels = Object.values(x.coaching).reduce((a, b) => a + (b ?? 0), 0);
+  return mestring + Math.max(0, levels - COACH_BASE_LEVELS);
+}
+
+/** Kroner per week: the role's wage, and more for each course. */
+export function wage(x: Staff): number {
+  return ROLES[x.role].wage + WAGE_PER_LEVEL[x.role] * courses(x);
+}
+
+/** A case worker's skill, in points out of 100. */
+export function caseWorkerSkill(x: Staff): number {
+  return CASEWORKER_SKILL[(x.level ?? 1) - 1] ?? 0;
+}
+
 export function wagesPerWeek(s: GameState): number {
-  return s.staff.reduce((sum, x) => sum + ROLES[x.role].wage, 0);
+  return s.staff.reduce((sum, x) => sum + wage(x), 0);
 }
 
 export function netIncomePerWeek(s: GameState): number {
@@ -95,9 +120,9 @@ export function hireCost(s: GameState): number {
   return Math.round(HIRE_COST_BASE * HIRE_COST_GROWTH ** s.staff.length);
 }
 
-/** Wages may never eat the whole grant. */
-export function canAffordWage(s: GameState, role: StaffRole): boolean {
-  return netIncomePerWeek(s) - ROLES[role].wage >= 0;
+/** Wages may never eat the whole grant. True when the income can pay this much more each week. */
+export function canAffordWage(s: GameState, kr: number): boolean {
+  return netIncomePerWeek(s) - kr >= 0;
 }
 
 /** The price of the next step in a line. */
