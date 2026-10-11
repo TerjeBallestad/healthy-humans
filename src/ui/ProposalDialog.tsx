@@ -17,8 +17,6 @@ import { act, useGame } from '../store';
 import { PROPOSAL, UNITS } from '../content/text';
 import { GRACE_MS } from './Tips';
 
-/** A case worker's result closes by itself after the roll. */
-const AUTO_CLOSE_MS = 4000;
 
 export function ProposalDialog() {
   const s = useGame();
@@ -48,11 +46,6 @@ function SceneCard() {
     const t = setTimeout(() => setReady(true), GRACE_MS);
     return () => clearTimeout(t);
   }, [p.outcome]);
-  useEffect(() => {
-    if (!p.caseWorker) return;
-    const t = setTimeout(() => act(closeProposal), AUTO_CLOSE_MS);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <div class="overlay" onClick={() => ready && p.caseWorker && act(closeProposal)}>
