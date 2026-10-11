@@ -1,11 +1,18 @@
 // Plays the game with a simple bot and prints the pace.
 // Usage: npm run sim [-- --taps-per-second=1 --shop=0]
 import { ACTIVITIES } from '../src/content/activities';
-import { MAX_SKILL, NEED_THRESHOLD, SECONDS_PER_WEEK, trainCost } from '../src/content/tuning';
-import { UPGRADES } from '../src/content/upgrades';
+import {
+  MAX_BEDS,
+  MAX_SKILL,
+  NEED_THRESHOLD,
+  SECONDS_PER_WEEK,
+  trainCost,
+} from '../src/content/tuning';
+import { LINES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, nudge, train } from '../src/sim/actions';
 import { canHire, hire, postAd, turnDown } from '../src/sim/staff';
-import { canBuy } from '../src/sim/institution';
+import { bedCost, canAffordWage, hireCost, upgradeCost } from '../src/sim/institution';
+import { MAX_STAFF } from '../src/content/staff';
 import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
@@ -80,10 +87,17 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
       const x = s.staff.at(-1)!;
       purchases.push({ what: `hire ${x.name} (${x.role})`, tick: s.tick - start });
     }
-    const u = UPGRADES.find((x) => canBuy(s, x.id));
+    // The cheapest level first, across all lines.
+    // Keep enough for the next job ad and the next bed, or the cheap levels eat everything.
+    const reserve =
+      (s.staff.length < MAX_STAFF && canAffordWage(s, 'worker') ? hireCost(s) : 0) +
+      (BEDS && s.beds.length < MAX_BEDS ? bedCost(s) : 0);
+    const u = LINES.filter((x) => s.budget - upgradeCost(s, x.id) >= reserve).sort(
+      (a, b) => upgradeCost(s, a.id) - upgradeCost(s, b.id),
+    )[0];
     if (u && !pick && !posted && s.adReady === null) {
       buyUpgrade(s, u.id);
-      purchases.push({ what: u.label, tick: s.tick - start });
+      purchases.push({ what: `${u.id} ${s.levels[u.id]}`, tick: s.tick - start });
     }
   }
   // Overskudd: save for an open milestone, else train.

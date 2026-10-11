@@ -1,8 +1,16 @@
 import type { ActivityId } from '../content/activities';
 import { ACTIVITY_BY_ID } from '../content/activities';
 import { MAX_SKILL, OMSORG_PER_NUDGE, trainCost } from '../content/tuning';
-import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
-import { bedCost, canBuy, canBuyBed, nudgeMult } from './institution';
+import type { LineId } from '../content/upgrades';
+import {
+  bedCost,
+  canBuy,
+  canBuyBed,
+  lineLevel,
+  nextMilestone,
+  nudgeMult,
+  upgradeCost,
+} from './institution';
 import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
@@ -65,11 +73,12 @@ export function admit(state: GameState, index: number): boolean {
   return true;
 }
 
-export function buyUpgrade(state: GameState, id: UpgradeId): boolean {
-  if (!canBuy(state, id)) return false;
-  const u = UPGRADE_BY_ID[id];
-  state.budget -= u.cost;
-  state.upgrades.push(id);
-  log(state, LOG.upgradeBought(u.label, u.note));
+export function buyUpgrade(state: GameState, line: LineId): boolean {
+  if (!canBuy(state, line)) return false;
+  const m = nextMilestone(state, line);
+  state.budget -= upgradeCost(state, line);
+  state.levels[line] = lineLevel(state, line) + 1;
+  // Only the named milestones go in the log. Plain levels would flood it.
+  if (state.levels[line] === m.level) log(state, LOG.upgradeBought(m.label, m.note || undefined));
   return true;
 }

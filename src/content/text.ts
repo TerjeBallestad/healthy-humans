@@ -120,7 +120,40 @@ export const UPGRADES_MENU = {
   title: 'Upgrades',
   tabs: { you: 'Your work', staff: 'Staff', funding: 'Funding', house: 'House' },
   buy: 'Buy',
+  level: (n: number) => `lvl ${n}`,
+  /** What the next level does: the value now, then the value after. */
+  effect: {
+    nudge: (now: string, next: string) => `Each nudge fills ${now} → ${next} segments`,
+    omsorgRate: (now: string, next: string) => `Omsorg refills ×${now} → ×${next}`,
+    omsorgCap: (now: string, next: string) => `Omsorg cap ${now} → ${next}`,
+    staff: (now: string, next: string) => `Staff nudge ×${now} → ×${next}`,
+    grant: (now: string, next: string) => `Kommune grant ×${now} → ×${next}`,
+    house: (now: string, next: string) => `Overskudd ×${now} → ×${next} for everyone`,
+  },
+  // TODO(Terje): placeholder names for milestones past the written ones, as "Garden III".
+  repeatName: (label: string, n: number) => `${label} ${roman(n)}`,
 };
+
+function roman(n: number): string {
+  const digits: [number, string][] = [
+    [1000, 'M'],
+    [900, 'CM'],
+    [500, 'D'],
+    [400, 'CD'],
+    [100, 'C'],
+    [90, 'XC'],
+    [50, 'L'],
+    [40, 'XL'],
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I'],
+  ];
+  let out = '';
+  for (const [v, d] of digits) while (n >= v) ((out += d), (n -= v));
+  return out;
+}
 
 export const STAFF_TEXT = {
   nudge: 'Nudge',
@@ -184,7 +217,7 @@ export const PROPOSAL = {
 
 export const TOASTS = {
   upgradeReady: 'Upgrade ready',
-  upgrade: (label: string, effect: string) => `${label}: ${effect.toLowerCase()}`,
+  upgrade: (label: string, level: string) => `${label}: ${level}`,
   canHire: 'You can hire',
   adCost: (kr: number) => `A job ad costs ${kr} kr.`,
   upgradesReady: 'Upgrades ready',

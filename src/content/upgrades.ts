@@ -1,189 +1,110 @@
 export type LineId = 'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'grant' | 'house';
 
-export type UpgradeId =
-  | 'course'
-  | 'supervision'
-  | 'lunch'
-  | 'avspasering'
-  | 'office'
-  | 'journal'
-  | 'calendar'
-  | 'handover'
-  | 'report'
-  | 'application'
-  | 'commonRoom'
-  | 'garden';
+export type UpgradeTab = 'you' | 'staff' | 'funding' | 'house';
 
-export interface UpgradeDef {
-  id: UpgradeId;
+/** A named level with a big bonus. One comes every `MILESTONE_EVERY` levels. */
+export interface UpgradeMilestone {
   label: string;
   /** One dry line under the name. */
   note: string;
-  /** What it does, in a few words. */
-  effect: string;
   /** Placeholder icon until there is art. */
   icon: string;
-  /** Upgrades in one line share a card in the menu and are bought in order. */
-  line: LineId;
-  cost: number;
-  /** Must be bought first. */
-  after?: UpgradeId;
-  /** Segments one of your own nudges fills. The highest bought wins. */
-  nudgeMult?: number;
-  /** Multiplies how fast omsorg refills. The highest bought wins. */
-  omsorgRateMult?: number;
-  /** The omsorg cap. The highest bought wins. */
-  omsorgCap?: number;
-  /** Multiplies staff nudges. The highest bought wins. */
-  staffMult?: number;
-  /** Multiplies the kommune grant. The highest bought wins. */
-  grantMult?: number;
-  /** Multiplies overskudd for every resident. The highest bought wins. */
-  overskuddMult?: number;
 }
 
+export interface LineDef {
+  id: LineId;
+  tab: UpgradeTab;
+  /** Kroner for level 1. Each level after costs `UPGRADE_COST_GROWTH` times more. */
+  baseCost: number;
+  /** Named milestones in order. Past the last one, the names repeat with a number (see text.ts). */
+  milestones: UpgradeMilestone[];
+}
+
+/** Levels between named milestones. */
+export const MILESTONE_EVERY = 10;
+/** Each plain level adds this much to the line's multiplier. */
+export const UPGRADE_STEP = 0.1;
+/** Each named milestone multiplies the line by this. */
+export const MILESTONE_BONUS = 2;
+/** Each level costs this many times the one before. */
+export const UPGRADE_COST_GROWTH = 1.15;
+
 // Ways to grow: make your own click stronger, build the machine that clicks for you, get more money,
-// or make the house a better place to get well.
-export const UPGRADES: UpgradeDef[] = [
+// or make the house a better place to get well. Every line has levels with no end, as in AdVenture Capitalist.
+export const LINES: LineDef[] = [
   {
-    id: 'course',
-    label: 'Course in motivational interviewing',
-    note: 'Two days at a hotel in Lillestrøm.',
-    effect: 'Each nudge fills 2 segments',
-    icon: '🏨',
-    line: 'nudge',
-    cost: 500,
-    nudgeMult: 2,
+    id: 'nudge',
+    tab: 'you',
+    baseCost: 75,
+    milestones: [
+      {
+        label: 'Course in motivational interviewing',
+        note: 'Two days at a hotel in Lillestrøm.',
+        icon: '🏨',
+      },
+      { label: 'Supervision group', note: 'Every second Thursday. There are buns.', icon: '🫂' },
+    ],
   },
   {
-    id: 'supervision',
-    label: 'Supervision group',
-    note: 'Every second Thursday. There are buns.',
-    effect: 'Each nudge fills 3 segments',
-    icon: '🫂',
-    line: 'nudge',
-    cost: 1500,
-    after: 'course',
-    nudgeMult: 3,
+    id: 'omsorgRate',
+    tab: 'you',
+    baseCost: 90,
+    milestones: [
+      { label: 'Lunch break', note: 'Thirty minutes. Nobody calls.', icon: '🥪' },
+      { label: 'Avspasering', note: 'The overtime comes back as days off.', icon: '🏖️' },
+    ],
   },
   {
-    id: 'lunch',
-    label: 'Lunch break',
-    note: 'Thirty minutes. Nobody calls.',
-    effect: 'Omsorg refills 50% faster',
-    icon: '🥪',
-    line: 'omsorgRate',
-    cost: 600,
-    omsorgRateMult: 1.5,
+    id: 'omsorgCap',
+    tab: 'you',
+    baseCost: 75,
+    milestones: [
+      { label: 'Own office', note: 'A door that closes.', icon: '🚪' },
+      {
+        label: 'Electronic journal',
+        note: 'The notes are in one place, not on napkins.',
+        icon: '💻',
+      },
+    ],
   },
   {
-    id: 'avspasering',
-    label: 'Avspasering',
-    note: 'The overtime comes back as days off.',
-    effect: 'Omsorg refills twice as fast',
-    icon: '🏖️',
-    line: 'omsorgRate',
-    cost: 1600,
-    after: 'lunch',
-    omsorgRateMult: 2,
+    id: 'staff',
+    tab: 'staff',
+    baseCost: 90,
+    milestones: [
+      { label: 'Shared calendar', note: 'Nobody books the same room twice.', icon: '📅' },
+      {
+        label: 'Handover routine',
+        note: 'Ten minutes at every shift change. Written down.',
+        icon: '📋',
+      },
+    ],
   },
   {
-    id: 'office',
-    label: 'Own office',
-    note: 'A door that closes.',
-    effect: 'Omsorg cap 60',
-    icon: '🚪',
-    line: 'omsorgCap',
-    cost: 500,
-    omsorgCap: 60,
+    id: 'grant',
+    tab: 'funding',
+    baseCost: 120,
+    milestones: [
+      { label: 'Annual report', note: 'Forty pages. The kommune reads the summary.', icon: '📊' },
+      {
+        label: 'Application to Helsedirektoratet',
+        note: 'A pilot project with a logo.',
+        icon: '🏛️',
+      },
+    ],
   },
   {
-    id: 'journal',
-    label: 'Electronic journal',
-    note: 'The notes are in one place, not on napkins.',
-    effect: 'Omsorg cap 80',
-    icon: '💻',
-    line: 'omsorgCap',
-    cost: 1400,
-    after: 'office',
-    omsorgCap: 80,
-  },
-  {
-    id: 'calendar',
-    label: 'Shared calendar',
-    note: 'Nobody books the same room twice.',
-    effect: 'Staff nudge 50% more often',
-    icon: '📅',
-    line: 'staff',
-    cost: 600,
-    staffMult: 1.5,
-  },
-  {
-    id: 'handover',
-    label: 'Handover routine',
-    note: 'Ten minutes at every shift change. Written down.',
-    effect: 'Staff nudge twice as often',
-    icon: '📋',
-    line: 'staff',
-    cost: 1600,
-    after: 'calendar',
-    staffMult: 2,
-  },
-  {
-    id: 'report',
-    label: 'Annual report',
-    note: 'Forty pages. The kommune reads the summary.',
-    effect: 'Kommune grant ×1.5',
-    icon: '📊',
-    line: 'grant',
-    cost: 800,
-    grantMult: 1.5,
-  },
-  {
-    id: 'application',
-    label: 'Application to Helsedirektoratet',
-    note: 'A pilot project with a logo.',
-    effect: 'Kommune grant ×2',
-    icon: '🏛️',
-    line: 'grant',
-    cost: 2000,
-    after: 'report',
-    grantMult: 2,
-  },
-  {
-    id: 'commonRoom',
-    label: 'Common room',
-    note: 'A sofa nobody owns, and a coffee machine.',
-    effect: 'Overskudd ×1.5 for everyone',
-    icon: '🛋️',
-    line: 'house',
-    cost: 700,
-    overskuddMult: 1.5,
-  },
-  {
-    id: 'garden',
-    label: 'Garden',
-    note: 'Six raised beds and a bench in the sun.',
-    effect: 'Overskudd ×2 for everyone',
-    icon: '🌻',
-    line: 'house',
-    cost: 1800,
-    after: 'commonRoom',
-    overskuddMult: 2,
+    id: 'house',
+    tab: 'house',
+    baseCost: 105,
+    milestones: [
+      { label: 'Common room', note: 'A sofa nobody owns, and a coffee machine.', icon: '🛋️' },
+      { label: 'Garden', note: 'Six raised beds and a bench in the sun.', icon: '🌻' },
+    ],
   },
 ];
 
-export const UPGRADE_BY_ID = Object.fromEntries(UPGRADES.map((u) => [u.id, u])) as Record<
-  UpgradeId,
-  UpgradeDef
+export const LINE_BY_ID = Object.fromEntries(LINES.map((l) => [l.id, l])) as Record<
+  LineId,
+  LineDef
 >;
-
-/** Lines in menu order, with the tab each one sits in. */
-export const LINES: { id: LineId; tab: 'you' | 'staff' | 'funding' | 'house' }[] = [
-  { id: 'nudge', tab: 'you' },
-  { id: 'omsorgRate', tab: 'you' },
-  { id: 'omsorgCap', tab: 'you' },
-  { id: 'staff', tab: 'staff' },
-  { id: 'grant', tab: 'funding' },
-  { id: 'house', tab: 'house' },
-];

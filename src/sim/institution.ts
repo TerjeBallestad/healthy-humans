@@ -12,38 +12,60 @@ import {
   STAFF_NUDGES_PER_SECOND,
 } from '../content/tuning';
 import { MESTRING_BONUS, ROLES, type StaffRole } from '../content/staff';
-import { UPGRADE_BY_ID, type UpgradeId } from '../content/upgrades';
+import {
+  LINE_BY_ID,
+  MILESTONE_BONUS,
+  MILESTONE_EVERY,
+  UPGRADE_COST_GROWTH,
+  UPGRADE_STEP,
+  type LineId,
+  type UpgradeMilestone,
+} from '../content/upgrades';
+import { UPGRADES_MENU } from '../content/text';
 import { taxPerWeek } from './discharge';
 import type { GameState } from './state';
 
+/** Levels bought in one upgrade line. */
+export function lineLevel(s: GameState, line: LineId): number {
+  return s.levels[line] ?? 0;
+}
+
+/** A line's multiplier at a level: each level adds a step, and each named milestone doubles it. */
+export function multAt(level: number): number {
+  return (1 + UPGRADE_STEP * level) * MILESTONE_BONUS ** Math.floor(level / MILESTONE_EVERY);
+}
+
+function lineMult(s: GameState, line: LineId): number {
+  return multAt(lineLevel(s, line));
+}
+
 export function omsorgCap(s: GameState): number {
-  return Math.max(OMSORG_CAP, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].omsorgCap ?? 0));
+  return Math.round(OMSORG_CAP * lineMult(s, 'omsorgCap'));
 }
 
 export function omsorgPerSecond(s: GameState): number {
-  const mult = Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].omsorgRateMult ?? 1));
-  return OMSORG_PER_SECOND * PACE * mult;
+  return OMSORG_PER_SECOND * PACE * lineMult(s, 'omsorgRate');
 }
 
 /** Segments one of the player's nudges fills. */
 export function nudgeMult(s: GameState): number {
-  return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].nudgeMult ?? 1));
+  return lineMult(s, 'nudge');
 }
 
 /** Multiplies staff nudges. */
 export function staffMult(s: GameState): number {
-  return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].staffMult ?? 1));
+  return lineMult(s, 'staff');
 }
 
 /** Multiplies the kommune grant. */
 export function grantMult(s: GameState): number {
-  return Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].grantMult ?? 1));
+  return lineMult(s, 'grant');
 }
 
 /** The kommune pays a base sum and a sum for each extra bed. The grant upgrades multiply both. */
 /** Multiplies overskudd for every resident: the house upgrades, and each staff member with the mestring course. */
 export function overskuddMult(s: GameState): number {
-  const house = Math.max(1, ...s.upgrades.map((id) => UPGRADE_BY_ID[id].overskuddMult ?? 1));
+  const house = lineMult(s, 'house');
   return house * (1 + MESTRING_BONUS * s.staff.filter((x) => x.mestring).length);
 }
 
@@ -79,14 +101,25 @@ export function canAffordWage(s: GameState, role: StaffRole): boolean {
   return netIncomePerWeek(s) - ROLES[role].wage >= 0;
 }
 
-/** Not bought yet, and anything it builds on is bought. */
-export function offered(s: GameState, id: UpgradeId): boolean {
-  const after = UPGRADE_BY_ID[id].after;
-  return !s.upgrades.includes(id) && (!after || s.upgrades.includes(after));
+/** The price of the next level in a line. */
+export function upgradeCost(s: GameState, line: LineId): number {
+  return Math.round(LINE_BY_ID[line].baseCost * UPGRADE_COST_GROWTH ** lineLevel(s, line));
 }
 
-export function canBuy(s: GameState, id: UpgradeId): boolean {
-  return offered(s, id) && s.budget >= UPGRADE_BY_ID[id].cost;
+export function canBuy(s: GameState, line: LineId): boolean {
+  return s.budget >= upgradeCost(s, line);
+}
+
+/** The named milestone a line works toward: the one at the end of its current run of levels. */
+export function nextMilestone(s: GameState, line: LineId): UpgradeMilestone & { level: number } {
+  const n = Math.floor(lineLevel(s, line) / MILESTONE_EVERY) + 1;
+  const written = LINE_BY_ID[line].milestones;
+  const m = written[n - 1] ?? {
+    ...written[written.length - 1]!,
+    label: UPGRADES_MENU.repeatName(written[written.length - 1]!.label, n),
+    note: '',
+  };
+  return { ...m, level: n * MILESTONE_EVERY };
 }
 
 export function bedCost(s: GameState): number {

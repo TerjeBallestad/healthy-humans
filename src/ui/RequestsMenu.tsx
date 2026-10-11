@@ -1,7 +1,8 @@
 import { signal } from '@preact/signals';
-import { LINES, UPGRADES, type LineId } from '../content/upgrades';
+import { LINES, MILESTONE_EVERY, type LineId } from '../content/upgrades';
 import { buyUpgrade } from '../sim/actions';
-import { canBuy } from '../sim/institution';
+import { canBuy, lineLevel, multAt, nextMilestone, upgradeCost } from '../sim/institution';
+import { OMSORG_CAP } from '../content/tuning';
 import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
@@ -16,7 +17,7 @@ const tab = signal<Tab>('you');
 
 /** Upgrades the player can buy right now, for the button badge. */
 export function affordableRequests(s: GameState): number {
-  return UPGRADES.filter((u) => canBuy(s, u.id)).length;
+  return LINES.filter((l) => canBuy(s, l.id)).length;
 }
 
 export function RequestsMenu() {
@@ -28,9 +29,7 @@ export function RequestsMenu() {
         <header>
           <nav class="tabs" role="tablist">
             {TABS.map((t) => {
-              const count = LINES.filter(
-                (l) => l.tab === t.id && UPGRADES.some((u) => u.line === l.id && canBuy(s, u.id)),
-              ).length;
+              const count = LINES.filter((l) => l.tab === t.id && canBuy(s, l.id)).length;
               return (
                 <button
                   role="tab"
@@ -58,46 +57,46 @@ export function RequestsMenu() {
   );
 }
 
-/** One card per line. It shows the next level, or the last one when the line is done. */
+/** A line's value at a level, as the effect line shows it. */
+function shown(line: LineId, level: number): string {
+  const mult = multAt(level);
+  if (line === 'omsorgCap') return String(Math.round(OMSORG_CAP * mult));
+  return String(Math.round(mult * 10) / 10);
+}
+
+/** One card per line. The title is the next named milestone, and the pips count the levels to it. */
 function LineCard({ line }: { line: LineId }) {
   const s = useGame();
-  const levels = UPGRADES.filter((u) => u.line === line);
-  const bought = levels.filter((u) => s.upgrades.includes(u.id)).length;
-  const next = levels[bought];
-  const shown = next ?? levels[levels.length - 1]!;
+  const level = lineLevel(s, line);
+  const m = nextMilestone(s, line);
+  const run = level % MILESTONE_EVERY;
   return (
-    <article class={next ? 'request' : 'request done'}>
+    <article class="request">
       <span class="icon" aria-hidden="true">
-        {shown.icon}
+        {m.icon}
       </span>
       <div class="text">
-        <strong class="title">{shown.label}</strong>
-        <span class="effect">{shown.effect}</span>
-        {levels.length > 1 && (
-          <span class="pips" aria-label={UNITS.levelOf(bought, levels.length)}>
-            {levels.map((_, i) => (
-              <span class={i < bought ? 'pip on' : 'pip'} />
-            ))}
-          </span>
-        )}
+        <strong class="title">
+          {m.label} <span class="muted">{UPGRADES_MENU.level(level)}</span>
+        </strong>
+        <span class="effect">
+          {UPGRADES_MENU.effect[line](shown(line, level), shown(line, level + 1))}
+        </span>
+        <span class="pips" aria-label={UNITS.levelOf(run, MILESTONE_EVERY)}>
+          {Array.from({ length: MILESTONE_EVERY }, (_, i) => (
+            <span class={i < run ? 'pip on' : i === MILESTONE_EVERY - 1 ? 'pip goal' : 'pip'} />
+          ))}
+        </span>
       </div>
       <div class="buy-col">
-        {next ? (
-          <>
-            <span class="price">{UNITS.kr(next.cost)}</span>
-            <button
-              class="buy-request"
-              disabled={!canBuy(s, next.id)}
-              onClick={() => act((g) => buyUpgrade(g, next.id))}
-            >
-              {UPGRADES_MENU.buy}
-            </button>
-          </>
-        ) : (
-          <span class="tick" aria-label={UNITS.done}>
-            ✓
-          </span>
-        )}
+        <span class="price">{UNITS.kr(upgradeCost(s, line))}</span>
+        <button
+          class="buy-request"
+          disabled={!canBuy(s, line)}
+          onClick={() => act((g) => buyUpgrade(g, line))}
+        >
+          {UPGRADES_MENU.buy}
+        </button>
       </div>
     </article>
   );

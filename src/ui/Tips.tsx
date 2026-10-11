@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
 import { GRANT_PER_BED } from '../content/tuning';
-import { UPGRADES } from '../content/upgrades';
+import { LINES } from '../content/upgrades';
 import { canNudge, canTrain, freeBed } from '../sim/actions';
 import { bestTier } from '../sim/discharge';
 import { canBuy, canBuyBed, grantMult, hireCost } from '../sim/institution';
@@ -128,7 +128,7 @@ function screenTips(s: GameState): (() => Tip | null)[] {
           }
         : null,
     () =>
-      UPGRADES.some((u) => canBuy(s, u.id))
+      LINES.some((l) => canBuy(s, l.id))
         ? {
             key: 'tip:upgrades',
             target: '[data-tip="upgrades"]',

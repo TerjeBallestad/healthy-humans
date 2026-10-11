@@ -1,5 +1,5 @@
 import { HIRE_COST_BASE } from '../content/tuning';
-import { UPGRADES } from '../content/upgrades';
+import { LINES } from '../content/upgrades';
 import { canTrain } from './actions';
 import { bestTier } from './discharge';
 import { canBuy, canBuyBed } from './institution';
@@ -20,7 +20,7 @@ export function markSeen(s: GameState, key: string) {
 
 const WHEN: Record<RevealId, (s: GameState) => boolean> = {
   staff: (s) => s.budget >= HIRE_COST_BASE || s.staff.length > 0,
-  upgrades: (s) => UPGRADES.some((u) => canBuy(s, u.id)) || s.upgrades.length > 0,
+  upgrades: (s) => LINES.some((l) => canBuy(s, l.id) || (s.levels[l.id] ?? 0) > 0),
   beds: (s) =>
     canBuyBed(s) ||
     s.beds.length > 1 ||

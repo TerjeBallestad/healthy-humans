@@ -19,9 +19,9 @@ import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archet
 import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
 import type { StaffRole } from '../content/staff';
-import type { UpgradeId } from '../content/upgrades';
+import type { LineId } from '../content/upgrades';
 
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -130,7 +130,8 @@ export interface GameState {
   adReady: number | null;
   /** People who answered the job ad. The player picks one. */
   candidates: Staff[];
-  upgrades: UpgradeId[];
+  /** Levels bought in each upgrade line. A line that is not here is at 0. */
+  levels: Partial<Record<LineId, number>>;
   /** One slot per bed. Null is an empty bed. */
   beds: (Resident | null)[];
   /** The bed the player looks at. */
@@ -224,7 +225,7 @@ export function newGame(): GameState {
     staff: [],
     adReady: null,
     candidates: [],
-    upgrades: [],
+    levels: {},
     beds: [newResident(ARCHETYPES[0]!.id)],
     selected: 0,
     nextArchetype: 1 + WAITLIST_START,

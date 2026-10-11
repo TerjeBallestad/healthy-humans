@@ -401,6 +401,7 @@ button:disabled {
 }
 .request .pips {
   display: flex;
+  align-items: center;
   gap: 4px;
   margin-top: 2px;
 }
@@ -412,6 +413,12 @@ button:disabled {
 }
 .request .pip.on {
   background: var(--accent);
+}
+/* The last pip is the named milestone, with the big bonus. */
+.request .pip.goal {
+  width: 10px;
+  height: 10px;
+  border-color: var(--gold);
 }
 .request .buy-col {
   display: grid;

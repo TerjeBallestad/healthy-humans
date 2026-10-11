@@ -64,7 +64,7 @@ describe('discharge', () => {
       { name: 'Kari', face: '🧑', role: 'worker', specialities: [], coaching: {}, carry: 0 },
     ];
     s.budget = 500;
-    s.upgrades = ['calendar'];
+    s.levels = { staff: 5 };
     automatic(s.beds[0]!, 6);
     const before = netIncomePerWeek(s);
     openDischarge(s, 0);
@@ -80,7 +80,7 @@ describe('discharge', () => {
     expect(r.skill).toEqual(newResident('maja', 100, 0, r.trait).skill);
     expect(s.staff.map((x) => x.name)).toEqual(['Kari']);
     expect(s.budget).toBe(500);
-    expect(s.upgrades).toHaveLength(1);
+    expect(s.levels.staff).toBe(5);
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - 40 + 10);
   });
 

@@ -184,8 +184,16 @@ Each step ends with something playable and one question to answer by playing.
    7k: **economy and onboarding.** Each bed adds to the grant. Overskudd from a House tab and a mestring course. Omsorg rate and cap upgrades. A skill-up pip and toasts. A gradual reveal with one "Click here" tip at a time, also in the proposal. One pause/play toggle.
    _Question: answered on 2026-10-10. Terje played 46 minutes and stopped at the caps._
 8. **Balance pass.** Tune with `npm run sim`. The 30-minute test passed in play. Pacing is "good, not perfect".
-9. **Automation.** A case worker resolves proposals by a rule ("wager up to 300 kr"). An intake rule fills a free bed ("lowest health first").
+9. **Automation and growth without caps.** Designed with Terje on 2026-10-11. Four small steps, each one playable.
    _Question: can the house run while you look elsewhere?_
+   9a: **upgrades without an end** (as in AdVenture Capitalist). Each upgrade line has levels with no end. Each level costs a fixed factor more than the last and multiplies the effect by a small amount. Every 10th level is a named milestone with a big bonus (×2). Milestone names are placeholders ("Garden X") until Terje writes them. Fixes "ran out of fumes when every cap was reached".
+   9b: **facility slots and the case worker.** The facility defines its slots. The first facility holds 4 beds, 1 coach, 1 miljøarbeider and 1 case worker. Slots do not depend on the beds, so later facilities can differ: a 1:1 intensive care unit, or 12 beds with 1 miljøarbeider that admits only advanced residents. Open: are slots open from the start, or does an office (coach office, case worker office, staff room with levels) open them up to the facility's limit?
+   - **One coach, maxed.** A coach can learn every level of every activity. No skill slots: Terje prefers to max one coach to a jigsaw of partial sheets.
+   - **Case worker, proposals.** Before the hire you make the kroner wager yourself (the contractor phase, as in Game Dev Story). After the hire the case worker takes every proposal, and there is no manual option. The resident still pays the 20 overskudd. The odds are the case worker's skill minus the milestone's difficulty, for example skill 60 and difficulty 0 (NAV), 10 (application), 25 (work trial). Later milestones are harder.
+   - **Case worker training costs kroner, with diminishing returns.** Each level adds a fixed number of points, and the price grows each level. 100% is possible, but the sensible stop is at 90 to 95%.
+   - **The proposal UI stays.** The dialog shows the scene card, the milestone track and the odds bar with the case worker's odds, without the slider. The marker rolls by itself. The dialog closes by itself after the result, or on a click. Later each archetype and potential gets its own milestones, so each resident tells a story through them. Show them while there are 1 or 2 facilities. Hide them later if they become noise.
+   9c: **intake course** (case worker training). The case worker admits to a free bed by a priority the player chooses: lowest health, best match, or richest. This is a choice about values, not a forecast. "Richest" pays well and should feel wrong.
+   9d: **discharge course** (case worker training). The case worker discharges at a tier the player chooses, "healthy human" by default.
 10. **A second facility.** See "After Act 1".
 
 ## After Act 1: several facilities
