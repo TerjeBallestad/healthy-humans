@@ -168,7 +168,8 @@ function screenTips(s: GameState): (() => Tip | null)[] {
 
 const GAP = 10;
 /** Real milliseconds a new tip ignores clicks, so a fast clicker reads it first. */
-const GRACE_MS = 1500;
+/** Clicks are ignored this long after a tip or a proposal shows, so fast clicking cannot skip it. */
+export const GRACE_MS = 1500;
 
 /** A "Click here" bubble next to the element it explains. */
 export function Tips() {

@@ -98,6 +98,8 @@ Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
 | A hire pool can be three coaches                      | Every pool has at least one miljøarbeider and one coach.                                                                                    |
 | The milestone also needs tips                         | Three tips in the proposal: the track, the wager, Go.                                                                                       |
 | Too many time controls, omsorg in a box               | One pause/play toggle. Omsorg without background or border.                                                                                 |
+| Venteliste collapses when the staff list grows        | The venteliste keeps up to 45% of the left column. The staff panel scrolls on its own below it.                                            |
+| Milestone dialog dismissed by fast clicking           | The proposal buttons ignore clicks for 1.5 s (`GRACE_MS`, shared with the tips), on open and again when the result shows.                  |
 
 ## Open issues
 

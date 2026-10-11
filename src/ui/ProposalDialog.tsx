@@ -15,6 +15,7 @@ import {
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
 import { PROPOSAL, UNITS } from '../content/text';
+import { GRACE_MS } from './Tips';
 
 /** A case worker's result closes by itself after the roll. */
 const AUTO_CLOSE_MS = 4000;
@@ -40,6 +41,13 @@ function SceneCard() {
   const odds = p.chance ?? chance(r, p.subject, kr);
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
   const cw = p.caseWorker ? s.staff.find((x) => x.name === p.caseWorker) : undefined;
+  // Fast clicking on the cards must not skip the card or its result. Clicks wait GRACE_MS each time.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(false);
+    const t = setTimeout(() => setReady(true), GRACE_MS);
+    return () => clearTimeout(t);
+  }, [p.outcome]);
   useEffect(() => {
     if (!p.caseWorker) return;
     const t = setTimeout(() => act(closeProposal), AUTO_CLOSE_MS);
@@ -47,7 +55,7 @@ function SceneCard() {
   }, []);
 
   return (
-    <div class="overlay" onClick={() => p.caseWorker && act(closeProposal)}>
+    <div class="overlay" onClick={() => ready && p.caseWorker && act(closeProposal)}>
       <div class="dialog scene" role="dialog" aria-modal="true">
         <div class="stage">
           <span class="face" aria-label={r.name}>
@@ -111,13 +119,13 @@ function SceneCard() {
               <button
                 class="choice"
                 data-tip="go"
-                disabled={!canWager(s, kr)}
+                disabled={!ready || !canWager(s, kr)}
                 onClick={() => act((g) => accept(g, kr))}
               >
                 <span>{PROPOSAL.go}</span>
                 <span class="odds">{kr > 0 ? UNITS.kr(kr) : PROPOSAL.alone}</span>
               </button>
-              <button class="choice quiet" onClick={() => act(decline)}>
+              <button class="choice quiet" disabled={!ready} onClick={() => act(decline)}>
                 {PROPOSAL.notNow}
               </button>
             </div>
@@ -129,7 +137,7 @@ function SceneCard() {
             <p class={`outcome ${p.outcome}`}>
               {p.outcome === 'declined' ? PROPOSAL.declined : p.result}
             </p>
-            <button class="choice" onClick={() => act(closeProposal)}>
+            <button class="choice" disabled={!ready} onClick={() => act(closeProposal)}>
               {PROPOSAL.continue}
             </button>
           </div>

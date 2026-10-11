@@ -1307,14 +1307,15 @@ button:disabled {
   font-variant-numeric: tabular-nums;
 }
 
-/* Waiting list: it scrolls on its own, so the staff below stay in view. */
+/* Waiting list and staff each scroll on their own. The list keeps up to 45% of the column. */
 .col.left {
   overflow: hidden;
 }
 .col.left .waitlist {
   display: flex;
   flex-direction: column;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
+  max-height: 45%;
   min-height: 0;
 }
 .col.left .waitlist ol {
@@ -1322,7 +1323,9 @@ button:disabled {
   overflow-y: auto;
 }
 .col.left .institution {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 .waitlist h3 .count {
   margin-left: 6px;
