@@ -12,7 +12,9 @@ import { LINES } from '../src/content/upgrades';
 import { admit, buyBed, buyUpgrade, freeBed, nudge, train } from '../src/sim/actions';
 import { canHire, hire, postAd, turnDown } from '../src/sim/staff';
 import { bedCost, canAffordWage, canBuy, hireCost, upgradeCost } from '../src/sim/institution';
-import { MAX_STAFF } from '../src/content/staff';
+import { MAX_STAFF, type StaffRole } from '../src/content/staff';
+
+const HIRE_ORDER: StaffRole[] = ['worker', 'coach', 'caseworker', 'worker'];
 import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
 import { MILESTONES } from '../src/content/milestones';
 import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
@@ -76,12 +78,9 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
 
   // Spend budget: staff first, then the cheapest upgrade.
   if (SHOP) {
-    // Post a job ad when it can. Then hire a candidate: a miljøarbeider first, then a coach.
-    const posted = postAd(s);
-    const order = s.candidates
-      .map((c, i) => ({ c, i }))
-      .sort((x, y) => (x.c.role === 'worker' ? 0 : 1) - (y.c.role === 'worker' ? 0 : 1));
-    const pick = order.find(({ i }) => canHire(s, i));
+    // Post a job ad when it can, for the next role in HIRE_ORDER. Then hire the first candidate who fits.
+    const posted = postAd(s, HIRE_ORDER[s.staff.length] ?? 'worker');
+    const pick = s.candidates.map((_, i) => ({ i })).find(({ i }) => canHire(s, i));
     if (!pick && s.candidates.length > 0) turnDown(s);
     if (pick && hire(s, pick.i)) {
       const x = s.staff.at(-1)!;

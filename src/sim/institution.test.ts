@@ -3,7 +3,11 @@ import type { NeedId } from '../content/needs';
 import {
   AD_WEEKS,
   CANDIDATES,
+  CASEWORK_STEP,
+  CASEWORKER_SKILL_MAX,
+  CASEWORKER_SKILL_MIN,
   COACH_TRAIN_COST,
+  MAX_STAFF,
   ROLES,
   SPECIALITY_FILL,
   SPECIALITY_TRAIN_COST,
@@ -29,9 +33,11 @@ import {
   staffNudgesPerSecond,
 } from './institution';
 import {
+  caseworkCost,
   hire,
   postAd,
   rollCandidates,
+  trainCasework,
   trainCoach,
   trainMestring,
   trainSpeciality,
@@ -93,19 +99,19 @@ describe('staff', () => {
   test('a job ad costs the fee, and candidates show up a week later', () => {
     const s = newGame();
     s.budget = HIRE_COST_BASE;
-    expect(postAd(s)).toBe(true);
+    expect(postAd(s, 'coach')).toBe(true);
     expect(s.budget).toBe(0);
-    expect(postAd(s)).toBe(false); // one ad at a time
+    expect(postAd(s, 'worker')).toBe(false); // one ad at a time
     run(s, AD_WEEKS * TICKS_PER_WEEK - 1);
     expect(s.candidates).toHaveLength(0);
     tick(s);
     expect(s.candidates).toHaveLength(CANDIDATES);
+    expect(s.candidates.every((c) => c.role === 'coach')).toBe(true);
   });
 
   test('picking someone costs only the wage of the role and closes the ad', () => {
     const s = newGame();
-    rollCandidates(s);
-    s.candidates[0]!.role = 'coach';
+    rollCandidates(s, 'coach');
     const budget = s.budget;
     expect(hire(s, 0)).toBe(true);
     expect(s.budget).toBe(budget);
@@ -116,20 +122,32 @@ describe('staff', () => {
 
   test('turning everyone down closes the ad', () => {
     const s = newGame();
-    rollCandidates(s);
+    rollCandidates(s, 'worker');
     turnDown(s);
     expect(s.candidates).toHaveLength(0);
     s.budget = HIRE_COST_BASE;
-    expect(postAd(s)).toBe(true);
+    expect(postAd(s, 'worker')).toBe(true);
   });
 
   test('wages may not eat the whole grant', () => {
     const s = newGame();
     for (let i = 0; i < 10; i++) {
-      rollCandidates(s);
+      rollCandidates(s, 'coach');
       hire(s, 0);
     }
     expect(netIncomePerWeek(s)).toBeGreaterThanOrEqual(0);
+  });
+
+  test('the house has MAX_STAFF office slots', () => {
+    const s = newGame();
+    s.budget = 1e9;
+    s.levels.grant = 20;
+    for (let i = 0; i < MAX_STAFF + 2; i++) {
+      rollCandidates(s, 'worker');
+      hire(s, 0);
+    }
+    expect(s.staff).toHaveLength(MAX_STAFF);
+    expect(postAd(s, 'worker')).toBe(false);
   });
 
   test('staff fill the bar of the lowest need for free', () => {
@@ -179,16 +197,29 @@ test('staff cannot make a rested resident sleep again', () => {
   }
 });
 
-describe('job ad', () => {
-  test('every pool has at least one miljøarbeider and one coach', () => {
-    for (let seed = 1; seed <= 200; seed++) {
+describe('case worker', () => {
+  test('candidates roll a skill in the range', () => {
+    for (let seed = 1; seed <= 100; seed++) {
       const s = newGame();
       s.seed = seed;
-      rollCandidates(s);
-      const roles = s.candidates.map((c) => c.role);
-      expect(roles).toContain('worker');
-      expect(roles).toContain('coach');
+      rollCandidates(s, 'caseworker');
+      for (const c of s.candidates) {
+        expect(c.skill).toBeGreaterThanOrEqual(CASEWORKER_SKILL_MIN);
+        expect(c.skill).toBeLessThanOrEqual(CASEWORKER_SKILL_MAX);
+      }
     }
+  });
+
+  test('the casework course costs kroner, more each step, up to 100', () => {
+    const s = newGame();
+    s.staff = [{ ...coach({}), role: 'caseworker', skill: 50 }];
+    s.budget = 1e9;
+    const first = caseworkCost(s.staff[0]!);
+    expect(trainCasework(s, 0)).toBe(true);
+    expect(s.staff[0]!.skill).toBe(50 + CASEWORK_STEP);
+    expect(caseworkCost(s.staff[0]!)).toBeGreaterThan(first);
+    while (trainCasework(s, 0));
+    expect(s.staff[0]!.skill).toBe(100);
   });
 });
 

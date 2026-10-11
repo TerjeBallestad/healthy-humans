@@ -6,6 +6,7 @@ import {
   PROPOSAL_COST_MILESTONE,
 } from '../content/tuning';
 import { random } from './rng';
+import { bestCaseWorker } from './staff';
 import { unlockedActivities } from './selectors';
 import { occupied, type GameState, type ProposalSubject, type Resident } from './state';
 import { log } from './tick';
@@ -30,6 +31,12 @@ export function chance(_r: Resident, subject: ProposalSubject, kr: number): numb
   const m = MILESTONE_BY_ID[subject.milestone];
   if (kr >= m.sure) return 1;
   return m.baseChance + (MAX_CHANCE - m.baseChance) * (1 - Math.exp((-3 * kr) / m.sure));
+}
+
+/** A case worker's odds: the skill minus the milestone's difficulty, in points out of 100. */
+export function caseWorkerChance(skill: number, subject: ProposalSubject): number {
+  const m = MILESTONE_BY_ID[subject.milestone];
+  return Math.max(0, Math.min(1, (skill - m.difficulty) / 100));
 }
 
 export function askText(subject: ProposalSubject): string {
@@ -59,6 +66,12 @@ export function maybePropose(state: GameState) {
     r.lastProposalTick = state.tick;
     state.resumeSpeed = state.speed || state.resumeSpeed;
     state.speed = 0;
+    // After the hire, the case worker takes every milestone. The player has no wager.
+    const cw = bestCaseWorker(state);
+    if (cw) {
+      state.proposal.caseWorker = cw.name;
+      resolve(state, caseWorkerChance(cw.skill ?? 0, subject), 0);
+    }
     return;
   }
 }
@@ -77,8 +90,15 @@ export function canWager(state: GameState, kr: number): boolean {
 export function accept(state: GameState, kr: number): boolean {
   const p = state.proposal;
   const r = p && state.beds[p.bed];
-  if (!p || !r || p.outcome || !canWager(state, kr)) return false;
-  const odds = chance(r, p.subject, kr);
+  if (!p || !r || p.outcome || p.caseWorker || !canWager(state, kr)) return false;
+  resolve(state, chance(r, p.subject, kr), kr);
+  return true;
+}
+
+/** Pay the wager and the overskudd, and roll the outcome. */
+function resolve(state: GameState, odds: number, kr: number) {
+  const p = state.proposal!;
+  const r = state.beds[p.bed]!;
   state.budget -= kr;
   // The overskudd is the price of doing it. Saying no costs nothing.
   r.overskudd -= proposalCost(p.subject);
@@ -89,7 +109,6 @@ export function accept(state: GameState, kr: number): boolean {
   if (won) r.milestones.push(m.id);
   p.result = won ? m.success : m.failure;
   log(state, p.result, r.name);
-  return true;
 }
 
 export function decline(state: GameState) {

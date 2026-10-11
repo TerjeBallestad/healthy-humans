@@ -111,7 +111,6 @@ export const INSTITUTION = {
   discharged: 'Discharged',
   tax: 'Tax',
   staff: 'Staff',
-  nobody: 'Nobody yet. It is just you.',
   nudgesInAll: (n: string) => `${n} nudges/s in all`,
   pickCandidate: 'Pick a candidate',
   deadline: 'Søknadsfrist',
@@ -185,6 +184,13 @@ export const STAFF_TEXT = {
   upToIndependent: 'Up to independent',
   upTo: (level: string) => `Up to ${level}`,
   train: 'Train',
+  // TODO(Terje): placeholder labels for the case worker.
+  skill: 'Skill',
+  skillShort: (n: number) => `skill ${n}`,
+  odds: 'Odds',
+  pct: (n: number) => `${n}%`,
+  caseworkCourse: 'Casework course',
+  caseworkEffect: (from: number, to: number) => `Skill ${from} → ${to}`,
 };
 
 export const DISCHARGE = {

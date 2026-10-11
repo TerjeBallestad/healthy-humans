@@ -3,6 +3,7 @@ import { ACTIVITIES } from '../content/activities';
 import { MAX_SKILL, PROPOSAL_COOLDOWN_WEEKS, PROPOSAL_COST_MILESTONE } from '../content/tuning';
 import {
   accept,
+  caseWorkerChance,
   chance,
   closeProposal,
   decline,
@@ -34,6 +35,37 @@ describe('overskudd', () => {
     expect(one.beds[0]!.overskudd).toBeGreaterThan(0);
     expect(one.beds[0]!.overskudd).toBeLessThan(all.beds[0]!.overskudd);
     expect(none.beds[0]!.overskudd).toBe(0);
+  });
+});
+
+describe('case worker', () => {
+  const withCaseWorker = (skill: number) => {
+    const s = ready();
+    s.staff = [
+      { name: 'Kari', face: '🧑', role: 'caseworker', skill, specialities: [], coaching: {}, carry: 0 },
+    ];
+    return s;
+  };
+
+  test('takes the milestone at once, with no wager', () => {
+    const s = withCaseWorker(60);
+    s.budget = 500;
+    maybePropose(s);
+    expect(s.proposal?.caseWorker).toBe('Kari');
+    expect(s.proposal?.chance).toBeCloseTo(0.6);
+    expect(s.proposal?.outcome).toMatch(/success|failure/);
+    expect(s.budget).toBe(500);
+    expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
+    expect(accept(s, 0)).toBe(false);
+  });
+
+  test('odds are skill minus difficulty, from 0 to 1', () => {
+    const nav = { kind: 'milestone', milestone: 'nav' } as const;
+    const trial = { kind: 'milestone', milestone: 'worktrial' } as const;
+    expect(caseWorkerChance(60, nav)).toBeCloseTo(0.6);
+    expect(caseWorkerChance(60, trial)).toBeCloseTo(0.35);
+    expect(caseWorkerChance(10, trial)).toBe(0);
+    expect(caseWorkerChance(100, nav)).toBe(1);
   });
 });
 

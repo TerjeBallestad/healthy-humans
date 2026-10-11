@@ -8,6 +8,8 @@ export interface MilestoneDef {
   success: string;
   failure: string;
   baseChance: number;
+  /** Points off a case worker's skill. The case worker's odds are skill minus difficulty. */
+  difficulty: number;
   /** Kroner that make success sure. Smaller wagers give less, with diminishing returns. */
   sure: number;
   /** Where it happens, for the scene card. */
@@ -31,6 +33,7 @@ export const MILESTONES: MilestoneDef[] = [
     success: 'Went to NAV. Said what was needed. Came home with a plan.',
     failure: 'Sat in the waiting room. Left before the name was called.',
     baseChance: 0.45,
+    difficulty: 0,
     sure: 600,
     place: 'NAV office',
     placeIcon: '🏢',
@@ -44,6 +47,7 @@ export const MILESTONES: MilestoneDef[] = [
     success: 'Sent the application. Read it nine times first.',
     failure: 'Wrote two lines. Deleted them.',
     baseChance: 0.35,
+    difficulty: 10,
     sure: 900,
     place: 'Kitchen table',
     placeIcon: '📝',
@@ -58,6 +62,7 @@ export const MILESTONES: MilestoneDef[] = [
     success: 'Five days at the warehouse. Came home tired. The good kind.',
     failure: 'Called in sick on Wednesday.',
     baseChance: 0.3,
+    difficulty: 25,
     sure: 1400,
     place: 'Warehouse',
     placeIcon: '🏭',

@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
 import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
 import { OVERSKUDD_CAP } from '../content/tuning';
@@ -15,6 +15,9 @@ import {
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
 import { PROPOSAL, UNITS } from '../content/text';
+
+/** A case worker's result closes by itself after the roll. */
+const AUTO_CLOSE_MS = 4000;
 
 export function ProposalDialog() {
   const s = useGame();
@@ -36,9 +39,15 @@ function SceneCard() {
   const [kr, setKr] = useState(0);
   const odds = p.chance ?? chance(r, p.subject, kr);
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
+  const cw = p.caseWorker ? s.staff.find((x) => x.name === p.caseWorker) : undefined;
+  useEffect(() => {
+    if (!p.caseWorker) return;
+    const t = setTimeout(() => act(closeProposal), AUTO_CLOSE_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <div class="overlay">
+    <div class="overlay" onClick={() => p.caseWorker && act(closeProposal)}>
       <div class="dialog scene" role="dialog" aria-modal="true">
         <div class="stage">
           <span class="face" aria-label={r.name}>
@@ -57,6 +66,11 @@ function SceneCard() {
         <OverskuddDrain before={p.overskuddBefore} cost={proposalCost(p.subject)} paid={rolled} />
         <Track r={r} current={m.id} ticking={p.outcome === 'success'} />
 
+        {cw && (
+          <p class="case-worker">
+            <span aria-hidden="true">{cw.face}</span> {cw.name}
+          </p>
+        )}
         <div class="odds-bar" data-tip="odds" aria-label={PROPOSAL.chance(Math.round(odds * 100))}>
           <span class="zone" style={{ width: `${odds * 100}%` }} />
           {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}

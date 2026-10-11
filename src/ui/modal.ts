@@ -4,6 +4,7 @@ import { act } from '../store';
 export type Modal =
   | { kind: 'requests' }
   | { kind: 'hire' }
+  | { kind: 'post' }
   | { kind: 'staff'; index: number }
   | { kind: 'patient'; index: number }
   | { kind: 'training'; index: number };

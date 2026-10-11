@@ -1,14 +1,14 @@
-import { ROLES } from '../content/staff';
+import { MAX_STAFF, ROLES } from '../content/staff';
 import { TIERS } from '../content/tiers';
 import { taxPerWeek } from '../sim/discharge';
 import { hireCost, staffNudgesPerSecond } from '../sim/institution';
 import { isSeen } from '../sim/reveal';
-import { canPostAd, postAd } from '../sim/staff';
+import { canPostAd } from '../sim/staff';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { openModal } from './modal';
 import { affordableRequests } from './RequestsMenu';
 import { StaffSummary } from './StaffMenus';
-import { act, useGame } from '../store';
+import { useGame } from '../store';
 import { INSTITUTION, UNITS } from '../content/text';
 
 export function InstitutionPanel() {
@@ -41,37 +41,45 @@ export function InstitutionPanel() {
         </>
       )}
       <h3>{INSTITUTION.staff}</h3>
-      {s.staff.length > 0 ? (
-        <div class="staff-list">
-          {s.staff.map((x, i) => (
-            <button class="staff-chip" onClick={() => openModal({ kind: 'staff', index: i })}>
-              <span aria-hidden="true">{ROLES[x.role].icon}</span>
-              <span class="name">{x.name}</span>
-              <StaffSummary x={x} />
+      <div class="staff-list">
+        {s.staff.map((x, i) => (
+          <button class="staff-chip" onClick={() => openModal({ kind: 'staff', index: i })}>
+            <span aria-hidden="true">{ROLES[x.role].icon}</span>
+            <span class="name">{x.name}</span>
+            <StaffSummary x={x} />
+          </button>
+        ))}
+        {Array.from({ length: Math.max(0, MAX_STAFF - s.staff.length) }, (_, k) =>
+          k > 0 ? (
+            <span class="office empty" aria-hidden="true" />
+          ) : s.candidates.length > 0 ? (
+            <button class="buy office" onClick={() => openModal({ kind: 'hire' })}>
+              <span>{INSTITUTION.pickCandidate}</span>
+              <span class="badge">{s.candidates.length}</span>
             </button>
-          ))}
-        </div>
-      ) : (
-        <p class="muted">{INSTITUTION.nobody}</p>
-      )}
+          ) : s.adReady !== null ? (
+            <button class="buy office" disabled>
+              <span>
+                {s.adRole && <span aria-hidden="true">{ROLES[s.adRole].icon} </span>}
+                {INSTITUTION.deadline}
+              </span>
+              <span class="price">{INSTITUTION.days(daysLeft)}</span>
+            </button>
+          ) : (
+            <button
+              class="buy office"
+              data-tip="hire"
+              disabled={!canPostAd(s)}
+              onClick={() => openModal({ kind: 'post' })}
+            >
+              <span>{INSTITUTION.hire}</span>
+              <span class="price">{UNITS.kr(hireCost(s))}</span>
+            </button>
+          ),
+        )}
+      </div>
       {staffNudgesPerSecond(s) > 0 && (
         <p class="muted hint">{INSTITUTION.nudgesInAll(staffNudgesPerSecond(s).toFixed(2))}</p>
-      )}
-      {s.candidates.length > 0 ? (
-        <button class="buy" onClick={() => openModal({ kind: 'hire' })}>
-          <span>{INSTITUTION.pickCandidate}</span>
-          <span class="badge">{s.candidates.length}</span>
-        </button>
-      ) : s.adReady !== null ? (
-        <button class="buy" disabled>
-          <span>{INSTITUTION.deadline}</span>
-          <span class="price">{INSTITUTION.days(daysLeft)}</span>
-        </button>
-      ) : (
-        <button class="buy" data-tip="hire" disabled={!canPostAd(s)} onClick={() => act(postAd)}>
-          <span>{INSTITUTION.hire}</span>
-          <span class="price">{UNITS.kr(hireCost(s))}</span>
-        </button>
       )}
       {s.staff.length > 0 && (
         <button class="buy requests-open" onClick={() => openModal({ kind: 'training', index: 0 })}>

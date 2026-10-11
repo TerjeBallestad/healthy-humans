@@ -3,7 +3,11 @@ import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
   AD_WEEKS,
   CANDIDATES,
-  COACH_SHARE,
+  CASEWORK_COST_AT_50,
+  CASEWORK_COST_GROWTH,
+  CASEWORK_STEP,
+  CASEWORKER_SKILL_MAX,
+  CASEWORKER_SKILL_MIN,
   COACH_TRAIN_COST,
   MAX_STAFF,
   MESTRING_TRAIN_COST,
@@ -36,6 +40,11 @@ function rollCandidate(s: GameState, taken: Set<string>, role: StaffRole): Staff
     staff.specialities.push(pick(s, NEED_ORDER));
     return staff;
   }
+  if (role === 'caseworker') {
+    const span = CASEWORKER_SKILL_MAX - CASEWORKER_SKILL_MIN;
+    staff.skill = CASEWORKER_SKILL_MIN + Math.round(random(s) * span);
+    return staff;
+  }
   // Three activities at lvl 1. Sometimes one goes higher.
   const acts = [...ACTIVITIES].sort(() => random(s) - 0.5).slice(0, 3);
   for (const a of acts) staff.coaching[a.id] = 1;
@@ -45,19 +54,13 @@ function rollCandidate(s: GameState, taken: Set<string>, role: StaffRole): Staff
   return staff;
 }
 
-/**
- * The answers to a job ad. There is always at least one of each role, and the rest are rolled.
- * Names already in the house are not used again.
- */
-export function rollCandidates(s: GameState) {
+/** The answers to a job ad: all in the role it asks for. Names already in the house are not used again. */
+export function rollCandidates(s: GameState, role: StaffRole) {
   const taken = new Set(s.staff.map((x) => x.name));
-  const roles: StaffRole[] = ['worker', 'coach'];
-  while (roles.length < CANDIDATES) roles.push(random(s) < COACH_SHARE ? 'coach' : 'worker');
-  roles.sort(() => random(s) - 0.5);
-  s.candidates = roles.map((role) => rollCandidate(s, taken, role));
+  s.candidates = Array.from({ length: CANDIDATES }, () => rollCandidate(s, taken, role));
 }
 
-/** A job ad is possible when no other ad is open and there is room in the house. */
+/** A job ad is possible when no other ad is open and there is a free office slot. */
 export function canPostAd(s: GameState): boolean {
   return (
     s.adReady === null &&
@@ -67,11 +70,12 @@ export function canPostAd(s: GameState): boolean {
   );
 }
 
-/** Pay for a job ad. The candidates show up AD_WEEKS later. */
-export function postAd(s: GameState): boolean {
+/** Pay for a job ad for one role. The candidates show up AD_WEEKS later. */
+export function postAd(s: GameState, role: StaffRole): boolean {
   if (!canPostAd(s)) return false;
   s.budget -= hireCost(s);
   s.adReady = s.tick + AD_WEEKS * TICKS_PER_WEEK;
+  s.adRole = role;
   log(s, LOG.adOut);
   return true;
 }
@@ -80,7 +84,7 @@ export function postAd(s: GameState): boolean {
 export function checkAd(s: GameState) {
   if (s.adReady === null || s.tick < s.adReady) return;
   s.adReady = null;
-  rollCandidates(s);
+  rollCandidates(s, s.adRole ?? 'worker');
   log(s, LOG.adAnswered(s.candidates.length));
 }
 
@@ -163,5 +167,33 @@ export function trainCoach(s: GameState, index: number, id: ActivityId): boolean
   const x = s.staff[index]!;
   s.omsorg -= coachTrainCost(x, id);
   x.coaching[id] = (x.coaching[id] ?? 0) + 1;
+  return true;
+}
+
+/** The case worker with the highest skill, or undefined before the first one is hired. */
+export function bestCaseWorker(s: GameState): Staff | undefined {
+  return s.staff
+    .filter((x) => x.role === 'caseworker')
+    .sort((a, b) => (b.skill ?? 0) - (a.skill ?? 0))[0];
+}
+
+/** Kroner for the next casework course. Infinity at 100. */
+export function caseworkCost(x: Staff): number {
+  const skill = x.skill ?? 0;
+  if (skill >= 100) return Infinity;
+  return Math.round(CASEWORK_COST_AT_50 * CASEWORK_COST_GROWTH ** ((skill - 50) / CASEWORK_STEP));
+}
+
+export function canTrainCasework(s: GameState, index: number): boolean {
+  const x = s.staff[index];
+  return !!x && x.role === 'caseworker' && s.budget >= caseworkCost(x);
+}
+
+/** Spend kroner on the casework course: CASEWORK_STEP more skill, up to 100. */
+export function trainCasework(s: GameState, index: number): boolean {
+  if (!canTrainCasework(s, index)) return false;
+  const x = s.staff[index]!;
+  s.budget -= caseworkCost(x);
+  x.skill = Math.min(100, (x.skill ?? 0) + CASEWORK_STEP);
   return true;
 }

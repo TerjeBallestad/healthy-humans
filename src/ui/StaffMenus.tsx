@@ -2,9 +2,12 @@ import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
+import { MILESTONES } from '../content/milestones';
 import {
+  CASEWORK_STEP,
   MESTRING_BONUS,
   MESTRING_TRAIN_COST,
+  ROLE_ORDER,
   ROLES,
   SPECIALITY_FILL,
   SPECIALITY_ICON,
@@ -13,9 +16,15 @@ import {
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, omsorgCap } from '../sim/institution';
+import { canAffordWage, hireCost, omsorgCap } from '../sim/institution';
+import { caseWorkerChance } from '../sim/proposals';
 import {
   canHire,
+  canPostAd,
+  canTrainCasework,
+  caseworkCost,
+  postAd,
+  trainCasework,
   canTrainCoach,
   canTrainMestring,
   canTrainSpeciality,
@@ -53,7 +62,9 @@ function Profile({ x }: { x: Staff }) {
           {x.face}
         </span>
         <table class="stats">
-          {x.role === 'worker' ? (
+          {x.role === 'caseworker' ? (
+            <CaseWorkerStats skill={x.skill ?? 0} />
+          ) : x.role === 'worker' ? (
             <>
               <thead>
                 <tr>
@@ -128,6 +139,38 @@ function Profile({ x }: { x: Staff }) {
   );
 }
 
+/** The skill, and the odds it gives on each milestone. */
+function CaseWorkerStats({ skill }: { skill: number }) {
+  return (
+    <>
+      <thead>
+        <tr>
+          <th />
+          <th>{STAFF_TEXT.odds}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="strong">
+          <td>{STAFF_TEXT.skill}</td>
+          <td class="value">{skill}</td>
+        </tr>
+        {MILESTONES.map((m) => (
+          <tr>
+            <td>{m.label}</td>
+            <td class="value">
+              {STAFF_TEXT.pct(
+                Math.round(
+                  caseWorkerChance(skill, { kind: 'milestone', milestone: m.id }) * 100,
+                ),
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </>
+  );
+}
+
 /** A button that shows a short explanation on hover, or on click until focus moves. */
 function Explain({ label, cls, text }: { label: ComponentChildren; cls: string; text: string }) {
   const [open, setOpen] = useState(false);
@@ -166,6 +209,12 @@ function RoleTag({ role }: { role: StaffRole }) {
 
 /** One short line for the staff panel. */
 export function StaffSummary({ x }: { x: Staff }) {
+  if (x.role === 'caseworker')
+    return (
+      <span class="sheet">
+        {ROLES.caseworker.label} · {STAFF_TEXT.skillShort(x.skill ?? 0)}
+      </span>
+    );
   if (x.role === 'worker')
     return (
       <span class="sheet">
@@ -238,6 +287,49 @@ export function HireMenu() {
   );
 }
 
+/** Pick the role for a job ad. The ad costs the same for every role. */
+export function PostAdMenu() {
+  const s = useGame();
+  if (modal.value?.kind !== 'post') return null;
+  return (
+    <div class="overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+      <div class="dialog hire post" role="dialog" aria-modal="true" aria-label={STAFF_TEXT.hireTitle}>
+        <header>
+          <h2>{STAFF_TEXT.hireTitle}</h2>
+          <span class="price">{UNITS.kr(hireCost(s))}</span>
+          <button class="close" onClick={closeModal} aria-label={UNITS.close}>
+            ✕
+          </button>
+        </header>
+        <div class="candidates">
+          {ROLE_ORDER.map((role) => {
+            const r = ROLES[role];
+            return (
+              <button
+                class="role-card"
+                disabled={!canPostAd(s)}
+                onClick={() => {
+                  act((g) => postAd(g, role));
+                  closeModal();
+                }}
+              >
+                <span class="role-icon" aria-hidden="true">
+                  {r.icon}
+                </span>
+                <strong>{r.label}</strong>
+                <span class="does">{r.does}</span>
+                <span class={canAffordWage(s, role) ? 'wage' : 'wage short'}>
+                  {UNITS.krPerWeek(r.wage)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StaffCard() {
   const s = useGame();
   const m = modal.value;
@@ -295,10 +387,16 @@ export function TrainingMenu() {
               </button>
             ))}
           </nav>
-          <span class="omsorg-left">
-            {STAFF_TEXT.omsorg} <strong>{Math.floor(s.omsorg)}</strong>
-            <span class="muted">/{omsorgCap(s)}</span>
-          </span>
+          {x.role === 'caseworker' ? (
+            <span class="omsorg-left">
+              <strong>{UNITS.kr(Math.floor(s.budget))}</strong>
+            </span>
+          ) : (
+            <span class="omsorg-left">
+              {STAFF_TEXT.omsorg} <strong>{Math.floor(s.omsorg)}</strong>
+              <span class="muted">/{omsorgCap(s)}</span>
+            </span>
+          )}
           <button class="close" onClick={closeModal} aria-label={UNITS.close}>
             ✕
           </button>
@@ -312,13 +410,17 @@ export function TrainingMenu() {
             title={STAFF_TEXT.mestringCourse}
             effect={STAFF_TEXT.mestringEffect(MESTRING_BONUS * 100)}
             done={!!x.mestring}
-            cost={MESTRING_TRAIN_COST}
+            price={UNITS.omsorg(MESTRING_TRAIN_COST)}
             can={canTrainMestring(s, i)}
             onTrain={() => act((g) => trainMestring(g, i))}
           />
-          {x.role === 'worker'
-            ? NEED_ORDER.map((n) => <SpecialityCourse i={i} x={x} need={n} />)
-            : ACTIVITIES.map((a) => <CoachCourse i={i} x={x} id={a.id} />)}
+          {x.role === 'caseworker' ? (
+            <CaseworkCourse i={i} x={x} />
+          ) : x.role === 'worker' ? (
+            NEED_ORDER.map((n) => <SpecialityCourse i={i} x={x} need={n} />)
+          ) : (
+            ACTIVITIES.map((a) => <CoachCourse i={i} x={x} id={a.id} />)
+          )}
         </div>
       </div>
     </div>
@@ -334,7 +436,7 @@ function SpecialityCourse({ i, x, need }: { i: number; x: Staff; need: NeedId })
       title={STAFF_TEXT.specialityCourse(SPECIALITY_LABEL[need])}
       effect={STAFF_TEXT.specialityEffect(covers(need), SPECIALITY_FILL)}
       done={has}
-      cost={SPECIALITY_TRAIN_COST}
+      price={UNITS.omsorg(SPECIALITY_TRAIN_COST)}
       can={canTrainSpeciality(s, i, need)}
       onTrain={() => act((g) => trainSpeciality(g, i, need))}
     />
@@ -353,9 +455,26 @@ function CoachCourse({ i, x, id }: { i: number; x: Staff; id: ActivityId }) {
       effect={done ? STAFF_TEXT.upToIndependent : STAFF_TEXT.upTo(levelText(level + 1))}
       level={level}
       done={done}
-      cost={coachTrainCost(x, id)}
+      price={UNITS.omsorg(coachTrainCost(x, id))}
       can={canTrainCoach(s, i, id)}
       onTrain={() => act((g) => trainCoach(g, i, id))}
+    />
+  );
+}
+
+/** Casework is paid with kroner, not omsorg. Each step costs more than the last. */
+function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
+  const s = useGame();
+  const skill = x.skill ?? 0;
+  return (
+    <Course
+      icon={ROLES.caseworker.icon}
+      title={STAFF_TEXT.caseworkCourse}
+      effect={STAFF_TEXT.caseworkEffect(skill, Math.min(100, skill + CASEWORK_STEP))}
+      done={skill >= 100}
+      price={UNITS.kr(caseworkCost(x))}
+      can={canTrainCasework(s, i)}
+      onTrain={() => act((g) => trainCasework(g, i))}
     />
   );
 }
@@ -367,7 +486,7 @@ function Course(p: {
   effect: string;
   level?: number;
   done: boolean;
-  cost: number;
+  price: string;
   can: boolean;
   onTrain: () => void;
 }) {
@@ -394,7 +513,7 @@ function Course(p: {
           </span>
         ) : (
           <>
-            <span class="price">{UNITS.omsorg(p.cost)}</span>
+            <span class="price">{p.price}</span>
             <button class="buy-request" disabled={!p.can} onClick={p.onTrain}>
               {STAFF_TEXT.train}
             </button>

@@ -62,6 +62,8 @@ export interface Staff {
   specialities: NeedId[];
   /** Highest level a coach can train, per activity. Missing means none. */
   coaching: Partial<Record<ActivityId, number>>;
+  /** A case worker's skill, 0 to 100. Missing for other roles. */
+  skill?: number;
   /** Took the mestring course: more overskudd for every resident. Missing in old saves. */
   mestring?: boolean;
   /** Nudges not yet given, carried between ticks. */
@@ -88,6 +90,8 @@ export interface Proposal {
   chance?: number;
   /** The roll, 0 to 1. Below the chance is a success. */
   roll?: number;
+  /** The case worker who took it. Missing when the player wagered. */
+  caseWorker?: string;
   /** Set once the player has chosen. */
   outcome?: 'success' | 'failure' | 'declined';
   /** What happened, in one line. */
@@ -128,6 +132,8 @@ export interface GameState {
   staff: Staff[];
   /** The tick the candidates for an open job ad show up. Null when there is no ad. */
   adReady: number | null;
+  /** The role the open job ad asks for. Missing in old saves: a miljøarbeider. */
+  adRole?: StaffRole;
   /** People who answered the job ad. The player picks one. */
   candidates: Staff[];
   /** Steps bought in each upgrade line. A line that is not here is at 0. */

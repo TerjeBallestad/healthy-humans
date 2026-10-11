@@ -482,6 +482,52 @@ button:disabled {
 .request .wage.short {
   color: var(--warn);
 }
+/* Office slots: one per staff member. The first free one hires, the rest stand empty. */
+.buy.office {
+  margin: 0;
+}
+.office.empty {
+  min-height: 40px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+/* The job ad: pick a role */
+.dialog.hire.post {
+  width: min(760px, 100%);
+}
+.post header .price {
+  color: var(--muted);
+}
+.role-card {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: left;
+  background: var(--panel);
+}
+.role-card .role-icon {
+  font-size: 2rem;
+}
+.role-card .does {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.role-card .wage {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.role-card .wage.short {
+  color: var(--warn);
+}
+/* The case worker who takes a milestone */
+.scene .case-worker {
+  margin: 4px 0;
+  font-weight: 600;
+}
 /* Staff profile, in the style of Game Dev Story: portrait and a table of stats */
 .overlay:has(.hire),
 .overlay:has(.staff-card),

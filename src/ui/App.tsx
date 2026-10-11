@@ -7,7 +7,7 @@ import { ProposalDialog } from './ProposalDialog';
 import { RequestsMenu } from './RequestsMenu';
 import { ResidentPanel } from './ResidentPanel';
 import { ResidentStrip } from './ResidentStrip';
-import { HireMenu, StaffCard, TrainingMenu } from './StaffMenus';
+import { HireMenu, PostAdMenu, StaffCard, TrainingMenu } from './StaffMenus';
 import { Tips } from './Tips';
 import { Toasts } from './Toasts';
 import { TopBar } from './TopBar';
@@ -37,6 +37,7 @@ export function App() {
       <DischargeDialog />
       <RequestsMenu />
       <HireMenu />
+      <PostAdMenu />
       <StaffCard />
       <TrainingMenu />
       <PatientCard />
