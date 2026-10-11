@@ -8,9 +8,10 @@ import {
   canBuyBed,
   lineLevel,
   nextMilestone,
-  nudgeMult,
+  nudgeFill,
   upgradeCost,
 } from './institution';
+import { random } from './rng';
 import { effort } from './selectors';
 import { newResident, type GameState } from './state';
 import { ARCHETYPE_BY_ID } from '../content/archetypes';
@@ -29,7 +30,9 @@ export function nudge(state: GameState, bed: number, id: ActivityId): boolean {
   if (!canNudge(state, bed, id)) return false;
   const r = state.beds[bed]!;
   state.omsorg -= OMSORG_PER_NUDGE;
-  r.bars[id] = Math.min(effort(r, id), r.bars[id] + nudgeMult(state));
+  const { whole, chance } = nudgeFill(state);
+  const fill = whole + (chance > 0 && random(state) < chance ? 1 : 0);
+  r.bars[id] = Math.min(effort(r, id), r.bars[id] + fill);
   return true;
 }
 

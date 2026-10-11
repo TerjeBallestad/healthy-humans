@@ -47,9 +47,15 @@ export function omsorgPerSecond(s: GameState): number {
   return OMSORG_PER_SECOND * PACE * lineMult(s, 'omsorgRate');
 }
 
-/** Segments one of the player's nudges fills. */
-export function nudgeMult(s: GameState): number {
-  return lineMult(s, 'nudge');
+/** Segments one of the player's nudges fills: always the whole part, and one more by chance. */
+export function nudgeFill(s: GameState): { whole: number; chance: number } {
+  return splitFill(lineMult(s, 'nudge'));
+}
+
+/** 1.3 segments is 1 segment and a 30% chance of 2. Segments are never split. */
+export function splitFill(mult: number): { whole: number; chance: number } {
+  const whole = Math.floor(mult + 1e-9);
+  return { whole, chance: Math.round((mult - whole) * 100) / 100 };
 }
 
 /** Multiplies staff nudges. */

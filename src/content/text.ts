@@ -14,6 +14,11 @@ export const UNITS = {
   signedPerW: (n: number) => `${n >= 0 ? '+' : ''}${n}/w`,
   omsorg: (n: number) => `${n} omsorg`,
   level: (n: number) => `lvl ${n}`,
+  /** One nudge's fill: whole segments, and a chance of one more. */
+  fill: (whole: number, chance: number) =>
+    chance > 0
+      ? `${whole}, ${Math.round(chance * 100)}% chance of ${whole + 1}`
+      : `${whole} ${plural(whole, 'segment', 'segments')}`,
   independent: 'independent',
   none: '–',
   close: 'Close',
@@ -121,9 +126,14 @@ export const UPGRADES_MENU = {
   tabs: { you: 'Your work', staff: 'Staff', funding: 'Funding', house: 'House' },
   buy: 'Buy',
   level: (n: number) => `lvl ${n}`,
+  /** One nudge's fill: whole segments, and a chance of one more. */
+  fill: (whole: number, chance: number) =>
+    chance > 0
+      ? `${whole}, ${Math.round(chance * 100)}% chance of ${whole + 1}`
+      : `${whole} ${plural(whole, 'segment', 'segments')}`,
   /** What the next level does: the value now, then the value after. */
   effect: {
-    nudge: (now: string, next: string) => `Each nudge fills ${now} → ${next} segments`,
+    nudge: (now: string, next: string) => `Each nudge: ${now} → ${next}`,
     omsorgRate: (now: string, next: string) => `Omsorg refills ×${now} → ×${next}`,
     omsorgCap: (now: string, next: string) => `Omsorg cap ${now} → ${next}`,
     staff: (now: string, next: string) => `Staff nudge ×${now} → ×${next}`,

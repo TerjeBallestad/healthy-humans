@@ -21,6 +21,7 @@ import {
   lineLevel,
   multAt,
   nextMilestone,
+  splitFill,
   upgradeCost,
   netIncomePerWeek,
   omsorgCap,
@@ -222,12 +223,27 @@ describe('upgrades', () => {
     expect(nextMilestone(s, 'house')).toMatchObject({ label: 'Garden III', level: 30 });
   });
 
+  test('a nudge fills whole segments, with a chance of one more', () => {
+    expect(splitFill(multAt(1))).toEqual({ whole: 1, chance: 0.1 });
+    expect(splitFill(multAt(10))).toEqual({ whole: 4, chance: 0 });
+    const s = newGame();
+    s.levels.nudge = 3;
+    const fills = new Set<number>();
+    for (let i = 0; i < 200; i++) {
+      s.omsorg = 40;
+      s.beds[0]!.bars.eat = 0;
+      nudge(s, 0, 'eat');
+      fills.add(s.beds[0]!.bars.eat);
+    }
+    expect([...fills].sort()).toEqual([1, 2]);
+  });
+
   test('the nudge line makes one nudge fill more segments, never past the bar', () => {
     const s = newGame();
     s.levels.nudge = 10;
     s.omsorg = 40;
     nudge(s, 0, 'eat');
-    expect(s.beds[0]!.bars.eat).toBeCloseTo(4);
+    expect(s.beds[0]!.bars.eat).toBe(4);
     s.beds[0]!.bars.eat = 11;
     nudge(s, 0, 'eat');
     expect(s.beds[0]!.bars.eat).toBe(12);

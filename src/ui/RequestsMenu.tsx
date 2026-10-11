@@ -1,7 +1,14 @@
 import { signal } from '@preact/signals';
 import { LINES, MILESTONE_EVERY, type LineId } from '../content/upgrades';
 import { buyUpgrade } from '../sim/actions';
-import { canBuy, lineLevel, multAt, nextMilestone, upgradeCost } from '../sim/institution';
+import {
+  canBuy,
+  lineLevel,
+  multAt,
+  nextMilestone,
+  splitFill,
+  upgradeCost,
+} from '../sim/institution';
 import { OMSORG_CAP } from '../content/tuning';
 import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
@@ -60,6 +67,10 @@ export function RequestsMenu() {
 /** A line's value at a level, as the effect line shows it. */
 function shown(line: LineId, level: number): string {
   const mult = multAt(level);
+  if (line === 'nudge') {
+    const { whole, chance } = splitFill(mult);
+    return UPGRADES_MENU.fill(whole, chance);
+  }
   if (line === 'omsorgCap') return String(Math.round(OMSORG_CAP * mult));
   return String(Math.round(mult * 10) / 10);
 }

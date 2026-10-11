@@ -68,9 +68,7 @@ function ActivityCard({ activity: a, priority }: { activity: ActivityDef; priori
             {a.icon}
           </span>
         </span>
-        <span class="nudge-label">
-          {auto ? UNITS.independent : `${Math.floor(filled)}/${size}`}
-        </span>
+        <span class="nudge-label">{auto ? UNITS.independent : `${filled}/${size}`}</span>
       </span>
       <span class="body">
         <span class="title">{a.label}</span>
@@ -103,7 +101,7 @@ function EffortRing({ size, filled }: { size: number; filled: number }) {
         const to = (i + 1) * step - gap / 2;
         return (
           <path
-            class={i + 1 <= filled ? 'seg on' : 'seg'}
+            class={i < filled ? 'seg on' : 'seg'}
             d={`M ${point(from)} A ${RADIUS} ${RADIUS} 0 0 1 ${point(to)}`}
           />
         );
