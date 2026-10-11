@@ -1,15 +1,23 @@
 import { describe, expect, test } from 'vitest';
 import { ACTIVITIES } from '../content/activities';
-import { MAX_SKILL, PROPOSAL_COOLDOWN_WEEKS, PROPOSAL_COST_MILESTONE } from '../content/tuning';
+import {
+  ATTEMPT_BONUS,
+  MAX_SKILL,
+  PROPOSAL_COOLDOWN_WEEKS,
+  PROPOSAL_COST_MILESTONE,
+} from '../content/tuning';
 import {
   accept,
-  caseWorkerChance,
+  caseWorkerSupport,
   chance,
   closeProposal,
+  competence,
   decline,
+  difficulty,
   eligibleSubjects,
+  maxKr,
   maybePropose,
-  surePrice,
+  odds,
 } from './proposals';
 import { newGame } from './state';
 import { tick } from './tick';
@@ -38,6 +46,9 @@ describe('overskudd', () => {
   });
 });
 
+const nav = { kind: 'milestone', milestone: 'nav' } as const;
+const trial = { kind: 'milestone', milestone: 'worktrial' } as const;
+
 describe('case worker', () => {
   const withCaseWorker = (level: number) => {
     const s = ready();
@@ -56,24 +67,35 @@ describe('case worker', () => {
   };
 
   test('takes the milestone at once, with no wager', () => {
-    const s = withCaseWorker(2); // skill 60
+    const s = withCaseWorker(2);
     s.budget = 500;
+    const c = competence(s.beds[0]!, nav);
     maybePropose(s);
     expect(s.proposal?.caseWorker).toBe('Kari');
-    expect(s.proposal?.chance).toBeCloseTo(0.6);
+    expect(s.proposal?.chance).toBeCloseTo(odds(c, difficulty(nav, caseWorkerSupport(2))));
     expect(s.proposal?.outcome).toMatch(/success|failure/);
     expect(s.budget).toBe(500);
     expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
     expect(accept(s, 0)).toBe(false);
   });
 
-  test('odds are skill minus difficulty, from 0 to 1', () => {
-    const nav = { kind: 'milestone', milestone: 'nav' } as const;
-    const trial = { kind: 'milestone', milestone: 'worktrial' } as const;
-    expect(caseWorkerChance(60, nav)).toBeCloseTo(0.6);
-    expect(caseWorkerChance(60, trial)).toBeCloseTo(0.35);
-    expect(caseWorkerChance(10, trial)).toBe(0);
-    expect(caseWorkerChance(100, nav)).toBe(1);
+  test('each level shrinks the difficulty, less each time, and never to 0', () => {
+    const d = [1, 2, 3, 4, 5].map((l) => difficulty(trial, caseWorkerSupport(l)));
+    expect(d[0]! - d[1]!).toBeGreaterThan(d[3]! - d[4]!);
+    expect(d[4]).toBeGreaterThan(0);
+  });
+
+  test('odds are competence against difficulty', () => {
+    expect(odds(10, 10)).toBe(0.5);
+    expect(odds(30, 10)).toBe(0.75);
+    expect(odds(0, 0)).toBe(1);
+  });
+
+  test('a failed try adds competence at the next try', () => {
+    const s = ready();
+    const before = competence(s.beds[0]!, nav);
+    s.beds[0]!.attempts = { nav: 2 };
+    expect(competence(s.beds[0]!, nav)).toBe(before + 2 * ATTEMPT_BONUS);
   });
 });
 
@@ -110,16 +132,14 @@ describe('proposals', () => {
     expect(s.proposal).toBeNull();
   });
 
-  test('kroner raise the odds, less for each krone, and the sure price is certain', () => {
+  test('kroner raise the odds, less for each krone, and never to certain', () => {
     const s = ready();
     maybePropose(s);
     const r = s.beds[0]!;
     const subject = s.proposal!.subject;
-    const sure = surePrice(subject);
     const [c0, c1, c2] = [0, 100, 200].map((kr) => chance(r, subject, kr));
     expect(c1! - c0!).toBeGreaterThan(c2! - c1!);
-    expect(chance(r, subject, sure - 50)).toBeLessThan(1);
-    expect(chance(r, subject, sure)).toBe(1);
+    expect(chance(r, subject, maxKr(subject))).toBeLessThan(1);
   });
 
   test('a wager costs kroner and rolls', () => {
@@ -133,16 +153,13 @@ describe('proposals', () => {
     expect(s.proposal!.roll).toBeGreaterThanOrEqual(0);
   });
 
-  test('the sure price always works, and no wager above the budget', () => {
+  test('no wager above the budget', () => {
     const s = ready();
     maybePropose(s);
-    const sure = surePrice(s.proposal!.subject);
-    s.budget = sure - 0.5;
-    expect(accept(s, sure)).toBe(false);
-    s.budget = sure;
-    accept(s, sure);
-    expect(s.proposal!.outcome).toBe('success');
-    expect(s.beds[0]!.milestones).toEqual(['nav']);
+    s.budget = 99.5;
+    expect(accept(s, 100)).toBe(false);
+    s.budget = 100;
+    expect(accept(s, 100)).toBe(true);
   });
 
   test('a successful milestone is kept', () => {

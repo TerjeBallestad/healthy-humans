@@ -17,7 +17,7 @@ import {
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, caseWorkerSkill, hireCost, wage } from './institution';
+import { canAffordWage, hireCost, wage } from './institution';
 import { random } from './rng';
 import type { GameState, Staff } from './state';
 import { TICKS_PER_WEEK } from './time';
@@ -179,7 +179,7 @@ export function trainCoach(s: GameState, index: number, id: ActivityId): boolean
 export function bestCaseWorker(s: GameState): Staff | undefined {
   return s.staff
     .filter((x) => x.role === 'caseworker')
-    .sort((a, b) => caseWorkerSkill(b) - caseWorkerSkill(a))[0];
+    .sort((a, b) => (b.level ?? 1) - (a.level ?? 1))[0];
 }
 
 /** Kroner for the next casework course. Infinity at the top level. */

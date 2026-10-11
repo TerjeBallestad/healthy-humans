@@ -966,6 +966,19 @@ button:disabled {
   box-shadow: 0 0 0 1px var(--accent);
   cursor: grab;
 }
+.tug {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0 8px;
+  font-size: 0.8rem;
+}
+.tug strong {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.tug s {
+  margin-right: 2px;
+}
 .wager-ends {
   display: flex;
   justify-content: space-between;

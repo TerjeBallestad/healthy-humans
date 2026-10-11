@@ -5,18 +5,21 @@ import { OVERSKUDD_CAP } from '../content/tuning';
 import {
   accept,
   canWager,
-  chance,
+  caseWorkerSupport,
   closeProposal,
+  competence,
   decline,
+  difficulty,
+  maxKr,
   maxWager,
+  odds as oddsOf,
   proposalCost,
-  surePrice,
+  wagerSupport,
 } from '../sim/proposals';
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
 import { PROPOSAL, UNITS } from '../content/text';
 import { GRACE_MS } from './Tips';
-
 
 export function ProposalDialog() {
   const s = useGame();
@@ -33,12 +36,17 @@ function SceneCard() {
   const p = s.proposal!;
   const r = s.beds[p.bed]!;
   const m = MILESTONE_BY_ID[p.subject.milestone];
-  const sure = surePrice(p.subject);
+  const sure = maxKr(p.subject);
   const cap = maxWager(s);
   const [kr, setKr] = useState(0);
-  const odds = p.chance ?? chance(r, p.subject, kr);
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
   const cw = p.caseWorker ? s.staff.find((x) => x.name === p.caseWorker) : undefined;
+  // The tug of war: the resident's competence against the milestone's difficulty after support.
+  // After the roll, show what was rolled. A failed try has already raised the competence.
+  const c = p.competence ?? competence(r, p.subject);
+  const support = cw ? caseWorkerSupport(cw.level ?? 1) : wagerSupport(p.subject, kr);
+  const d = p.difficulty ?? difficulty(p.subject, support);
+  const odds = p.chance ?? oddsOf(c, d);
   // Fast clicking on the cards must not skip the card or its result. Clicks wait GRACE_MS each time.
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -77,6 +85,15 @@ function SceneCard() {
           {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}
           <span class="odds-label">{Math.round(odds * 100)}%</span>
         </div>
+        <div class="tug muted">
+          <span>
+            {PROPOSAL.competence} <strong>{Math.round(c)}</strong>
+          </span>
+          <span>
+            {PROPOSAL.difficulty} {d < m.difficulty - 0.5 && <s>{m.difficulty}</s>}{' '}
+            <strong>{Math.round(d)}</strong>
+          </span>
+        </div>
 
         {!p.outcome && (
           <>
@@ -105,7 +122,7 @@ function SceneCard() {
               </div>
               <span class="wager-ends muted">
                 <span>{UNITS.kr(0)}</span>
-                <span class={kr >= sure ? 'sure on' : 'sure'}>{PROPOSAL.sure(sure)}</span>
+                <span class={kr >= sure ? 'sure on' : 'sure'}>{UNITS.kr(sure)}</span>
               </span>
             </div>
             <div class="choices row">

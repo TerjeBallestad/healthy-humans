@@ -43,6 +43,8 @@ export interface Resident {
   current: CurrentActivity | null;
   overskudd: number;
   milestones: MilestoneId[];
+  /** Failed tries at each milestone. Each one adds competence at the next try. Missing in old saves. */
+  attempts?: Partial<Record<MilestoneId, number>>;
   /** Health when they moved in, 0 to 100. */
   arrivalHealth: number;
   /** Extra need decay from poor health at arrival, as a fraction. Fades over time. */
@@ -88,6 +90,9 @@ export interface Proposal {
   /** Kroner wagered and the chance it gave. Set once the player has chosen. */
   kr?: number;
   chance?: number;
+  /** The resident's competence and the milestone's difficulty after support, at the roll. */
+  competence?: number;
+  difficulty?: number;
   /** The roll, 0 to 1. Below the chance is a success. */
   roll?: number;
   /** The case worker who took it. Missing when the player wagered. */

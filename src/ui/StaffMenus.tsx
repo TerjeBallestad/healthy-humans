@@ -5,7 +5,6 @@ import { NEED_ORDER, type NeedId } from '../content/needs';
 import { MILESTONES } from '../content/milestones';
 import {
   CASEWORKER_MAX_LEVEL,
-  CASEWORKER_SKILL,
   MESTRING_BONUS,
   MESTRING_TRAIN_COST,
   ROLE_ORDER,
@@ -18,8 +17,8 @@ import {
   type StaffRole,
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
-import { canAffordWage, caseWorkerSkill, hireCost, omsorgCap, wage } from '../sim/institution';
-import { caseWorkerChance } from '../sim/proposals';
+import { canAffordWage, hireCost, omsorgCap, wage } from '../sim/institution';
+import { caseWorkerSupport, difficulty } from '../sim/proposals';
 import {
   canHire,
   canPostAd,
@@ -141,15 +140,15 @@ function Profile({ x }: { x: Staff }) {
   );
 }
 
-/** The level, and the odds it gives on each milestone. */
+/** The level, and how much smaller it makes each milestone. */
 function CaseWorkerStats({ x }: { x: Staff }) {
-  const skill = caseWorkerSkill(x);
+  const support = caseWorkerSupport(x.level ?? 1);
   return (
     <>
       <thead>
         <tr>
           <th />
-          <th>{STAFF_TEXT.odds}</th>
+          <th>{STAFF_TEXT.difficulty}</th>
         </tr>
       </thead>
       <tbody>
@@ -157,16 +156,17 @@ function CaseWorkerStats({ x }: { x: Staff }) {
           <td>{STAFF_TEXT.level}</td>
           <td class="value">{UNITS.level(x.level ?? 1)}</td>
         </tr>
-        {MILESTONES.map((m) => (
-          <tr>
-            <td>{m.label}</td>
-            <td class="value">
-              {STAFF_TEXT.pct(
-                Math.round(caseWorkerChance(skill, { kind: 'milestone', milestone: m.id }) * 100),
-              )}
-            </td>
-          </tr>
-        ))}
+        {MILESTONES.map((m) => {
+          const subject = { kind: 'milestone', milestone: m.id } as const;
+          return (
+            <tr>
+              <td>{m.label}</td>
+              <td class="value">
+                {STAFF_TEXT.reduced(m.difficulty, Math.round(difficulty(subject, support)))}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </>
   );
@@ -479,12 +479,12 @@ function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
   const s = useGame();
   const level = x.level ?? 1;
   const done = level >= CASEWORKER_MAX_LEVEL;
-  const step = done ? 0 : CASEWORKER_SKILL[level]! - CASEWORKER_SKILL[level - 1]!;
+  const divisor = (l: number) => 1 + caseWorkerSupport(l);
   return (
     <Course
       icon={ROLES.caseworker.icon}
       title={STAFF_TEXT.caseworkCourse}
-      effect={STAFF_TEXT.caseworkEffect(step)}
+      effect={STAFF_TEXT.caseworkEffect(divisor(level), divisor(level + 1))}
       level={level}
       max={CASEWORKER_MAX_LEVEL}
       done={done}

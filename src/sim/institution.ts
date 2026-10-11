@@ -11,13 +11,7 @@ import {
   PACE,
   STAFF_NUDGES_PER_SECOND,
 } from '../content/tuning';
-import {
-  CASEWORKER_SKILL,
-  COACH_BASE_LEVELS,
-  MESTRING_BONUS,
-  ROLES,
-  WAGE_PER_LEVEL,
-} from '../content/staff';
+import { COACH_BASE_LEVELS, MESTRING_BONUS, ROLES, WAGE_PER_LEVEL } from '../content/staff';
 import {
   LINE_BY_ID,
   UPGRADE_COST_GROWTH,
@@ -100,11 +94,6 @@ export function courses(x: Staff): number {
 /** Kroner per week: the role's wage, and more for each course. */
 export function wage(x: Staff): number {
   return ROLES[x.role].wage + WAGE_PER_LEVEL[x.role] * courses(x);
-}
-
-/** A case worker's skill, in points out of 100. */
-export function caseWorkerSkill(x: Staff): number {
-  return CASEWORKER_SKILL[(x.level ?? 1) - 1] ?? 0;
 }
 
 export function wagesPerWeek(s: GameState): number {

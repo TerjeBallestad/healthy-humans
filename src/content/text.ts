@@ -186,10 +186,10 @@ export const STAFF_TEXT = {
   train: 'Train',
   // TODO(Terje): placeholder labels for the case worker.
   level: 'Level',
-  odds: 'Odds',
-  pct: (n: number) => `${n}%`,
   caseworkCourse: 'Casework course',
-  caseworkEffect: (pts: number) => `Odds +${pts}% on every milestone`,
+  difficulty: 'Difficulty',
+  reduced: (from: number, to: number) => `${from} → ${to}`,
+  caseworkEffect: (from: number, to: number) => `Milestone difficulty ÷${from} → ÷${to}`,
   wageRaise: (kr: number) => `wage +${kr} kr/week`,
 };
 
@@ -216,13 +216,15 @@ export const DISCHARGE = {
 export const PROPOSAL = {
   chance: (pct: number) => `Chance ${pct}%`,
   krToSpend: 'Kroner to spend',
-  sure: (kr: number) => `${kr} kr: sure`,
   go: 'Go',
   alone: 'alone',
   notNow: 'Not now',
   declined: 'Maybe another time.',
   continue: 'Continue',
   overskudd: 'Overskudd',
+  // TODO(Terje): placeholder labels for the two sides of the odds bar.
+  competence: 'Competence',
+  difficulty: 'Difficulty',
 };
 
 export const TOASTS = {
@@ -259,8 +261,8 @@ export const TIPS = {
   milestone: (name: string, milestone: string, count: number) =>
     `${name} wants to try something big: ${milestone}. ${count} milestones lead to a healthy human.`,
   wagerTitle: 'Drag here',
-  wager: (kr: number) =>
-    `Spend kroner on support to raise the odds. At ${kr} kr it is sure to work.`,
+  // TODO(Terje): the second sentence ("At X kr it is sure to work") went with the sure price.
+  wager: 'Spend kroner on support to raise the odds.',
   go: (cost: number, name: string) =>
     `Go costs ${cost} overskudd (striped on the bar) and rolls the odds. "Not now" is free, and ${name} asks again later.`,
 };

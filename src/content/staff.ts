@@ -35,7 +35,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     label: 'Case worker',
     icon: '🗂️',
     wage: 60,
-    does: 'Takes every milestone. The odds are the skill minus the difficulty of the milestone.',
+    does: 'Takes every milestone, and makes each one smaller for the resident.',
   },
 };
 
@@ -79,9 +79,9 @@ export const MESTRING_BONUS = 0.25;
 /** Omsorg to teach a coach the next level of an activity, by the level they know now. */
 export const COACH_TRAIN_COST = [10, 20, 35] as const;
 
-/** A case worker's skill by level (lvl 1 first), in points out of 100. The odds are skill minus difficulty. */
-export const CASEWORKER_SKILL = [50, 60, 70, 80, 90] as const;
-export const CASEWORKER_MAX_LEVEL = CASEWORKER_SKILL.length;
+/** Support each case worker level gives. Support divides a milestone's difficulty: D ÷ (1 + support). */
+export const CASEWORKER_SUPPORT_PER_LEVEL = 2;
+export const CASEWORKER_MAX_LEVEL = 5;
 /** A chance for a case worker candidate to start at lvl 2. The others start at lvl 1. */
 export const CASEWORKER_LVL2_SHARE = 0.3;
 /** Kroner for the casework course, by the level the case worker has now. */

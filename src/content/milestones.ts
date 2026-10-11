@@ -7,11 +7,10 @@ export interface MilestoneDef {
   ask: string;
   success: string;
   failure: string;
-  baseChance: number;
-  /** Points off a case worker's skill. The case worker's odds are skill minus difficulty. */
+  /** Pushes against the resident's competence. Odds = competence ÷ (competence + difficulty). */
   difficulty: number;
-  /** Kroner that make success sure. Smaller wagers give less, with diminishing returns. */
-  sure: number;
+  /** The most kroner the player can wager. It shrinks the difficulty as much as a top case worker. */
+  maxKr: number;
   /** Where it happens, for the scene card. */
   place: string;
   placeIcon: string;
@@ -32,9 +31,8 @@ export const MILESTONES: MilestoneDef[] = [
     ask: 'I want to go to the NAV meeting myself.',
     success: 'Went to NAV. Said what was needed. Came home with a plan.',
     failure: 'Sat in the waiting room. Left before the name was called.',
-    baseChance: 0.45,
-    difficulty: 0,
-    sure: 600,
+    difficulty: 10,
+    maxKr: 600,
     place: 'NAV office',
     placeIcon: '🏢',
     needsRung: 7,
@@ -46,9 +44,8 @@ export const MILESTONES: MilestoneDef[] = [
     ask: 'There is a job at the warehouse. I want to apply.',
     success: 'Sent the application. Read it nine times first.',
     failure: 'Wrote two lines. Deleted them.',
-    baseChance: 0.35,
     difficulty: 10,
-    sure: 900,
+    maxKr: 900,
     place: 'Kitchen table',
     placeIcon: '📝',
     needsRung: 9,
@@ -61,9 +58,8 @@ export const MILESTONES: MilestoneDef[] = [
     ask: 'They want me for a trial week.',
     success: 'Five days at the warehouse. Came home tired. The good kind.',
     failure: 'Called in sick on Wednesday.',
-    baseChance: 0.3,
-    difficulty: 25,
-    sure: 1400,
+    difficulty: 45,
+    maxKr: 1400,
     place: 'Warehouse',
     placeIcon: '🏭',
     needsRung: 9,

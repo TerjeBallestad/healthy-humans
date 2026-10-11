@@ -65,8 +65,10 @@ export const OVERSKUDD_CAP = 60;
 export const PROPOSAL_COST_MILESTONE = 20;
 /** Shortest gap between two proposals. */
 export const PROPOSAL_COOLDOWN_WEEKS = 3;
-/** Highest chance below the sure price. */
-export const MAX_CHANCE = 0.95;
+/** Competence a resident gains at a milestone for each earlier try at it. */
+export const ATTEMPT_BONUS = 3;
+/** Support at the top of the wager slider. Support divides the difficulty: D ÷ (1 + support). */
+export const WAGER_SUPPORT_AT_MAX = 10;
 
 /** A new person joins the waiting list this often. */
 export const WAITLIST_WEEKS_PER_PERSON = 3;

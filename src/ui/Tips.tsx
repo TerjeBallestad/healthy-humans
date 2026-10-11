@@ -8,7 +8,7 @@ import { bestTier } from '../sim/discharge';
 import { canBuy, canBuyBed, grantMult, hireCost } from '../sim/institution';
 import { isSeen, markSeen } from '../sim/reveal';
 import { effort, unlockedActivities } from '../sim/selectors';
-import { proposalCost, surePrice } from '../sim/proposals';
+import { proposalCost } from '../sim/proposals';
 import { canPostAd } from '../sim/staff';
 import { selectedResident, type GameState } from '../sim/state';
 import { act, useGame } from '../store';
@@ -55,7 +55,7 @@ function proposalTips(s: GameState): (() => Tip | null)[] {
       also: '[data-tip="odds"]',
       title: TIPS.wagerTitle,
       side: 'right',
-      text: TIPS.wager(surePrice(p.subject)),
+      text: TIPS.wager,
     }),
     () => ({
       key: 'tip:go',
