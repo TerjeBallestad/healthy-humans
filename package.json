@@ -12,6 +12,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "sim": "tsx scripts/balance.ts",
+    "econ": "vite --open /tools/econ/",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
