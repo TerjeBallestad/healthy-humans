@@ -90,11 +90,11 @@ export function staffNudgesPerSecond(s: GameState): number {
 
 /** Courses a staff member has, past what every new hire of the role has. Each one raises the wage. */
 export function courses(x: Staff): number {
-  const mestring = x.mestring ? 1 : 0;
-  if (x.role === 'worker') return mestring + Math.max(0, x.specialities.length - 1);
-  if (x.role === 'caseworker') return mestring + (x.level ?? 1) - 1;
+  const extra = (x.mestring ? 1 : 0) + (x.intake ? 1 : 0);
+  if (x.role === 'worker') return extra + Math.max(0, x.specialities.length - 1);
+  if (x.role === 'caseworker') return extra + (x.level ?? 1) - 1;
   const levels = Object.values(x.coaching).reduce((a, b) => a + (b ?? 0), 0);
-  return mestring + Math.max(0, levels - COACH_BASE_LEVELS);
+  return extra + Math.max(0, levels - COACH_BASE_LEVELS);
 }
 
 /** Kroner per week: the role's wage, and more for each course. */

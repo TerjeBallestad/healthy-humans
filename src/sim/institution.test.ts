@@ -4,6 +4,7 @@ import {
   AD_WEEKS,
   CANDIDATES,
   CASEWORKER_MAX_LEVEL,
+  INTAKE_COST,
   WAGE_PER_LEVEL,
   COACH_TRAIN_COST,
   MAX_STAFF,
@@ -37,6 +38,8 @@ import {
   postAd,
   rollCandidates,
   trainCasework,
+  trainIntake,
+  matchScore,
   trainCoach,
   trainMestring,
   trainSpeciality,
@@ -220,6 +223,73 @@ describe('case worker', () => {
     expect(caseworkCost(s.staff[0]!)).toBeGreaterThan(first);
     while (trainCasework(s, 0));
     expect(s.staff[0]!.level).toBe(CASEWORKER_MAX_LEVEL);
+  });
+});
+
+describe('intake', () => {
+  const house = () => {
+    const s = newGame();
+    s.seen = undefined;
+    s.staff = [{ ...coach({}), role: 'caseworker', level: 1 }];
+    s.budget = INTAKE_COST;
+    s.beds = [null];
+    s.waiting = [
+      { archetype: 'arvid', trait: 'cooks', health: 70 },
+      { archetype: 'maja', trait: 'rich', health: 80 },
+      { archetype: 'rolf', trait: 'tidy', health: 40 },
+    ];
+    return s;
+  };
+
+  test('nobody is admitted without the course', () => {
+    const s = house();
+    tick(s);
+    expect(s.beds[0]).toBeNull();
+  });
+
+  test('the course costs kroner and a wage step', () => {
+    const s = house();
+    const before = wage(s.staff[0]!);
+    expect(trainIntake(s, 0)).toBe(true);
+    expect(s.budget).toBe(0);
+    expect(wage(s.staff[0]!)).toBe(before + WAGE_PER_LEVEL.caseworker);
+    expect(trainIntake(s, 0)).toBe(false);
+  });
+
+  test('lowest health first by default', () => {
+    const s = house();
+    trainIntake(s, 0);
+    s.selected = 0;
+    tick(s);
+    expect(s.beds[0]?.archetype).toBe('rolf');
+    expect(s.waiting).toHaveLength(2);
+  });
+
+  test('richest first', () => {
+    const s = house();
+    trainIntake(s, 0);
+    s.intakeRule = 'rich';
+    tick(s);
+    expect(s.beds[0]?.archetype).toBe('maja');
+  });
+
+  test('best match: the hard activities staff can help with', () => {
+    const s = house();
+    trainIntake(s, 0);
+    s.intakeRule = 'match';
+    // Maja finds sleep hard. A sleep miljøarbeider helps her.
+    s.staff.push({ ...coach({}), role: 'worker', specialities: ['energy'] });
+    expect(matchScore(s, s.waiting[1]!)).toBe(1);
+    tick(s);
+    expect(s.beds[0]?.archetype).toBe('maja');
+  });
+
+  test('with no match, lowest health breaks the tie', () => {
+    const s = house();
+    trainIntake(s, 0);
+    s.intakeRule = 'match';
+    tick(s);
+    expect(s.beds[0]?.archetype).toBe('rolf');
   });
 });
 

@@ -10,8 +10,8 @@ export const UNITS = {
   krPerWeek: (n: number) => `${n} kr/week`,
   plusKrPerWeek: (n: number) => `+${n} kr/week`,
   plusKrPerWeekLong: (n: number) => `+${n} kr per week`,
-  plusKrPerW: (n: number) => `+${n} kr/w`,
-  signedPerW: (n: number) => `${n >= 0 ? '+' : ''}${n}/w`,
+  plusKrPerW: (n: number) => `+${Math.round(n)} kr/w`,
+  signedPerW: (n: number) => `${n >= 0 ? '+' : ''}${Math.round(n)}/w`,
   omsorg: (n: number) => `${n} omsorg`,
   level: (n: number) => `lvl ${n}`,
   /** One nudge's fill: whole segments, and a chance of one more. */
@@ -192,6 +192,10 @@ export const STAFF_TEXT = {
   difficulty: 'Difficulty',
   reduced: (from: number, to: number) => `${from} → ${to}`,
   caseworkEffect: (from: number, to: number) => `Milestone difficulty ÷${from} → ÷${to}`,
+  // TODO(Terje): placeholder labels for the intake course and its rules.
+  intakeCourse: 'Intake course',
+  intakeEffect: 'Admits to a free bed by your rule',
+  intakeRule: { health: 'Lowest health', match: 'Best match', rich: 'Richest' },
   wageRaise: (kr: number) => `wage +${kr} kr/week`,
   payGradeFull: 'Pay grade full',
 };

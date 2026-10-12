@@ -86,6 +86,14 @@ export const CASEWORKER_MAX_LEVEL = 5;
 export const CASEWORKER_LVL2_SHARE = 0.3;
 /** Kroner for the casework course, by the level the case worker has now. */
 export const CASEWORK_COST = [400, 750, 1400, 2600] as const;
+/** Kroner for the intake course. After it, the case worker admits to free beds by the house's intake rule. */
+export const INTAKE_COST = 600;
+
+/** How the case worker picks from the venteliste. Lowest health first is the default. */
+export type IntakeRule = 'health' | 'match' | 'rich';
+export const INTAKE_RULES: IntakeRule[] = ['health', 'match', 'rich'];
+/** Placeholder icons for the rules. */
+export const INTAKE_ICON: Record<IntakeRule, string> = { health: '🩺', match: '🧩', rich: '💰' };
 
 /** Each course a staff member has (or came with) adds this to the wage, by role. */
 export const WAGE_PER_LEVEL: Record<StaffRole, number> = { worker: 10, coach: 5, caseworker: 15 };

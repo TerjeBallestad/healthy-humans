@@ -414,6 +414,27 @@ button:disabled {
   background: var(--accent);
 }
 
+.intake-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.intake-rules button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.intake-rules button.on {
+  color: var(--fg);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
 .request .buy-col {
   display: grid;
   justify-items: end;

@@ -5,6 +5,9 @@ import { NEED_ORDER, type NeedId } from '../content/needs';
 import { MILESTONES } from '../content/milestones';
 import {
   CASEWORKER_MAX_LEVEL,
+  INTAKE_COST,
+  INTAKE_ICON,
+  INTAKE_RULES,
   MESTRING_BONUS,
   MESTRING_TRAIN_COST,
   ROLE_ORDER,
@@ -23,7 +26,10 @@ import {
   canHire,
   canPostAd,
   canTrainCasework,
+  canTrainIntake,
   caseworkCost,
+  intakeRule,
+  trainIntake,
   postAd,
   trainCasework,
   canTrainCoach,
@@ -424,7 +430,10 @@ export function TrainingMenu() {
             onTrain={() => act((g) => trainMestring(g, i))}
           />
           {x.role === 'caseworker' ? (
-            <CaseworkCourse i={i} x={x} />
+            <>
+              <CaseworkCourse i={i} x={x} />
+              <IntakeCourse i={i} x={x} />
+            </>
           ) : x.role === 'worker' ? (
             NEED_ORDER.map((n) => <SpecialityCourse i={i} x={x} need={n} />)
           ) : (
@@ -501,6 +510,42 @@ function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
   );
 }
 
+/** After the intake course, the card holds the house's intake rule. */
+function IntakeCourse({ i, x }: { i: number; x: Staff }) {
+  const s = useGame();
+  const rule = intakeRule(s);
+  return (
+    <Course
+      icon="📥"
+      title={STAFF_TEXT.intakeCourse}
+      effect={STAFF_TEXT.intakeEffect}
+      done={!!x.intake}
+      price={UNITS.kr(INTAKE_COST)}
+      raise={WAGE_PER_LEVEL.caseworker}
+      wageShort={!canAffordWage(s, WAGE_PER_LEVEL.caseworker)}
+      payFull={!inPayGrade(s, x)}
+      can={canTrainIntake(s, i)}
+      onTrain={() => act((g) => trainIntake(g, i))}
+    >
+      {x.intake && (
+        <span class="intake-rules" role="radiogroup">
+          {INTAKE_RULES.map((r) => (
+            <button
+              role="radio"
+              aria-checked={r === rule}
+              class={r === rule ? 'on' : ''}
+              onClick={() => act((g) => (g.intakeRule = r))}
+            >
+              <span aria-hidden="true">{INTAKE_ICON[r]}</span>
+              {STAFF_TEXT.intakeRule[r]}
+            </button>
+          ))}
+        </span>
+      )}
+    </Course>
+  );
+}
+
 /** One course, in the shape of an upgrade card. */
 function Course(p: {
   icon: string;
@@ -519,6 +564,8 @@ function Course(p: {
   payFull?: boolean;
   can: boolean;
   onTrain: () => void;
+  /** More controls under the effect. */
+  children?: ComponentChildren;
 }) {
   return (
     <article class={p.done ? 'request done' : 'request'}>
@@ -535,6 +582,7 @@ function Course(p: {
             ))}
           </span>
         )}
+        {p.children}
       </div>
       <div class="buy-col">
         {p.done ? (

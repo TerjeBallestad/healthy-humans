@@ -25,7 +25,7 @@ import {
   workerNudgesPerSecond,
 } from './institution';
 import { updateReveals } from './reveal';
-import { checkAd, coachLevel } from './staff';
+import { autoIntake, checkAd, coachLevel } from './staff';
 import { eligibleSubjects, maybePropose } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
@@ -55,6 +55,7 @@ export function tick(state: GameState) {
     state.nextArchetype += 1;
   }
   declineWaiting(state);
+  autoIntake(state);
   checkAd(state);
   updateReveals(state);
 

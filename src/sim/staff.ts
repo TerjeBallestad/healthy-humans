@@ -1,4 +1,4 @@
-import { ACTIVITIES, type ActivityId } from '../content/activities';
+import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
 import {
   AD_WEEKS,
@@ -7,18 +7,23 @@ import {
   CASEWORKER_LVL2_SHARE,
   CASEWORKER_MAX_LEVEL,
   COACH_TRAIN_COST,
+  INTAKE_COST,
   MAX_STAFF,
   MESTRING_TRAIN_COST,
   ROLES,
   SPECIALITY_TRAIN_COST,
   STAFF_FACES,
   STAFF_NAMES,
+  type IntakeRule,
   type StaffRole,
 } from '../content/staff';
+import { ARCHETYPE_BY_ID } from '../content/archetypes';
+import { TRAIT_BY_ID } from '../content/traits';
+import { admit, freeBed } from './actions';
 import { MAX_SKILL } from '../content/tuning';
 import { canAffordWage, canRaise, hireCost, wage } from './institution';
 import { random } from './rng';
-import type { GameState, Staff } from './state';
+import type { GameState, Staff, WaitingPerson } from './state';
 import { TICKS_PER_WEEK } from './time';
 import { log } from './tick';
 import { LOG } from '../content/text';
@@ -199,4 +204,59 @@ export function trainCasework(s: GameState, index: number): boolean {
   s.budget -= caseworkCost(x);
   x.level = (x.level ?? 1) + 1;
   return true;
+}
+
+export function canTrainIntake(s: GameState, index: number): boolean {
+  const x = s.staff[index];
+  return (
+    !!x && x.role === 'caseworker' && !x.intake && s.budget >= INTAKE_COST && canRaise(s, x)
+  );
+}
+
+/** Spend kroner on the intake course: the case worker admits to free beds from now on. */
+export function trainIntake(s: GameState, index: number): boolean {
+  if (!canTrainIntake(s, index)) return false;
+  s.budget -= INTAKE_COST;
+  s.staff[index]!.intake = true;
+  return true;
+}
+
+export function intakeRule(s: GameState): IntakeRule {
+  return s.intakeRule ?? 'health';
+}
+
+/** Hard activities the house can help with: a miljøarbeider has the need, or a coach can teach it. */
+export function matchScore(s: GameState, p: WaitingPerson): number {
+  return ARCHETYPE_BY_ID[p.archetype].hard.filter(
+    (id) =>
+      coachLevel(s, id) > 0 ||
+      s.staff.some((x) => x.role === 'worker' && x.specialities.includes(ACTIVITY_BY_ID[id].trigger)),
+  ).length;
+}
+
+/** How much a person counts under a rule. Higher goes first. Lowest health breaks a tie. */
+function intakeScore(s: GameState, rule: IntakeRule, p: WaitingPerson): number {
+  if (rule === 'match') return matchScore(s, p);
+  if (rule === 'rich') return TRAIT_BY_ID[p.trait].tax ?? 1;
+  return 0;
+}
+
+/** The index on the venteliste the case worker would admit next, or -1. */
+export function intakePick(s: GameState): number {
+  const rule = intakeRule(s);
+  let best = -1;
+  for (let i = 0; i < s.waiting.length; i++) {
+    const p = s.waiting[i]!;
+    const b = s.waiting[best];
+    const d = b ? intakeScore(s, rule, p) - intakeScore(s, rule, b) : 1;
+    if (d > 0 || (d === 0 && p.health < b!.health)) best = i;
+  }
+  return best;
+}
+
+/** Called each tick: a case worker with the intake course fills a free bed. */
+export function autoIntake(s: GameState) {
+  if (!s.staff.some((x) => x.intake) || s.discharge || freeBed(s) < 0) return;
+  const i = intakePick(s);
+  if (i >= 0) admit(s, i, false);
 }

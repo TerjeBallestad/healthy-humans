@@ -60,15 +60,15 @@ export function freeBed(state: GameState): number {
   return state.beds.indexOf(null);
 }
 
-/** Move someone from the waiting list into the first free bed. */
-export function admit(state: GameState, index: number): boolean {
+/** Move someone from the waiting list into the first free bed. The player's pick selects the bed. */
+export function admit(state: GameState, index: number, select = true): boolean {
   const bed = freeBed(state);
   const person = state.waiting[index];
   if (bed < 0 || !person) return false;
   const a = ARCHETYPE_BY_ID[person.archetype];
   state.waiting.splice(index, 1);
   state.beds[bed] = newResident(a.id, person.health, state.tick, person.trait);
-  state.selected = bed;
+  if (select) state.selected = bed;
   log(state, a.arrives);
   return true;
 }

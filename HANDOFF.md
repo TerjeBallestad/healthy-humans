@@ -1,6 +1,6 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
+Last session: 2026-10-12 (9c). Read this first, then `PLAN.md`.
 
 ## Where things are
 
@@ -11,7 +11,7 @@ Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
 - **Steps 1 to 7k are done.** 7k (2026-10-10) is the economy and onboarding pass: bed income, a House tab and a mestring course for overskudd, omsorg rate and cap upgrades, a skill-up pip, toasts, gradual reveal and tips, and one pause/play toggle.
 - **Last play (2026-10-10):** Terje played to Y3 M5 W4 (115 weeks, about 46 min at 1x) and found it "quite interesting tactically", with different ways to play. Pacing is good, not perfect. It ran out of fumes when every cap was reached (4 beds, 6 staff, all upgrades). The onboarding tips work well after two fixes (a 1.5 s click delay, and a pause while a tip shows). Not yet played: the pause/play toggle, omsorg without a box, and the hire pool with one of each role.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
-- **Next (designed 2026-10-11):** step 9 in `PLAN.md`. 9a is played: the game keeps going, with a fine tune later. **9b (office slots and the case worker) is built and not played yet.** Then 9c intake course, 9d discharge course. Then a second facility as a tab. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits, candidates of different quality.
+- **Next (designed 2026-10-11):** step 9 in `PLAN.md`. 9a is played: the game keeps going, with a fine tune later. **9b (office slots and the case worker) and 9c (the intake course) are built and not played yet.** Then 9d discharge course. Then a second facility as a tab. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits, candidates of different quality.
 
 ## What the game does now
 
@@ -139,7 +139,7 @@ Last session: 2026-10-11 (9b). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 79 tests
+npm test           # vitest, 85 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 npm run deploy:itch  # build for itch.io and push with butler

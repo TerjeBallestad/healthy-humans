@@ -18,7 +18,7 @@ import { unlockedActivities } from './selectors';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
 import type { TierId } from '../content/tiers';
-import type { StaffRole } from '../content/staff';
+import type { IntakeRule, StaffRole } from '../content/staff';
 import type { LineId } from '../content/upgrades';
 
 export const SAVE_VERSION = 24;
@@ -68,6 +68,8 @@ export interface Staff {
   level?: number;
   /** Took the mestring course: more overskudd for every resident. Missing in old saves. */
   mestring?: boolean;
+  /** A case worker who took the intake course admits to free beds. Missing in old saves. */
+  intake?: boolean;
   /** Nudges not yet given, carried between ticks. */
   carry: number;
 }
@@ -164,6 +166,8 @@ export interface GameState {
   seed: number;
   /** Parts of the screen shown and tips done, for the onboarding. Missing in old saves: no onboarding. */
   seen?: string[];
+  /** How a case worker with the intake course picks from the venteliste. Missing: lowest health. */
+  intakeRule?: IntakeRule;
 }
 
 const perActivity = (value: number) =>
