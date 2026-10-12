@@ -2,7 +2,7 @@ import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITIES, ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
 import { NEED_ORDER, type NeedId } from '../content/needs';
-import { MILESTONES } from '../content/milestones';
+import { PHASES, PHASE_LABEL, PHASE_RULES } from '../content/milestones';
 import {
   CASEWORKER_MAX_LEVEL,
   INTAKE_COST,
@@ -21,7 +21,7 @@ import {
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
 import { canAffordWage, hireCost, inPayGrade, omsorgCap, wage } from '../sim/institution';
-import { caseWorkerSupport, difficulty } from '../sim/proposals';
+import { caseWorkerSupport } from '../sim/proposals';
 import {
   canHire,
   canPostAd,
@@ -146,7 +146,7 @@ function Profile({ x }: { x: Staff }) {
   );
 }
 
-/** The level, and how much smaller it makes each milestone. */
+/** The level, and how much smaller it makes the milestones in each phase. */
 function CaseWorkerStats({ x }: { x: Staff }) {
   const support = caseWorkerSupport(x.level ?? 1);
   return (
@@ -162,14 +162,12 @@ function CaseWorkerStats({ x }: { x: Staff }) {
           <td>{STAFF_TEXT.level}</td>
           <td class="value">{UNITS.level(x.level ?? 1)}</td>
         </tr>
-        {MILESTONES.map((m) => {
-          const subject = { kind: 'milestone', milestone: m.id } as const;
+        {PHASES.map((phase) => {
+          const d = PHASE_RULES[phase].difficulty;
           return (
             <tr>
-              <td>{m.label}</td>
-              <td class="value">
-                {STAFF_TEXT.reduced(m.difficulty, Math.round(difficulty(subject, support)))}
-              </td>
+              <td>{PHASE_LABEL[phase]}</td>
+              <td class="value">{STAFF_TEXT.reduced(d, Math.round(d / (1 + support)))}</td>
             </tr>
           );
         })}

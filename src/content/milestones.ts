@@ -1,71 +1,154 @@
-export type MilestoneId = 'nav' | 'application' | 'worktrial';
+import type { Colour } from './identity';
+
+// Milestones are cards in three phases: identity, then mastery, then purpose.
+// A proposal offers a hand of cards from the patient's phase. One success moves them to the next phase.
+// Each card has a hidden fit for each colour, from -3 to +3. The player learns it from the reactions.
+
+export type Phase = 'identity' | 'mastery' | 'purpose';
+export const PHASES: Phase[] = ['identity', 'mastery', 'purpose'];
+
+// TODO(Terje): placeholder phase names.
+export const PHASE_LABEL: Record<Phase, string> = {
+  identity: 'Identity',
+  mastery: 'Mastery',
+  purpose: 'Purpose',
+};
+
+export type MilestoneId =
+  | 'nav'
+  | 'therapist'
+  | 'retreat'
+  | 'trip'
+  | 'boat'
+  | 'garden'
+  | 'piano'
+  | 'course'
+  | 'job'
+  | 'volunteer'
+  | 'kidsTeam'
+  | 'business';
 
 export interface MilestoneDef {
   id: MilestoneId;
+  phase: Phase;
   label: string;
-  /** The resident's proposal. First person. */
-  ask: string;
-  success: string;
-  failure: string;
-  /** Pushes against the resident's competence. Odds = competence ÷ (competence + difficulty). */
-  difficulty: number;
-  /** The most kroner the player can wager. It shrinks the difficulty as much as a top case worker. */
-  maxKr: number;
   /** Where it happens, for the scene card. */
-  place: string;
   placeIcon: string;
-  /** Rung the resident must have reached. */
-  needsRung: number;
-  /** Milestone that must be done first. */
-  after?: MilestoneId;
-  /** Every routine must be automatic first. */
-  needsAllRoutines?: boolean;
-  /** The discharge tier this milestone is needed for. */
-  forTier: string;
+  place?: string;
+  /** Lines for the scene card. A card without them shows only its label. */
+  ask?: string;
+  success?: string;
+  failure?: string;
+  /** Hidden. How well the card fits each colour, from -3 to +3. */
+  fit: Record<Colour, number>;
+  /** Purpose cards only: kroner per week after discharge as a healthy human, before quality and trait. */
+  tax?: number;
 }
 
+/** Per phase: the difficulty against competence, the most kroner to wager, and the rung the patient needs. */
+export const PHASE_RULES: Record<
+  Phase,
+  { difficulty: number; maxKr: number; needsRung: number; needsAllRoutines?: boolean }
+> = {
+  identity: { difficulty: 10, maxKr: 600, needsRung: 7 },
+  mastery: { difficulty: 20, maxKr: 900, needsRung: 9 },
+  purpose: { difficulty: 45, maxKr: 1400, needsRung: 9, needsAllRoutines: true },
+};
+
+const fit = (white: number, blue: number, black: number, red: number, green: number) => ({
+  white,
+  blue,
+  black,
+  red,
+  green,
+});
+
+// TODO(Terje): card names are placeholders, from the grilling on 2026-10-12. Only NAV and the job
+// keep the old lines. The others show their label until Terje writes them.
 export const MILESTONES: MilestoneDef[] = [
   {
     id: 'nav',
+    phase: 'identity',
     label: 'Meeting at NAV',
+    placeIcon: '🏢',
+    place: 'NAV office',
     ask: 'I want to go to the NAV meeting myself.',
     success: 'Went to NAV. Said what was needed. Came home with a plan.',
     failure: 'Sat in the waiting room. Left before the name was called.',
-    difficulty: 10,
-    maxKr: 600,
-    place: 'NAV office',
-    placeIcon: '🏢',
-    needsRung: 7,
-    forTier: 'fit for work',
+    fit: fit(3, 1, -1, -2, 0),
   },
   {
-    id: 'application',
-    label: 'Job application',
-    ask: 'There is a job at the warehouse. I want to apply.',
-    success: 'Sent the application. Read it nine times first.',
-    failure: 'Wrote two lines. Deleted them.',
-    difficulty: 10,
-    maxKr: 900,
-    place: 'Kitchen table',
-    placeIcon: '📝',
-    needsRung: 9,
-    after: 'nav',
-    forTier: 'fit for work',
+    id: 'therapist',
+    phase: 'identity',
+    label: 'Meeting a therapist',
+    placeIcon: '🛋️',
+    fit: fit(0, 3, 2, -1, -2),
   },
   {
-    id: 'worktrial',
-    label: 'Work trial',
+    id: 'retreat',
+    phase: 'identity',
+    label: 'Meditation retreat',
+    placeIcon: '🧘',
+    fit: fit(1, -1, -2, -1, 3),
+  },
+  { id: 'trip', phase: 'identity', label: 'A trip', placeIcon: '🎒', fit: fit(-2, 0, 1, 3, 1) },
+  {
+    id: 'boat',
+    phase: 'mastery',
+    label: 'Build a boat',
+    placeIcon: '⛵',
+    fit: fit(-1, 2, 2, 1, 1),
+  },
+  {
+    id: 'garden',
+    phase: 'mastery',
+    label: 'Fix the garden',
+    placeIcon: '🌱',
+    fit: fit(1, -1, -2, 0, 3),
+  },
+  {
+    id: 'piano',
+    phase: 'mastery',
+    label: 'Learn the piano',
+    placeIcon: '🎹',
+    fit: fit(0, 1, 0, 3, -1),
+  },
+  { id: 'course', phase: 'mastery', label: 'A course', placeIcon: '📚', fit: fit(3, 2, 1, -2, -1) },
+  {
+    id: 'job',
+    phase: 'purpose',
+    label: 'A job',
+    placeIcon: '🏭',
+    place: 'Warehouse',
     ask: 'They want me for a trial week.',
     success: 'Five days at the warehouse. Came home tired. The good kind.',
     failure: 'Called in sick on Wednesday.',
-    difficulty: 45,
-    maxKr: 1400,
-    place: 'Warehouse',
-    placeIcon: '🏭',
-    needsRung: 9,
-    after: 'application',
-    needsAllRoutines: true,
-    forTier: 'healthy human',
+    fit: fit(2, 2, 0, -2, 0),
+    tax: 100,
+  },
+  {
+    id: 'volunteer',
+    phase: 'purpose',
+    label: 'Volunteering',
+    placeIcon: '🤲',
+    fit: fit(3, 0, -3, 0, 1),
+    tax: 20,
+  },
+  {
+    id: 'kidsTeam',
+    phase: 'purpose',
+    label: "Coaching a kids' team",
+    placeIcon: '⚽',
+    fit: fit(1, -1, -1, 1, 3),
+    tax: 30,
+  },
+  {
+    id: 'business',
+    phase: 'purpose',
+    label: 'A small business',
+    placeIcon: '🧾',
+    fit: fit(-2, 1, 3, 2, -1),
+    tax: 60,
   },
 ];
 
@@ -73,3 +156,19 @@ export const MILESTONE_BY_ID = Object.fromEntries(MILESTONES.map((m) => [m.id, m
   MilestoneId,
   MilestoneDef
 >;
+
+/** Cards in a hand. */
+export const HAND_SIZE = 3;
+/** Fit at or above this is good, at or below its negative is poor. */
+export const GOOD_FIT = 1;
+/** Each point of fit over the stay's successes adds this to the quality. Quality multiplies the tax. */
+export const QUALITY_PER_FIT = 0.1;
+export const QUALITY_MIN = 0.2;
+
+export type FitLevel = 'good' | 'neutral' | 'poor';
+
+/** The patient's face after a milestone, by result and fit. Placeholders until there are lines. */
+export const REACTION_FACE: Record<'success' | 'failure', Record<FitLevel, string>> = {
+  success: { good: '🤩', neutral: '🙂', poor: '😶' },
+  failure: { good: '😤', neutral: '😕', poor: '😞' },
+};

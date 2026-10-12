@@ -42,6 +42,9 @@ export const LOG = {
     'was found by a neighbour. The case is closed.',
   ],
   easier: (activity: string) => `${activity}: a little easier now.`,
+  // TODO(Terje): placeholder results for milestone cards without their own lines.
+  milestoneDone: (label: string) => `${label}: ✓`,
+  milestoneFailed: (label: string) => `${label}: ✗`,
 };
 
 /** The resident's status line when nothing else applies. */
@@ -265,8 +268,11 @@ export const TIPS = {
   discharge: (name: string) =>
     `${name} can go home now. A higher tier pays more tax, but the bed stays full while you wait.`,
   milestoneTitle: 'A milestone',
-  milestone: (name: string, milestone: string, count: number) =>
-    `${name} wants to try something big: ${milestone}. ${count} milestones lead to a healthy human.`,
+  // TODO(Terje): the milestone name went out of this line with the hand of cards.
+  milestone: (name: string, count: number) =>
+    `${name} wants to try something big. ${count} milestones lead to a healthy human.`,
+  // TODO(Terje): placeholder for the tip on the hand of milestone cards.
+  hand: 'Pick one.',
   wagerTitle: 'Drag here',
   // TODO(Terje): the second sentence ("At X kr it is sure to work") went with the sure price.
   wager: 'Spend kroner on support to raise the odds.',

@@ -8,6 +8,7 @@ import { activeNeeds, statusLine } from '../sim/selectors';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
 import { RESIDENT, UNITS } from '../content/text';
+import { IdentityChip } from './IdentityChip';
 
 export function ResidentPanel() {
   const s = useGame();
@@ -26,6 +27,7 @@ export function ResidentPanel() {
     <section class="panel resident">
       <h2>
         {r.name}
+        <IdentityChip id={r.identity} />
         {r.trait && <span class="tag">{TRAIT_BY_ID[r.trait].label}</span>}
       </h2>
       <p class="muted intro">{r.intro}</p>

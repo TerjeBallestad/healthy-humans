@@ -234,9 +234,9 @@ describe('intake', () => {
     s.budget = INTAKE_COST;
     s.beds = [null];
     s.waiting = [
-      { archetype: 'arvid', trait: 'cooks', health: 70 },
-      { archetype: 'maja', trait: 'rich', health: 80 },
-      { archetype: 'rolf', trait: 'tidy', health: 40 },
+      { archetype: 'arvid', trait: 'cooks', identity: { primary: 'red' }, health: 70 },
+      { archetype: 'maja', trait: 'rich', identity: { primary: 'red' }, health: 80 },
+      { archetype: 'rolf', trait: 'tidy', identity: { primary: 'red' }, health: 40 },
     ];
     return s;
   };

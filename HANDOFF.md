@@ -1,6 +1,6 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-12 (9c). Read this first, then `PLAN.md`.
+Last session: 2026-10-12 (9c, then step 11: patient identity). Read this first, then `PLAN.md`.
 
 ## Where things are
 
@@ -11,6 +11,8 @@ Last session: 2026-10-12 (9c). Read this first, then `PLAN.md`.
 - **Steps 1 to 7k are done.** 7k (2026-10-10) is the economy and onboarding pass: bed income, a House tab and a mestring course for overskudd, omsorg rate and cap upgrades, a skill-up pip, toasts, gradual reveal and tips, and one pause/play toggle.
 - **Last play (2026-10-10):** Terje played to Y3 M5 W4 (115 weeks, about 46 min at 1x) and found it "quite interesting tactically", with different ways to play. Pacing is good, not perfect. It ran out of fumes when every cap was reached (4 beds, 6 staff, all upgrades). The onboarding tips work well after two fixes (a 1.5 s click delay, and a pause while a tip shows). Not yet played: the pause/play toggle, omsorg without a box, and the hire pool with one of each role.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
+- **Patient identity (step 11, built 2026-10-12, not played yet).** From a grilling with Terje (notes in `PLAN.md` under "Patient identity"). Each patient has an identity (`src/content/identity.ts`): one colour or a pair, shown as a split chip with a keyword. Milestones are 12 cards in three phases (`src/content/milestones.ts`): identity, mastery, purpose. A proposal offers a hand of 3 from the patient's phase. The player always picks the card. The pick is prefilled from the playbook (the last pick for that identity and phase). The case worker no longer takes the milestone. It only adds support, and the player clicks Go. Each card has a hidden fit per colour. After the roll, the patient's face shows the fit. Tiers: see step 11 in `PLAN.md`. Save version 25: old saves reset.
+  - **Placeholders for Terje:** the 5 keywords and 10 pair names (Lifelines words), the phase names, the card names (from the grilling), the result lines for cards without lines (`LOG.milestoneDone`, `LOG.milestoneFailed`), the hand tip ("Pick one."), and the milestone tip (the milestone name went out). NAV and the job keep the old lines. The application card is gone.
 - **Next (designed 2026-10-11):** step 9 in `PLAN.md`. 9a is played: the game keeps going, with a fine tune later. **9b (office slots and the case worker) is played and works well (Terje, 2026-10-12). 9c (the intake course) works in play, but its UI is confusing for a new player and feels clunky. Best match is invisible on screen.** Then 9d discharge course. Then a second facility as a tab. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits, candidates of different quality.
 
 ## What the game does now
@@ -93,17 +95,17 @@ Last session: 2026-10-12 (9c). Read this first, then `PLAN.md`.
 | Overskudd is the last tight spot                      | House tab: common room ×1.5, garden ×2. Mestring course for any staff member: +25% overskudd each, for omsorg.                              |
 | Wants omsorg upgrades, not only nudge upgrades        | "Your work" gets two more lines: omsorg rate (×1.5, ×2) and omsorg cap (60, 80).                                                            |
 | Discharged list squeezes the venteliste to 0 rows     | Discharged shows a count per tier and the tax, not the names.                                                                               |
-| Skill-up and affordable things are easy to miss       | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each, beside the button.                          |
+| Skill-up and affordable things are easy to miss       | Gold pip on the bed card when a skill-up is ready. Toasts when an upgrade or a hire becomes affordable, once each, beside the button.       |
 | The start is overwhelming for new players             | Gradual reveal and one "Click here" tip at a time, with the text Terje wrote for nudge and train.                                           |
 | Tips dismissed by fast clicking before being read     | Tips ignore clicks for 1.5 s, and the bubble lets clicks through. OK is faded until then.                                                   |
 | The game should pause while a tip shows               | It pauses, and resumes when the tip is done.                                                                                                |
 | A hire pool can be three coaches                      | Every pool has at least one miljøarbeider and one coach.                                                                                    |
 | The milestone also needs tips                         | Three tips in the proposal: the track, the wager, Go.                                                                                       |
 | Too many time controls, omsorg in a box               | One pause/play toggle. Omsorg without background or border.                                                                                 |
-| Venteliste collapses when the staff list grows        | The venteliste keeps up to 45% of the left column. The staff panel scrolls on its own below it.                                            |
-| Milestone dialog dismissed by fast clicking           | The proposal buttons ignore clicks for 1.5 s (`GRACE_MS`, shared with the tips), on open and again when the result shows.                  |
-| Milestone stuck after an upgrade menu opened on it    | Closing a menu no longer restarts the clock under a proposal or a vedtak. The scene card is keyed by the tick the proposal opened.        |
-| Toasts bottom right, unreadable in play               | Each toast sits beside its button (Upgrades, or the Hire slot) with an arrow and the upgrade's icon. Bottom right if the button is gone.  |
+| Venteliste collapses when the staff list grows        | The venteliste keeps up to 45% of the left column. The staff panel scrolls on its own below it.                                             |
+| Milestone dialog dismissed by fast clicking           | The proposal buttons ignore clicks for 1.5 s (`GRACE_MS`, shared with the tips), on open and again when the result shows.                   |
+| Milestone stuck after an upgrade menu opened on it    | Closing a menu no longer restarts the clock under a proposal or a vedtak. The scene card is keyed by the tick the proposal opened.          |
+| Toasts bottom right, unreadable in play               | Each toast sits beside its button (Upgrades, or the Hire slot) with an arrow and the upgrade's icon. Bottom right if the button is gone.    |
 
 ## Open issues
 
@@ -139,7 +141,7 @@ Last session: 2026-10-12 (9c). Read this first, then `PLAN.md`.
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 85 tests
+npm test           # vitest, 95 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 npm run deploy:itch  # build for itch.io and push with butler

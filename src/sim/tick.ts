@@ -26,7 +26,7 @@ import {
 } from './institution';
 import { updateReveals } from './reveal';
 import { autoIntake, checkAd, coachLevel } from './staff';
-import { eligibleSubjects, maybePropose } from './proposals';
+import { maybePropose, phaseOpen } from './proposals';
 import { activeNeeds, effort, readyQueue, unlockedActivities } from './selectors';
 import { fillLearningWindow, newReferral, occupied, type GameState, type Resident } from './state';
 import { TICKS_PER_SECOND, TICKS_PER_WEEK } from './time';
@@ -172,7 +172,7 @@ function progressActivity(state: GameState, r: Resident) {
  */
 function coachWork(state: GameState, r: Resident) {
   if (!state.staff.some((x) => x.role === 'coach')) return;
-  const reserve = eligibleSubjects(r).length > 0 ? PROPOSAL_COST_MILESTONE : 0;
+  const reserve = phaseOpen(r) ? PROPOSAL_COST_MILESTONE : 0;
   const next = unlockedActivities(r)
     .filter(
       (a) =>

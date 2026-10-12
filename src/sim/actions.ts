@@ -67,7 +67,7 @@ export function admit(state: GameState, index: number, select = true): boolean {
   if (bed < 0 || !person) return false;
   const a = ARCHETYPE_BY_ID[person.archetype];
   state.waiting.splice(index, 1);
-  state.beds[bed] = newResident(a.id, person.health, state.tick, person.trait);
+  state.beds[bed] = newResident(a.id, person.health, state.tick, person.trait, person.identity);
   if (select) state.selected = bed;
   log(state, a.arrives);
   return true;

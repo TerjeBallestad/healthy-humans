@@ -32,6 +32,12 @@ One word, one meaning.
 | **Staff**          | Hired from a job ad. A miljøarbeider nudges bars, best on a speciality. A coach spends overskudd on skill levels.                       |
 | **Upgrade**        | A one-off purchase with kroner, in lines: your nudge, omsorg rate and cap, staff speed, funding, the house.                             |
 | **Mestring**       | A staff course, paid with omsorg. Each staff member with it adds overskudd for every resident.                                          |
+| **Identity**       | A patient's colour, or a pair of colours with a primary. Shown as one chip with a keyword.                                              |
+| **Phase**          | Identity, mastery, purpose. A patient needs one successful milestone in each, in order.                                                 |
+| **Hand**           | The 2 or 3 milestone cards a patient offers at a proposal, from their phase. The player picks one.                                      |
+| **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                  |
+| **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                   |
+| **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                          |
 
 ## Mechanics (Act 1)
 
@@ -193,9 +199,17 @@ Each step ends with something playable and one question to answer by playing.
    - **Case worker, proposals.** Before the hire you make the kroner wager yourself (the contractor phase, as in Game Dev Story). After the hire the case worker takes every proposal, and there is no manual option. The resident still pays the 20 overskudd. Odds, armor style (changed 2026-10-11): competence ÷ (competence + difficulty). Competence is the resident's skill levels plus a bonus per failed try. The case worker's level and the kroner wager both divide the difficulty, with diminishing returns.
    - **Case worker training costs kroner, with diminishing returns.** Levels 1 to 5. The price grows each level. The odds come close to 100% but never reach it.
    - **The proposal UI stays.** The dialog shows the scene card, the milestone track and the odds bar with the case worker's odds, without the slider. The marker rolls by itself. The dialog stays until a click (closing by itself was too fast to read). Later each archetype and potential gets its own milestones, so each resident tells a story through them. Show them while there are 1 or 2 facilities. Hide them later if they become noise.
-   9c: **intake course** (case worker training). Built 2026-10-12, played: the mechanics work, the UI needs work. The case worker admits to a free bed by a priority the player chooses: lowest health, best match, or richest. This is a choice about values, not a forecast. "Richest" pays well and should feel wrong.
-   9d: **discharge course** (case worker training). The case worker discharges at a tier the player chooses, "healthy human" by default.
+     9c: **intake course** (case worker training). Built 2026-10-12, played: the mechanics work, the UI needs work. The case worker admits to a free bed by a priority the player chooses: lowest health, best match, or richest. This is a choice about values, not a forecast. "Richest" pays well and should feel wrong.
+     9d: **discharge course** (case worker training). The case worker discharges at a tier the player chooses, "healthy human" by default.
 10. **A second facility.** See "After Act 1".
+11. **Patient identity, first version.** Built 2026-10-12, not played yet. See "Patient identity" below.
+
+- Each patient rolls an identity. The first three are single colours, all different. Then 80% pairs.
+- 12 milestone cards, 4 per phase, each with a hidden fit per colour. A hand holds the best and the worst fit of the phase and one other, in a fixed order.
+- The roll is as before. The reaction face shows the fit after the roll: 🤩 🙂 😶 on a success, 😤 😕 😞 on a failure.
+- "Fit for work" needs an identity and a mastery success and all routines. "Healthy human" needs a purpose success and pays that card's tax (job 100, business 60, kids' team 30, volunteering 20). Quality (1 + 0.1 per point of fit, at least 0.2) multiplies every tier's tax.
+- Not in it: primærkontakt, talking, the story timeline, more cards and unlocks, hidden identity, a planning course.
+  _Question: do the patients feel like people, and does learning the fit feel like the Game Dev Tycoon table?_
 
 ## After Act 1: several facilities
 
@@ -206,6 +220,27 @@ Terje's direction (2026-10-10). Not built, not final.
 - Facilities are blank slates. The furniture and objects you put in them specialise them. A label such as "works as a rusbolig" can emerge from the objects. Objects change rules. Staff skills change rates.
 - Staff are defined by their skills, not by fixed roles. Open: a job specialization the player chooses, to frame "work with this patient type".
 - Ideas, none chosen: potential on referrals (the highest tier they can reach), disorders with their own ladder and one new rule each (rus: craving rises, relapse drops a skill; ADHD: the effort ring leaks; angst: locked activities and calm; psychosis: medication only a nurse fills), more activities per need.
+
+## Patient identity (grilling, 2026-10-12)
+
+Terje: patients are too anonymous. The game should in the end focus on the patients and give them an identity journey: they find out who they are and which milestones fit them. In Lifelines the colour identity worked in the background and stayed invisible to the player. Here the model is the genre and platform table from Game Dev Tycoon: the player slowly learns which combinations work. The table is not shown in the game. It lives in the player's head. Several versions will be tried.
+
+Settled so far:
+
+- **Identity is visible, fit is discovered.** The referral shows the patient's identity. The player learns what fits it. Hiding the identity can come later, if it feels too easy.
+- **The fit table is hidden data.** Each milestone is a row, and the five colours are the columns, with a value from −3 to +3 per cell. A patient's fit with a milestone is the sum of their two colours, with the primary weighted higher. Five columns give all ten pairs, so what the player learns about one colour carries over to new pairs.
+- **The player learns the fit from a reaction after the milestone.** It shows whether the milestone fit, apart from whether the roll succeeded. Terje writes the reaction lines.
+- **Two results, four outcomes.** Competence decides whether a milestone works (the roll). Fit decides what it means (the reaction). Success with a good fit: flourishing. Success with a poor fit: it worked, but left the patient empty (a Crooked Rung, as in Lifelines). Failure with a good fit: they want to try again. Failure with a poor fit: it hurt.
+- **The patient offers a hand of 2 or 3 milestones.** When a proposal comes, the player picks one or says "Not now". The hand comes from the patient's identity: usually one good fit, one neutral, one poor. Milestones become cards from a pool that grows with unlocks, not fixed steps on one path. A case worker course can later pick from the hand by a rule.
+- **Three phases of milestones (Terje).** Identity first: find out who you are (a NAV meeting, a therapist, a meditation retreat, a trip). Then mastery: a challenge (build a boat, fix the garden, learn the piano, a course, study). Then purpose: give back to the world (a job, or other ways, still open). Each hand draws from the patient's current phase.
+- **Purpose milestones differ in tax.** A job pays the most, volunteering little. Each purpose fits some colours more than others (for example volunteering for White, gigs for Red, a business for Black). The last choice of a stay is between kroner and the patient's flourishing. A good fit should still pay something through the quality, so the kind choice is not always a loss.
+- **On screen: one coloured chip with the pair name (Terje).** Blue + Red shows as one chip, "Creative", with its background split between blue and red (a blend fails for pairs such as White + Black, which turns grey). The pair name adds flavour. The risk is cognitive load: the player must learn ten names and still think in two colours to read the fit. If that fails, split the chip into two single chips ("Analytical" + "Passionate"). Our own palette, not the MTG colours. Terje writes the five single and ten pair keywords. The Lifelines words in `color_keywords.gd` serve as placeholders.
+- **Identities can be a single colour (Terje).** The first patients are single colours, so the player learns the five columns one at a time before pairs come. A single colour counts its column at full weight, so its reactions are stronger and easier to read. Its chip has one colour.
+- **The player always picks the card. The case worker only raises the odds.** No full automation of the pick (Terje): if this is what the game is about, it stays an explicit choice. To keep it light, the pick is prefilled with the player's last choice for the same identity and phase, when that card is in the hand. After the first time, it costs one click to confirm.
+- Parked (Terje): a patient who arrives with a high-paid job and burns out, and leaves with volunteering in addition to the job. Probably more complex than it is worth.
+- **Maslow is the shape of the ladder** (routines, then belonging, then milestones, then identity). **Ikigai is a candidate score** for the whole stay: love (fit), good at (competence), world needs (the milestone's value), paid for (tax). Not settled.
+
+Open: what the outcomes change in the game, Ikigai as the score, colours or keywords on screen, more milestones and how they unlock, the primærkontakt, talking, and a visible story.
 
 ## Open questions to answer in play
 

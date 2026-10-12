@@ -787,7 +787,65 @@ button:disabled {
   margin-bottom: 18px;
 }
 .scene .face {
+  position: relative;
   margin-bottom: 18px;
+}
+.scene .face .base.gone {
+  animation: fade-out 0.3s ease-in 1.6s both;
+}
+.scene .face .react {
+  position: absolute;
+  animation: pop 0.4s ease-out 1.6s both;
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.25);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.scene .who {
+  margin: 4px 0 0;
+  text-align: center;
+  font-weight: 600;
+}
+.hand {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+.hand .mcard {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.hand .mcard-icon {
+  font-size: 1.8rem;
+}
+.hand .mcard.on {
+  border-color: var(--accent);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  font-weight: 600;
+}
+.hand .mcard:disabled {
+  opacity: 0.35;
 }
 .scene blockquote {
   margin: 12px 0 16px;
@@ -1776,4 +1834,22 @@ button:disabled {
   .cards {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
+}
+
+/* Identity: one chip, split between the two colours of a pair. */
+.identity {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  color: #2b2620;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--a) 70%, white) 50%,
+    color-mix(in srgb, var(--b) 70%, white) 50%
+  );
 }

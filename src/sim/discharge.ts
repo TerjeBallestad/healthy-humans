@@ -1,5 +1,5 @@
 import { ACTIVITIES } from '../content/activities';
-import { MILESTONE_BY_ID } from '../content/milestones';
+import { MILESTONE_BY_ID, PHASE_LABEL, type Phase } from '../content/milestones';
 import { TIERS, TIER_BY_ID, type TierDef, type TierId } from '../content/tiers';
 import { TRAIT_BY_ID } from '../content/traits';
 import {
@@ -10,47 +10,51 @@ import {
 } from '../content/tuning';
 import type { GameState, Resident } from './state';
 import { log } from './tick';
+import { quality } from './proposals';
 import { LOG } from '../content/text';
 
 const automatic = (r: Resident, upToRung: number) =>
   ACTIVITIES.filter((a) => a.rung <= upToRung).every((a) => r.skill[a.id] >= MAX_SKILL);
+
+/** True when the resident has a success in this phase. */
+const did = (r: Resident, phase: Phase) =>
+  r.milestones.some((m) => MILESTONE_BY_ID[m].phase === phase);
 
 export function tierOpen(r: Resident, id: TierId): boolean {
   switch (id) {
     case 'alone':
       return automatic(r, 6);
     case 'work':
-      return (
-        r.milestones.includes('nav') &&
-        r.milestones.includes('application') &&
-        automatic(r, ACTIVITIES.length)
-      );
+      return did(r, 'identity') && did(r, 'mastery') && automatic(r, ACTIVITIES.length);
     case 'healthy':
-      return r.milestones.includes('worktrial');
+      return did(r, 'purpose');
   }
 }
 
 /** The parts of a tier the resident has not done yet, for the UI. */
 export function tierMissing(r: Resident, id: TierId): string[] {
-  const milestone = (m: 'nav' | 'application' | 'worktrial') =>
-    r.milestones.includes(m) ? [] : [MILESTONE_BY_ID[m].label];
+  const phase = (p: Phase) => (did(r, p) ? [] : [PHASE_LABEL[p]]);
   switch (id) {
     case 'alone':
       return automatic(r, 6) ? [] : ['rungs 1 to 6 automatic'];
     case 'work':
       return [
-        ...milestone('nav'),
-        ...milestone('application'),
+        ...phase('identity'),
+        ...phase('mastery'),
         ...(automatic(r, ACTIVITIES.length) ? [] : ['all routines automatic']),
       ];
     case 'healthy':
-      return milestone('worktrial');
+      return phase('purpose');
   }
 }
 
-/** Kroner per week this resident pays after discharge at a tier. */
+/** Kroner per week this resident pays after discharge at a tier. A healthy human pays the tax of their purpose card. The stay's quality and the trait multiply it. */
 export function tierTax(r: Resident, id: TierId): number {
-  return TIER_BY_ID[id].taxPerWeek * ((r.trait && TRAIT_BY_ID[r.trait].tax) ?? 1);
+  const purpose = r.milestones.find((m) => MILESTONE_BY_ID[m].phase === 'purpose');
+  const base =
+    (id === 'healthy' && purpose && MILESTONE_BY_ID[purpose].tax) || TIER_BY_ID[id].taxPerWeek;
+  const trait = (r.trait && TRAIT_BY_ID[r.trait].tax) ?? 1;
+  return Math.round(base * quality(r) * trait);
 }
 
 /** The best tier the resident can be discharged at now, if any. */

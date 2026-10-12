@@ -2,6 +2,7 @@ import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { ACTIVITIES } from '../content/activities';
 import { MILESTONES } from '../content/milestones';
+import { phaseOf } from '../sim/proposals';
 import { NEED_ORDER } from '../content/needs';
 import { DEBUG_SPEEDS, MAX_SKILL } from '../content/tuning';
 import { omsorgCap } from '../sim/institution';
@@ -73,7 +74,7 @@ export function DebugPanel() {
             <button
               onClick={() =>
                 onSelected((r) => {
-                  const m = MILESTONES.find((x) => !r.milestones.includes(x.id));
+                  const m = MILESTONES.find((x) => x.phase === phaseOf(r));
                   if (m) r.milestones.push(m.id);
                 })
               }

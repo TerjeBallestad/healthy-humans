@@ -15,8 +15,8 @@ import { bedCost, canAffordWage, canBuy, hireCost, upgradeCost } from '../src/si
 import { MAX_STAFF, ROLES, type StaffRole } from '../src/content/staff';
 
 const HIRE_ORDER: StaffRole[] = ['worker', 'coach', 'caseworker', 'worker'];
-import { accept, closeProposal, eligibleSubjects } from '../src/sim/proposals';
-import { MILESTONES } from '../src/content/milestones';
+import { accept, closeProposal, fitOf, phaseOpen, pick } from '../src/sim/proposals';
+import { PHASES } from '../src/content/milestones';
 import { activeNeeds, effort, unlockedActivities } from '../src/sim/selectors';
 import { newGame, occupied } from '../src/sim/state';
 import { tick } from '../src/sim/tick';
@@ -56,9 +56,14 @@ const start = s.tick;
 while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
   tick(s);
 
-  // Proposals: wager up to 250 kr when it can afford it.
+  // Proposals: pick the best fit, and wager up to 250 kr when it can afford it.
   if (s.proposal) {
-    accept(s, Math.min(250, Math.floor(s.budget / 50) * 50));
+    const who = s.beds[s.proposal.bed]!;
+    const best = [...s.proposal.hand].sort(
+      (a, b) => fitOf(who.identity, b) - fitOf(who.identity, a),
+    )[0]!;
+    pick(s, best);
+    if (!accept(s, Math.min(250, Math.floor(s.budget / 50) * 50))) accept(s, 0);
     if (s.proposal.outcome === 'success') milestoneSuccess++;
     else milestoneFail++;
     if (s.proposal.outcome === 'success') {
@@ -101,7 +106,7 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
   }
   // Overskudd: save for an open milestone, else train.
   for (const [bed, r] of occupied(s)) {
-    if (eligibleSubjects(r).length > 0) continue;
+    if (phaseOpen(r)) continue;
     const cheapest = unlockedActivities(r)
       .filter((a) => r.skill[a.id] < MAX_SKILL)
       .sort(
@@ -144,7 +149,7 @@ while (s.tick - start < MAX_WEEKS * TICKS_PER_WEEK) {
     }
     lastRung = r.unlockedRung;
   }
-  if (r.milestones.length === MILESTONES.length) break;
+  if (r.milestones.length === PHASES.length) break;
 }
 
 const elapsed = s.tick - start;
@@ -162,10 +167,8 @@ for (const u of unlockedAt) {
 }
 if (purchases.length) console.log('');
 for (const p of purchases) console.log(`  buy  ${p.what.padEnd(36)} ${real(p.tick).padStart(8)}`);
-const done = r.milestones.length === MILESTONES.length;
-console.log(
-  `\n  ${done ? 'Work trial done' : 'Not finished'} at ${real(elapsed)} (${week(elapsed)})`,
-);
+const done = r.milestones.length === PHASES.length;
+console.log(`\n  ${done ? 'Purpose done' : 'Not finished'} at ${real(elapsed)} (${week(elapsed)})`);
 console.log(
   `  Trained ${trained} levels. Milestones ${milestoneSuccess} ok / ${milestoneFail} failed`,
 );

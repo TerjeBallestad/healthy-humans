@@ -17,6 +17,7 @@ import { TICKS_PER_WEEK } from '../sim/time';
 import { act, useGame } from '../store';
 import { closeModal, modal, openModal } from './modal';
 import { PATIENT, UNITS, WAITING } from '../content/text';
+import { IdentityChip } from './IdentityChip';
 
 const healthLevel = (p: WaitingPerson) =>
   p.health < WAIT_URGENT_HEALTH ? 'bad' : p.health < 40 ? 'worse' : '';
@@ -46,6 +47,7 @@ export function WaitingList() {
               <button class="wait-row" onClick={() => openModal({ kind: 'patient', index: i })}>
                 <span class="who">
                   {ARCHETYPE_BY_ID[p.archetype].name}
+                  <IdentityChip id={p.identity} />
                   <span class="tag">{trait.label}</span>
                 </span>
                 <span class="meter" title={WAITING.health}>
@@ -120,6 +122,7 @@ export function PatientCard() {
         <div class="profile">
           <div class="profile-head">
             <strong>{a.name}</strong>
+            <IdentityChip id={p.identity} />
             <span class="trait-tag">{trait.label}</span>
           </div>
           <div class="profile-body">

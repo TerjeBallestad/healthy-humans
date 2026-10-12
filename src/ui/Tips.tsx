@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityId } from '../content/activities';
-import { MILESTONES, MILESTONE_BY_ID } from '../content/milestones';
+import { PHASES } from '../content/milestones';
 import { GRANT_PER_BED } from '../content/tuning';
 import { LINES } from '../content/upgrades';
 import { canNudge, canTrain, freeBed } from '../sim/actions';
@@ -40,31 +40,43 @@ function proposalTips(s: GameState): (() => Tip | null)[] {
   const p = s.proposal!;
   const r = s.beds[p.bed];
   if (!r || p.outcome) return [];
-  const m = MILESTONE_BY_ID[p.subject.milestone];
   return [
     () => ({
       key: 'tip:milestone',
       target: '[data-tip="track"]',
       title: TIPS.milestoneTitle,
       side: 'right',
-      text: TIPS.milestone(r.name, m.label, MILESTONES.length),
+      text: TIPS.milestone(r.name, PHASES.length),
     }),
     () => ({
-      key: 'tip:wager',
-      target: '[data-tip="wager"]',
-      also: '[data-tip="odds"]',
-      title: TIPS.wagerTitle,
-      side: 'right',
-      text: TIPS.wager,
-    }),
-    () => ({
-      key: 'tip:go',
-      target: '[data-tip="go"]',
-      also: '[data-tip="drain"]',
+      key: 'tip:hand',
+      target: '[data-tip="hand"]',
       title: TIPS.clickHere,
       side: 'right',
-      text: TIPS.go(proposalCost(p.subject), r.name),
+      text: TIPS.hand,
     }),
+    () =>
+      p.pick && !p.caseWorker
+        ? {
+            key: 'tip:wager',
+            target: '[data-tip="wager"]',
+            also: '[data-tip="odds"]',
+            title: TIPS.wagerTitle,
+            side: 'right',
+            text: TIPS.wager,
+          }
+        : null,
+    () =>
+      p.pick
+        ? {
+            key: 'tip:go',
+            target: '[data-tip="go"]',
+            also: '[data-tip="drain"]',
+            title: TIPS.clickHere,
+            side: 'right',
+            text: TIPS.go(proposalCost(), r.name),
+          }
+        : null,
   ];
 }
 

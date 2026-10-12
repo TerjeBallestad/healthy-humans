@@ -10,7 +10,9 @@ import {
   signDischarge,
   taxPerWeek,
   tierMissing,
+  tierTax,
 } from './discharge';
+import { quality } from './proposals';
 import { netIncomePerWeek } from './institution';
 import { maybePropose } from './proposals';
 import { effort } from './selectors';
@@ -34,15 +36,29 @@ describe('tiers', () => {
     expect(bestTier(r)?.id).toBe('alone');
   });
 
-  test('"fit for work" needs NAV, the application and every routine', () => {
+  test('"fit for work" needs an identity and a mastery milestone and every routine', () => {
     const r = newGame().beds[0]!;
     automatic(r, 6);
-    r.milestones = ['nav', 'application'];
+    r.milestones = ['nav', 'course'];
     expect(bestTier(r)?.id).toBe('alone');
     automatic(r, 9);
     expect(bestTier(r)?.id).toBe('work');
-    r.milestones.push('worktrial');
+    r.milestones.push('job');
     expect(bestTier(r)?.id).toBe('healthy');
+  });
+
+  test("a healthy human pays the purpose card's tax, times the quality", () => {
+    const r = newGame().beds[0]!;
+    r.trait = null;
+    r.identity = { primary: 'white' };
+    automatic(r, 9);
+    r.milestones = ['trip', 'piano', 'job'];
+    const poor = tierTax(r, 'healthy');
+    r.milestones = ['nav', 'course', 'job'];
+    expect(tierTax(r, 'healthy')).toBeGreaterThan(poor);
+    expect(tierTax(r, 'healthy')).toBe(Math.round(100 * quality(r)));
+    r.milestones = ['nav', 'course', 'volunteer'];
+    expect(tierTax(r, 'healthy')).toBe(Math.round(20 * quality(r)));
   });
 });
 
@@ -213,6 +229,6 @@ describe('tier text', () => {
     const r = newGame().beds[0]!;
     automatic(r, ACTIVITIES.length);
     r.milestones.push('nav');
-    expect(tierMissing(r, 'work')).toEqual(['Job application']);
+    expect(tierMissing(r, 'work')).toEqual(['Mastery']);
   });
 });

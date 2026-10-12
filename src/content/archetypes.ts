@@ -4,9 +4,6 @@ import type { TierId } from './tiers';
 
 export type ArchetypeId = 'arvid' | 'maja' | 'rolf';
 
-/** Personality colours, as in lifelines-core-loop's character_profile.gd. Unused for now. */
-export type Colour = 'white' | 'blue' | 'black' | 'red' | 'green';
-
 // Grey-box residents. Keep them loose: the plan is a procedural personality system later.
 export interface ArchetypeDef {
   id: ArchetypeId;
@@ -25,7 +22,6 @@ export interface ArchetypeDef {
   hard: ActivityId[];
   /** Two lines about life after discharge, for each tier. */
   glimpse: Record<TierId, [string, string]>;
-  colours?: Partial<Record<Colour, number>>;
 }
 
 export const ARCHETYPES: ArchetypeDef[] = [
@@ -53,7 +49,6 @@ export const ARCHETYPES: ArchetypeDef[] = [
         'His sister came for dinner. He cooked.',
       ],
     },
-    colours: { blue: 0.6, white: 0.3 },
   },
   {
     id: 'maja',
@@ -76,7 +71,6 @@ export const ARCHETYPES: ArchetypeDef[] = [
         'Her mother calls. Maja calls back.',
       ],
     },
-    colours: { red: 0.5, green: 0.4 },
   },
   {
     id: 'rolf',
@@ -102,7 +96,6 @@ export const ARCHETYPES: ArchetypeDef[] = [
         'His grandson visits. Rolf makes waffles.',
       ],
     },
-    colours: { black: 0.4, green: 0.4 },
   },
 ];
 

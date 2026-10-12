@@ -17,11 +17,18 @@ import { random } from './rng';
 import { unlockedActivities } from './selectors';
 import { ARCHETYPES, ARCHETYPE_BY_ID, type ArchetypeId } from '../content/archetypes';
 import type { MilestoneId } from '../content/milestones';
+import {
+  COLOURS,
+  FIRST_SINGLES,
+  SINGLE_SHARE,
+  type Colour,
+  type Identity,
+} from '../content/identity';
 import type { TierId } from '../content/tiers';
 import type { IntakeRule, StaffRole } from '../content/staff';
 import type { LineId } from '../content/upgrades';
 
-export const SAVE_VERSION = 24;
+export const SAVE_VERSION = 25;
 
 export interface CurrentActivity {
   id: ActivityId;
@@ -34,6 +41,7 @@ export interface Resident {
   name: string;
   intro: string;
   trait: TraitId | null;
+  identity: Identity;
   needs: Record<NeedId, number>;
   /** Clicks put into each nudge bar. */
   bars: Record<ActivityId, number>;
@@ -42,6 +50,7 @@ export interface Resident {
   unlockedRung: number;
   current: CurrentActivity | null;
   overskudd: number;
+  /** Successful milestones, one per phase, in order. */
   milestones: MilestoneId[];
   /** Failed tries at each milestone. Each one adds competence at the next try. Missing in old saves. */
   attempts?: Partial<Record<MilestoneId, number>>;
@@ -77,16 +86,18 @@ export interface Staff {
 export interface WaitingPerson {
   archetype: ArchetypeId;
   trait: TraitId;
+  identity: Identity;
   /** 0 to 100. Drops each week on the list. At 0 the person is lost. */
   health: number;
 }
 
-export type ProposalSubject = { kind: 'milestone'; milestone: MilestoneId };
-
 export interface Proposal {
   /** The bed of the resident who proposes. */
   bed: number;
-  subject: ProposalSubject;
+  /** The cards the resident offers, from their phase. */
+  hand: MilestoneId[];
+  /** The card the player has chosen. Prefilled from the playbook. Missing until a pick. */
+  pick?: MilestoneId;
   /** Overskudd the resident had when the proposal opened. The cost is paid on accept. */
   overskuddBefore: number;
   /** Kroner wagered and the chance it gave. Set once the player has chosen. */
@@ -97,7 +108,7 @@ export interface Proposal {
   difficulty?: number;
   /** The roll, 0 to 1. Below the chance is a success. */
   roll?: number;
-  /** The case worker who took it. Missing when the player wagered. */
+  /** The case worker who supports it. Missing before the first case worker: the player wagers. */
   caseWorker?: string;
   /** Set once the player has chosen. */
   outcome?: 'success' | 'failure' | 'declined';
@@ -168,6 +179,10 @@ export interface GameState {
   seen?: string[];
   /** How a case worker with the intake course picks from the venteliste. Missing: lowest health. */
   intakeRule?: IntakeRule;
+  /** Identities rolled so far. The first few are single colours. */
+  identities: number;
+  /** The player's last pick for each identity and phase, keyed "identityKey:phase". */
+  playbook: Record<string, MilestoneId>;
 }
 
 const perActivity = (value: number) =>
@@ -179,6 +194,7 @@ export function newResident(
   health = 100,
   tick = 0,
   trait: TraitId | null = null,
+  identity: Identity = { primary: 'white' },
 ): Resident {
   const a = ARCHETYPE_BY_ID[id];
   const skill = perActivity(0);
@@ -194,6 +210,7 @@ export function newResident(
     name: a.name,
     intro: a.intro,
     trait,
+    identity,
     needs,
     bars: perActivity(0),
     skill,
@@ -223,11 +240,29 @@ export function fillLearningWindow(r: Resident): ActivityDef[] {
   return opened;
 }
 
-/** A new referral with a rolled trait and health. Advances the seed. */
+/** A new referral with a rolled trait, identity and health. Advances the seed. */
 export function newReferral(s: GameState, archetype: ArchetypeId): WaitingPerson {
   const trait = TRAITS[Math.floor(random(s) * TRAITS.length)]!.id;
+  const identity = rollIdentity(s);
   const health = WAIT_HEALTH_MIN + random(s) * (WAIT_HEALTH_MAX - WAIT_HEALTH_MIN);
-  return { archetype, trait, health: Math.round(health) };
+  return { archetype, trait, identity, health: Math.round(health) };
+}
+
+/** The first FIRST_SINGLES identities are single colours, all different. Then mostly pairs. */
+export function rollIdentity(s: GameState): Identity {
+  const pick = (from: Colour[]) => from[Math.floor(random(s) * from.length)]!;
+  const first = s.identities < FIRST_SINGLES;
+  s.identities += 1;
+  if (first) {
+    const used = [...s.beds.map((r) => r?.identity), ...s.waiting.map((p) => p.identity)];
+    const fresh = COLOURS.filter(
+      (c) => !used.some((id) => id && !id.secondary && id.primary === c),
+    );
+    return { primary: pick(fresh.length ? fresh : COLOURS) };
+  }
+  const primary = pick(COLOURS);
+  if (random(s) < SINGLE_SHARE) return { primary };
+  return { primary, secondary: pick(COLOURS.filter((c) => c !== primary)) };
 }
 
 export function newGame(): GameState {
@@ -241,7 +276,7 @@ export function newGame(): GameState {
     adReady: null,
     candidates: [],
     levels: {},
-    beds: [newResident(ARCHETYPES[0]!.id)],
+    beds: [],
     selected: 0,
     nextArchetype: 1 + WAITLIST_START,
     discharged: [],
@@ -253,7 +288,10 @@ export function newGame(): GameState {
     resumeSpeed: 1,
     seed: (Math.random() * 2 ** 32) | 0,
     seen: [],
+    identities: 0,
+    playbook: {},
   };
+  s.beds.push(newResident(ARCHETYPES[0]!.id, 100, 0, null, rollIdentity(s)));
   for (let i = 0; i < WAITLIST_START; i++)
     s.waiting.push(newReferral(s, ARCHETYPES[(1 + i) % ARCHETYPES.length]!.id));
   return s;

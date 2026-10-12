@@ -6,6 +6,7 @@ import {
   PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
 } from '../content/tuning';
+import { MILESTONE_BY_ID } from '../content/milestones';
 import {
   accept,
   caseWorkerSupport,
@@ -13,13 +14,18 @@ import {
   closeProposal,
   competence,
   decline,
+  dealHand,
   difficulty,
-  eligibleSubjects,
+  fitOf,
   maxKr,
   maybePropose,
   odds,
+  phaseOf,
+  phaseOpen,
+  pick,
+  quality,
 } from './proposals';
-import { newGame } from './state';
+import { newGame, newReferral } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
 
@@ -28,7 +34,15 @@ const ready = () => {
   s.beds[0]!.overskudd = 30;
   s.beds[0]!.unlockedRung = 7; // NAV is open
   s.beds[0]!.lastProposalTick = -1e9;
+  s.beds[0]!.identity = { primary: 'white' };
   return s;
+};
+
+/** Open a proposal and pick a card from the hand: NAV when it is there. */
+const open = (s: ReturnType<typeof newGame>) => {
+  maybePropose(s);
+  const hand = s.proposal!.hand;
+  pick(s, hand.includes('nav') ? 'nav' : hand[0]!);
 };
 
 describe('overskudd', () => {
@@ -46,8 +60,8 @@ describe('overskudd', () => {
   });
 });
 
-const nav = { kind: 'milestone', milestone: 'nav' } as const;
-const trial = { kind: 'milestone', milestone: 'worktrial' } as const;
+const nav = 'nav' as const;
+const trial = 'job' as const;
 
 describe('case worker', () => {
   const withCaseWorker = (level: number) => {
@@ -66,17 +80,19 @@ describe('case worker', () => {
     return s;
   };
 
-  test('takes the milestone at once, with no wager', () => {
+  test('supports the picked card, with no wager', () => {
     const s = withCaseWorker(2);
     s.budget = 500;
     const c = competence(s.beds[0]!, nav);
-    maybePropose(s);
+    open(s);
     expect(s.proposal?.caseWorker).toBe('Kari');
+    expect(s.proposal?.outcome).toBeUndefined();
+    expect(accept(s, 100)).toBe(false);
+    expect(accept(s, 0)).toBe(true);
     expect(s.proposal?.chance).toBeCloseTo(odds(c, difficulty(nav, caseWorkerSupport(2))));
     expect(s.proposal?.outcome).toMatch(/success|failure/);
     expect(s.budget).toBe(500);
     expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
-    expect(accept(s, 0)).toBe(false);
   });
 
   test('each level shrinks the difficulty, less each time, and never to 0', () => {
@@ -103,7 +119,7 @@ describe('proposals', () => {
   test('a proposal opens and pauses the game, and only going costs overskudd', () => {
     const s = ready();
     s.speed = 2;
-    maybePropose(s);
+    open(s);
     expect(s.proposal).not.toBeNull();
     expect(s.speed).toBe(0);
     expect(s.beds[0]!.overskudd).toBe(30);
@@ -134,9 +150,9 @@ describe('proposals', () => {
 
   test('kroner raise the odds, less for each krone, and never to certain', () => {
     const s = ready();
-    maybePropose(s);
+    open(s);
     const r = s.beds[0]!;
-    const subject = s.proposal!.subject;
+    const subject = s.proposal!.pick!;
     const [c0, c1, c2] = [0, 100, 200].map((kr) => chance(r, subject, kr));
     expect(c1! - c0!).toBeGreaterThan(c2! - c1!);
     expect(chance(r, subject, maxKr(subject))).toBeLessThan(1);
@@ -144,7 +160,7 @@ describe('proposals', () => {
 
   test('a wager costs kroner and rolls', () => {
     const s = ready();
-    maybePropose(s);
+    open(s);
     s.budget = 1000;
     expect(accept(s, 12.5)).toBe(false); // whole kroner only
     accept(s, 122);
@@ -155,7 +171,7 @@ describe('proposals', () => {
 
   test('no wager above the budget', () => {
     const s = ready();
-    maybePropose(s);
+    open(s);
     s.budget = 99.5;
     expect(accept(s, 100)).toBe(false);
     s.budget = 100;
@@ -166,7 +182,7 @@ describe('proposals', () => {
     // Seeds are random. Try until one succeeds.
     for (let i = 0; i < 50; i++) {
       const s = ready();
-      maybePropose(s);
+      open(s);
       s.budget = 1000;
       accept(s, 300);
       if (s.proposal!.outcome !== 'success') continue;
@@ -186,22 +202,86 @@ describe('proposals', () => {
     expect(s.speed).toBe(2);
   });
 
-  test('milestones open with the ladder, in order', () => {
-    const s = newGame();
-    expect(eligibleSubjects(s.beds[0]!).some((x) => x.kind === 'milestone')).toBe(false);
-    s.beds[0]!.unlockedRung = 7;
-    const first = eligibleSubjects(s.beds[0]!)[0];
-    expect(first).toEqual({ kind: 'milestone', milestone: 'nav' });
-    s.beds[0]!.milestones.push('nav');
-    s.beds[0]!.unlockedRung = 9;
-    expect(eligibleSubjects(s.beds[0]!)[0]).toEqual({
-      kind: 'milestone',
-      milestone: 'application',
-    });
-    s.beds[0]!.milestones.push('application');
-    expect(eligibleSubjects(s.beds[0]!).some((x) => x.kind === 'milestone')).toBe(false);
-    const r = s.beds[0]!;
+  test('phases open with the ladder, one success each', () => {
+    const r = newGame().beds[0]!;
+    expect(phaseOpen(r)).toBe(false);
+    r.unlockedRung = 7;
+    expect(phaseOf(r)).toBe('identity');
+    expect(phaseOpen(r)).toBe(true);
+    r.milestones.push('trip');
+    expect(phaseOf(r)).toBe('mastery');
+    expect(phaseOpen(r)).toBe(false);
+    r.unlockedRung = 9;
+    expect(phaseOpen(r)).toBe(true);
+    r.milestones.push('piano');
+    expect(phaseOf(r)).toBe('purpose');
+    expect(phaseOpen(r)).toBe(false);
     for (const a of ACTIVITIES) r.skill[a.id] = MAX_SKILL;
-    expect(eligibleSubjects(s.beds[0]!)[0]).toEqual({ kind: 'milestone', milestone: 'worktrial' });
+    expect(phaseOpen(r)).toBe(true);
+    r.milestones.push('job');
+    expect(phaseOf(r)).toBeNull();
+  });
+});
+
+describe('identity and fit', () => {
+  test('the first patients have one colour each, all different', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const s = newGame();
+      // Arvid and the first referral, then the next referral.
+      s.waiting.push(newReferral(s, 'rolf'));
+      const first = [s.beds[0]!.identity, ...s.waiting.map((p) => p.identity)];
+      expect(first.every((id) => !id.secondary)).toBe(true);
+      expect(new Set(first.map((id) => id.primary)).size).toBe(3);
+    }
+  });
+
+  test('a single colour counts fully, a pair weights the primary', () => {
+    expect(fitOf({ primary: 'red' }, 'trip')).toBe(MILESTONE_BY_ID.trip.fit.red);
+    const pair = fitOf({ primary: 'red', secondary: 'white' }, 'trip');
+    expect(pair).toBeCloseTo(0.6 * 3 + 0.4 * -2);
+  });
+
+  test('the hand holds the best and the worst fit of the phase', () => {
+    const s = ready();
+    const r = s.beds[0]!;
+    r.identity = { primary: 'red' };
+    for (let i = 0; i < 20; i++) {
+      const hand = dealHand(s, r, 'identity');
+      expect(hand).toHaveLength(3);
+      expect(hand).toContain('trip');
+      expect(hand).toContain('nav');
+      expect(hand.every((id) => MILESTONE_BY_ID[id].phase === 'identity')).toBe(true);
+    }
+  });
+
+  test('the last pick is prefilled for the same identity and phase', () => {
+    const s = ready();
+    maybePropose(s);
+    expect(s.proposal!.pick).toBeUndefined();
+    pick(s, 'nav');
+    accept(s, 0);
+    closeProposal(s);
+    s.beds[0]!.milestones = [];
+    s.beds[0]!.overskudd = 30;
+    s.beds[0]!.lastProposalTick = -1e9;
+    maybePropose(s);
+    expect(s.proposal!.pick).toBe('nav');
+  });
+
+  test('no going without a pick', () => {
+    const s = ready();
+    maybePropose(s);
+    expect(accept(s, 0)).toBe(false);
+  });
+
+  test('quality grows with the fit of each success, and has a floor', () => {
+    const r = newGame().beds[0]!;
+    r.identity = { primary: 'white' };
+    expect(quality(r)).toBe(1);
+    r.milestones = ['nav', 'course', 'volunteer'];
+    expect(quality(r)).toBeCloseTo(1.9);
+    r.identity = { primary: 'black' };
+    r.milestones = ['retreat', 'garden', 'volunteer'];
+    expect(quality(r)).toBeCloseTo(0.3);
   });
 });

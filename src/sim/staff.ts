@@ -208,9 +208,7 @@ export function trainCasework(s: GameState, index: number): boolean {
 
 export function canTrainIntake(s: GameState, index: number): boolean {
   const x = s.staff[index];
-  return (
-    !!x && x.role === 'caseworker' && !x.intake && s.budget >= INTAKE_COST && canRaise(s, x)
-  );
+  return !!x && x.role === 'caseworker' && !x.intake && s.budget >= INTAKE_COST && canRaise(s, x);
 }
 
 /** Spend kroner on the intake course: the case worker admits to free beds from now on. */
@@ -230,7 +228,9 @@ export function matchScore(s: GameState, p: WaitingPerson): number {
   return ARCHETYPE_BY_ID[p.archetype].hard.filter(
     (id) =>
       coachLevel(s, id) > 0 ||
-      s.staff.some((x) => x.role === 'worker' && x.specialities.includes(ACTIVITY_BY_ID[id].trigger)),
+      s.staff.some(
+        (x) => x.role === 'worker' && x.specialities.includes(ACTIVITY_BY_ID[id].trigger),
+      ),
   ).length;
 }
 
