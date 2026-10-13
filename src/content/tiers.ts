@@ -1,3 +1,5 @@
+import { byId } from './byId';
+
 export type TierId = 'alone' | 'work' | 'healthy';
 
 export interface TierDef {
@@ -18,7 +20,4 @@ export const TIERS: TierDef[] = [
   { id: 'healthy', label: 'Healthy human', taxPerWeek: 100 },
 ];
 
-export const TIER_BY_ID = Object.fromEntries(TIERS.map((t) => [t.id, t])) as Record<
-  TierId,
-  TierDef
->;
+export const TIER_BY_ID = byId(TIERS);

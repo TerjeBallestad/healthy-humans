@@ -1,5 +1,6 @@
 import type { ActivityId } from './activities';
 import type { NeedId } from './needs';
+import { byId } from './byId';
 
 export type TraitId = 'cooks' | 'tidy' | 'family' | 'rich';
 
@@ -31,7 +32,4 @@ export const TRAITS: TraitDef[] = [
   { id: 'rich', label: 'Rich', effect: 'Double tax at discharge', tax: 2 },
 ];
 
-export const TRAIT_BY_ID = Object.fromEntries(TRAITS.map((t) => [t.id, t])) as Record<
-  TraitId,
-  TraitDef
->;
+export const TRAIT_BY_ID = byId(TRAITS);

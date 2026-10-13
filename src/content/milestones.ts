@@ -1,4 +1,5 @@
 import type { Colour } from './identity';
+import { byId } from './byId';
 
 // Milestones are cards in three phases: identity, then mastery, then purpose.
 // A proposal offers a hand of cards from the patient's phase. One success moves them to the next phase.
@@ -152,10 +153,7 @@ export const MILESTONES: MilestoneDef[] = [
   },
 ];
 
-export const MILESTONE_BY_ID = Object.fromEntries(MILESTONES.map((m) => [m.id, m])) as Record<
-  MilestoneId,
-  MilestoneDef
->;
+export const MILESTONE_BY_ID = byId(MILESTONES);
 
 /** Cards in a hand. */
 export const HAND_SIZE = 3;

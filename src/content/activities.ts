@@ -1,4 +1,5 @@
 import type { NeedId } from './needs';
+import { byId } from './byId';
 
 export type ActivityId =
   'eat' | 'shower' | 'sleep' | 'dishes' | 'laundry' | 'tidy' | 'groceries' | 'walk' | 'call';
@@ -168,7 +169,4 @@ export const ACTIVITIES: ActivityDef[] = [
   },
 ];
 
-export const ACTIVITY_BY_ID = Object.fromEntries(ACTIVITIES.map((a) => [a.id, a])) as Record<
-  ActivityId,
-  ActivityDef
->;
+export const ACTIVITY_BY_ID = byId(ACTIVITIES);

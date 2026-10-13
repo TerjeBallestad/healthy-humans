@@ -1,6 +1,7 @@
 import type { ActivityId } from './activities';
 import type { NeedId } from './needs';
 import type { TierId } from './tiers';
+import { byId } from './byId';
 
 export type ArchetypeId = 'arvid' | 'maja' | 'rolf';
 
@@ -99,7 +100,4 @@ export const ARCHETYPES: ArchetypeDef[] = [
   },
 ];
 
-export const ARCHETYPE_BY_ID = Object.fromEntries(ARCHETYPES.map((a) => [a.id, a])) as Record<
-  ArchetypeId,
-  ArchetypeDef
->;
+export const ARCHETYPE_BY_ID = byId(ARCHETYPES);

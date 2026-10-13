@@ -1,3 +1,4 @@
+import { byId } from './byId';
 export type LineId =
   'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'payGrade' | 'grant' | 'house';
 
@@ -119,7 +120,4 @@ export const LINES: LineDef[] = [
   },
 ];
 
-export const LINE_BY_ID = Object.fromEntries(LINES.map((l) => [l.id, l])) as Record<
-  LineId,
-  LineDef
->;
+export const LINE_BY_ID = byId(LINES);
