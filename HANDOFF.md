@@ -107,6 +107,16 @@ Last session: 2026-10-16 (step 11b: the proposal in four steps, personalities as
 | Milestone stuck after an upgrade menu opened on it    | Closing a menu no longer restarts the clock under a proposal or a vedtak. The scene card is keyed by the tick the proposal opened.          |
 | Toasts bottom right, unreadable in play               | Each toast sits beside its button (Upgrades, or the Hire slot) with an arrow and the upgrade's icon. Bottom right if the button is gone.    |
 
+## Milestone content (for Terje, 2026-10-16)
+
+The milestone mechanics work. All the text around them is placeholder, marked `TODO(Terje)`:
+
+- `src/content/milestones.ts`: the phase names (`PHASE_LABEL`), the phase questions (`PHASE_QUESTION`), the 12 cards (labels, and `place`, `ask`, `success`, `failure`, which only NAV and the job have), the fit line (`REACTION_FIT_LINE`, 3 lines), and the result line (`REACTION_RESULT_LINE`, 6 lines).
+- `src/content/text.ts`, `PROPOSAL`: the patient's answer, the 6 readiness lines (alone and prepared), "Something else", "Preparation", the case worker line, the attempt line, the stamps, and the 3 fit effect lines. `TIPS`: the proposal tips and the personality pop-up. `RESIDENT`: "Tried:", the strain line and the boost line. `LOG`: the results for cards with no lines of their own.
+- `src/content/identity.ts`: the 5 colour keywords and the 10 pair names.
+- `src/content/upgrades.ts`: the personality upgrade's name and note.
+- Faces: `REACTION_FACE` in `milestones.ts`.
+
 ## Open issues
 
 - **Next big step (Terje, 2026-10-10): several facilities.** The direction and the ideas are in `PLAN.md` under "After Act 1". Automate the wager and admissions first.
