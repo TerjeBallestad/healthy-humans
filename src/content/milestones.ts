@@ -181,21 +181,26 @@ export const REACTION_FACE: Record<'success' | 'failure', Record<FitLevel, strin
   failure: { good: '😤', neutral: '😕', poor: '😞' },
 };
 
-/** What the patient says afterwards, by result and fit. The card's label starts each line. */
-// TODO(Terje): placeholder reaction lines. The poor-fit failure is from Terje's draft.
-export const REACTION_LINE: Record<
-  'success' | 'failure',
-  Record<FitLevel, (label: string) => string>
-> = {
+/**
+ * What the patient says afterwards, in two parts. The fit line says how it felt. The result line
+ * says whether it worked, and is keyed by the fit too, so it can agree or contrast ("But ...").
+ */
+// TODO(Terje): placeholder reaction lines, from Terje's examples on 2026-10-16.
+export const REACTION_FIT_LINE: Record<FitLevel, string> = {
+  good: 'I had a great experience.',
+  neutral: 'Not my cup of tea.',
+  poor: 'I really hated it.',
+};
+
+export const REACTION_RESULT_LINE: Record<'success' | 'failure', Record<FitLevel, string>> = {
   success: {
-    good: (label) => `${label} was exactly right. I feel more like myself.`,
-    neutral: (label) => `${label} went fine. I'm not sure what I think of it.`,
-    poor: (label) => `${label}: I did it. But I felt nothing.`,
+    good: 'I feel like a new person.',
+    neutral: 'But I learned a thing or two.',
+    poor: 'But I learned a thing or two about myself.',
   },
   failure: {
-    good: (label) => `${label} didn't work out this time. But I liked it. I want to try again.`,
-    neutral: (label) => `${label} didn't work out. Maybe another time.`,
-    poor: (label) =>
-      `${label} was terrible. I really hated it. But I learned a thing or two about myself.`,
+    good: "But I don't feel like I learned anything.",
+    neutral: "I don't feel like I learned anything.",
+    poor: "And I don't feel like I learned anything.",
   },
 };

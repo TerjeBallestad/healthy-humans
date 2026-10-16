@@ -6,7 +6,8 @@ import {
   PHASE_LABEL,
   PHASE_QUESTION,
   REACTION_FACE,
-  REACTION_LINE,
+  REACTION_FIT_LINE,
+  REACTION_RESULT_LINE,
   type MilestoneId,
 } from '../content/milestones';
 import {
@@ -252,12 +253,13 @@ function Answer({
 function Reaction({ r, id, ready }: { r: Resident; id: MilestoneId; ready: boolean }) {
   const s = useGame();
   const p = s.proposal!;
-  const m = MILESTONE_BY_ID[id];
   const won = p.outcome === 'success';
   const fit = fitLevel(fitOf(r.identity, id));
   return (
     <div class="result">
-      <blockquote>“{REACTION_LINE[won ? 'success' : 'failure'][fit](m.label)}”</blockquote>
+      <blockquote>
+        “{REACTION_FIT_LINE[fit]} {REACTION_RESULT_LINE[won ? 'success' : 'failure'][fit]}”
+      </blockquote>
       <p class="stamps">
         <span class={won ? 'stamp good' : 'stamp poor'}>
           {won ? '✓' : '✗'} {won ? PROPOSAL.worked : PROPOSAL.failed}

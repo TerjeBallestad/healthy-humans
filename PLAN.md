@@ -216,7 +216,7 @@ Each step ends with something playable and one question to answer by playing.
   1. **The question.** The phase as a question ("What do you recommend, so Arvid can find out who they really are?") and the hand. "Not now" is here.
   2. **The answer.** The patient answers the pick, and sounds sure, unsure or doubtful from the odds (`READY_SURE` 0.7, `READY_UNSURE` 0.45). The odds bar stays, with words (Terje). The wager is now **preparation**: kroner for lessons, a plan, someone who goes along. It fits every card. After the hire, the case worker prepares the patient, and the slider goes. "Go" shows the overskudd cost. "Something else" goes back to the hand.
   3. **The attempt.** One line, and the marker rolls on the odds bar.
-  4. **The reaction.** The reaction face, a line by result and fit, and two plain stamps ("✓ It worked", "😞 Not a fit"). The phase track ticks on a success.
+  4. **The reaction.** The reaction face, then two lines: one for the fit ("I really hated it."), then one for the result ("But I learned a thing or two."). The result line is keyed by the fit too, so it can agree or contrast. Then two plain stamps ("✓ It worked", "😞 Not a fit"). The phase track ticks on a success.
   - **Personalities are an upgrade the player buys** (Terje: the player has it, not the case worker). The "Personality profiles" line (Your work tab, 800 kr, one step) shows after the first milestone try. Before it, no chips show anywhere, and the playbook does not prefill (it is keyed by identity). After the buy, a tip points at the chip and explains it.
   - **The resident panel lists every try** ("Tried:") with ✓ or ✗ and the reaction face, so what the player learned stays on screen.
   - All new lines are placeholders marked `TODO(Terje)`.
