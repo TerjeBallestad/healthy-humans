@@ -231,6 +231,7 @@ Each step ends with something playable and one question to answer by playing.
 
 Terje's direction (2026-10-10). Not built, not final.
 
+- **Decided 2026-10-16: a Godot rewrite in a third repo, for Steam.** See `GODOT.md`. This web build stays for itch.io and market fit.
 - In the end the game joins the Godot sim in `../lifelines-core-loop`. Facilities are places on a map, and you see residents move and do activities. In this UI, facilities can be tabs.
 - The top-level play: which staff go to which facility, and which patient goes to which bed. Moves should cost something.
 - Facilities are blank slates. The furniture and objects you put in them specialise them. A label such as "works as a rusbolig" can emerge from the objects. Objects change rules. Staff skills change rates.
