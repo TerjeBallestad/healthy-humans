@@ -3,7 +3,7 @@ import { TIERS } from '../content/tiers';
 import { taxPerWeek } from '../sim/discharge';
 import { hireCost, staffNudgesPerSecond } from '../sim/institution';
 import { isSeen } from '../sim/reveal';
-import { canPostAd } from '../sim/staff';
+import { canPostAd, coursesReady } from '../sim/staff';
 import { TICKS_PER_WEEK } from '../sim/time';
 import { openModal } from './modal';
 import { affordableRequests } from './RequestsMenu';
@@ -14,6 +14,7 @@ import { INSTITUTION, UNITS } from '../content/text';
 export function InstitutionPanel() {
   const s = useGame();
   const affordable = affordableRequests(s);
+  const courses = s.staff.reduce((n, _, i) => n + coursesReady(s, i), 0);
   const daysLeft = s.adReady === null ? 0 : Math.ceil(((s.adReady - s.tick) / TICKS_PER_WEEK) * 7);
   if (!isSeen(s, 'staff')) return null;
   return (
@@ -82,8 +83,21 @@ export function InstitutionPanel() {
         <p class="muted hint">{INSTITUTION.nudgesInAll(staffNudgesPerSecond(s).toFixed(2))}</p>
       )}
       {s.staff.length > 0 && (
-        <button class="buy requests-open" onClick={() => openModal({ kind: 'training', index: 0 })}>
+        <button
+          class="buy requests-open"
+          onClick={() =>
+            // Open on the first staff member with a course ready.
+            openModal({
+              kind: 'training',
+              index: Math.max(
+                0,
+                s.staff.findIndex((_, i) => coursesReady(s, i) > 0),
+              ),
+            })
+          }
+        >
           <span>{INSTITUTION.training}</span>
+          {courses > 0 && <span class="badge">{courses}</span>}
         </button>
       )}
       {isSeen(s, 'upgrades') && (

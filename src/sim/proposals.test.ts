@@ -91,6 +91,8 @@ describe('case worker', () => {
     const s = withCaseWorker(2);
     s.budget = 500;
     const c = competence(s.beds[0]!, nav);
+    // Before the roll: a failed try adds competence.
+    const expected = chance(s.beds[0]!, nav, caseWorkerShare(2) * 600);
     open(s);
     expect(s.proposal?.caseWorker).toBe('Kari');
     expect(s.proposal?.outcome).toBeUndefined();
@@ -98,7 +100,7 @@ describe('case worker', () => {
     expect(accept(s, 0)).toBe(true);
     const base = odds(c, 10);
     expect(s.proposal?.chance).toBeGreaterThan(base);
-    expect(s.proposal?.chance).toBeCloseTo(chance(s.beds[0]!, nav, caseWorkerShare(2) * 600));
+    expect(s.proposal?.chance).toBeCloseTo(expected);
     expect(s.proposal?.outcome).toMatch(/success|failure/);
     expect(s.budget).toBe(500);
     expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);

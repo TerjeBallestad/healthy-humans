@@ -36,6 +36,7 @@ import {
   canTrainMestring,
   canTrainSpeciality,
   coachTrainCost,
+  coursesReady,
   hire,
   trainCoach,
   trainMestring,
@@ -391,6 +392,7 @@ export function TrainingMenu() {
               >
                 <span aria-hidden="true">{y.face}</span>
                 {y.name}
+                {coursesReady(s, j) > 0 && <span class="badge">{coursesReady(s, j)}</span>}
               </button>
             ))}
           </nav>

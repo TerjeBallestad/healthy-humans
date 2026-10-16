@@ -260,3 +260,16 @@ export function autoIntake(s: GameState) {
   const i = intakePick(s);
   if (i >= 0) admit(s, i, false);
 }
+
+/** Courses this staff member can take right now, for the badge on the Training button. */
+export function coursesReady(s: GameState, index: number): number {
+  const x = s.staff[index];
+  if (!x) return 0;
+  const role =
+    x.role === 'worker'
+      ? NEED_ORDER.filter((n) => canTrainSpeciality(s, index, n)).length
+      : x.role === 'coach'
+        ? ACTIVITIES.filter((a) => canTrainCoach(s, index, a.id)).length
+        : (canTrainCasework(s, index) ? 1 : 0) + (canTrainIntake(s, index) ? 1 : 0);
+  return role + (canTrainMestring(s, index) ? 1 : 0);
+}
