@@ -244,7 +244,7 @@ Terje: patients are too anonymous. The game should in the end focus on the patie
 Settled so far:
 
 - **Identity is visible, fit is discovered.** The referral shows the patient's identity. The player learns what fits it. Hiding the identity can come later, if it feels too easy.
-- **The fit table is hidden data.** Each milestone is a row, and the five colours are the columns, with a value from −3 to +3 per cell. A patient's fit with a milestone is the sum of their two colours, with the primary weighted higher. Five columns give all ten pairs, so what the player learns about one colour carries over to new pairs.
+- **The fit table is hidden data.** Each milestone is a row, and the five colours are the columns, with a value from −3 to +3 per cell. A patient's fit with a milestone is the sum of their two colours, with both colours counted the same (changed 2026-10-16: with the primary at 60%, one chip could hide two different fits, so the player could not learn it). Five columns give all ten pairs, so what the player learns about one colour carries over to new pairs.
 - **The player learns the fit from a reaction after the milestone.** It shows whether the milestone fit, apart from whether the roll succeeded. Terje writes the reaction lines.
 - **Two results, four outcomes.** Competence decides whether a milestone works (the roll). Fit decides what it means (the reaction). Success with a good fit: flourishing. Success with a poor fit: it worked, but left the patient empty (a Crooked Rung, as in Lifelines). Failure with a good fit: they want to try again. Failure with a poor fit: it hurt.
 - **The patient offers a hand of 2 or 3 milestones.** When a proposal comes, the player picks one or says "Not now". The hand comes from the patient's identity: usually one good fit, one neutral, one poor. Milestones become cards from a pool that grows with unlocks, not fixed steps on one path. A case worker course can later pick from the hand by a rule.
@@ -258,7 +258,15 @@ Settled so far:
 
 Open: what the outcomes change in the game, Ikigai as the score, colours or keywords on screen, more milestones and how they unlock, the primærkontakt, talking, and a visible story.
 
-## Open questions to answer in play
+## Content production (parked, 2026-10-16)
+
+The milestone mechanics work and are fun (Terje, 2026-10-16). The content is placeholder and does not hold together yet. In play, a Contemplative patient got a neutral fit on the meditation retreat, and the neutral line ("Not my cup of tea") read as a poor fit. Two fixes are in: pairs count both colours at 50%, and the neutral line sounds neutral. The rest waits for a content pass. Keep these rules in mind, so the content work stays clear and has an end:
+
+- **More cards per phase.** Four cards per phase give a hand of three that hardly changes. More cards also give the fit table more to teach.
+- **Lines per card by default, with an override per archetype.** Each card has its own lines (the answer, the attempt, the reactions) that work for every patient. An archetype can override the lines that matter ("Arvid on the retreat"). The code looks for the archetype line first, then the card line, then a generic line. Lines can then come one at a time, and the game always has something to show.
+- **The fit table and the keywords are written together.** Each card's fit row must match the words on the chips, so that "Contemplative likes the retreat" makes sense to a player. The current table is from the first grilling and does not follow the keywords (for example Self-care, Black, hates the retreat).
+- **Each identity needs a clear like and a clear dislike in each phase.** Today pairs such as Protective and Dutiful are neutral on almost every card, so the player learns nothing from them.
+- **A coverage script.** It lists the cards and identities with missing lines or flat fits, and prints the fit of every card for every identity, so the content pass has a checklist and an end.
 
 - Is the omsorg cap needed? (There are now cap upgrades, so it is part of the economy.)
 - Is a need at 0 for 30% of the time too harsh for a relaxed player? (`npm run sim -- --taps-per-second=2`)

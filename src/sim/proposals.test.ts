@@ -250,10 +250,11 @@ describe('identity and fit', () => {
     }
   });
 
-  test('a single colour counts fully, a pair weights the primary', () => {
+  test('a single colour counts fully, a pair counts both, in either order', () => {
     expect(fitOf({ primary: 'red' }, 'trip')).toBe(MILESTONE_BY_ID.trip.fit.red);
     const pair = fitOf({ primary: 'red', secondary: 'white' }, 'trip');
-    expect(pair).toBeCloseTo(0.6 * 3 + 0.4 * -2);
+    expect(pair).toBeCloseTo(0.5 * 3 + 0.5 * -2);
+    expect(fitOf({ primary: 'white', secondary: 'red' }, 'trip')).toBeCloseTo(pair);
   });
 
   test('the hand holds the best and the worst fit of the phase', () => {

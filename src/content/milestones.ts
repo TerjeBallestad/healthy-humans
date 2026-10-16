@@ -191,7 +191,7 @@ export const REACTION_FACE: Record<'success' | 'failure', Record<FitLevel, strin
 // TODO(Terje): placeholder reaction lines, from Terje's examples on 2026-10-16.
 export const REACTION_FIT_LINE: Record<FitLevel, string> = {
   good: 'I had a great experience.',
-  neutral: 'Not my cup of tea.',
+  neutral: 'It was OK, I guess.',
   poor: 'I really hated it.',
 };
 
