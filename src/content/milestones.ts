@@ -52,7 +52,7 @@ export interface MilestoneDef {
   failure?: string;
   /** Hidden. How well the card fits each colour, from -3 to +3. */
   fit: Record<Colour, number>;
-  /** Purpose cards only: kroner per week after discharge as a healthy human, before quality and trait. */
+  /** Purpose cards only: kroner per week after discharge as a healthy human, before the fit and the trait. */
   tax?: number;
 }
 
@@ -169,9 +169,12 @@ export const MILESTONE_BY_ID = byId(MILESTONES);
 export const HAND_SIZE = 3;
 /** Fit at or above this is good, at or below its negative is poor. */
 export const GOOD_FIT = 1;
-/** Each point of fit over the stay's successes adds this to the quality. Quality multiplies the tax. */
-export const QUALITY_PER_FIT = 0.1;
-export const QUALITY_MIN = 0.2;
+/** A good fit that works in identity or mastery: overskudd grows this much faster for the rest of the stay. */
+export const FIT_OVERSKUDD_BOOST = 0.25;
+/** A good purpose card that works multiplies the tax at discharge by this. */
+export const FIT_TAX_MULT = 1.5;
+/** A poor fit, whatever the roll, adds this strain: needs drop faster for a while, as after a long wait. */
+export const FIT_POOR_STRAIN = 0.2;
 
 export type FitLevel = 'good' | 'neutral' | 'poor';
 

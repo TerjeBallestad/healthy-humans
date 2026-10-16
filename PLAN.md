@@ -221,6 +221,10 @@ Each step ends with something playable and one question to answer by playing.
   - **The resident panel lists every try** ("Tried:") with ✓ or ✗ and the reaction face, so what the player learned stays on screen.
   - All new lines are placeholders marked `TODO(Terje)`.
     _Question: does each step make sense to a first-time player, and does buying personalities feel like a light turning on?_
+    11c: **fit acts at once, and a gentler wager.** Built 2026-10-16, not played yet. Terje: the fit did nothing you could feel (only a tax multiplier at discharge), and the armor wager was too steep.
+  - **Fit effects, shown on the reaction screen in one plain line.** A good fit that works in identity or mastery: overskudd grows 25% faster for the rest of the stay (`FIT_OVERSKUDD_BOOST`, adds up). A good purpose card that works: tax ×1.5 at discharge (`FIT_TAX_MULT`). This replaces the old quality sum. A poor fit, whatever the roll: strain +0.2, so needs drop 20% faster for a while, as after a long wait (`FIT_POOR_STRAIN`). Neutral: nothing. Fit still does not change the odds, so the odds bar cannot leak the hidden table.
+  - **Preparation closes the gap to certain.** Competence against difficulty gives the odds alone. Kroner close the gap to 100% along a gentle curve, `(1 − e^(−1.5x)) / (1 − e^(−1.5))` for share x of the full price (`PREP_CURVE`). The full price is sure. Arvid at competence 13 on an identity card: 57% alone, 65% at 60 kr, 71% at 120 kr, 86% at 300 kr, 100% at 600 kr.
+  - **A case worker prepares like a share of the full price:** 18% per level (`CASEWORKER_SHARE_PER_LEVEL`). Lvl 1 gives 70% in the example above, lvl 5 gives 98%, never sure.
 
 ## After Act 1: several facilities
 

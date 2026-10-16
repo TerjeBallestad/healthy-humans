@@ -79,8 +79,8 @@ export const MESTRING_BONUS = 0.25;
 /** Omsorg to teach a coach the next level of an activity, by the level they know now. */
 export const COACH_TRAIN_COST = [10, 20, 35] as const;
 
-/** Support each case worker level gives. Support divides a milestone's difficulty: D ÷ (1 + support). */
-export const CASEWORKER_SUPPORT_PER_LEVEL = 2;
+/** Each case worker level prepares a patient as well as this share of the full price. Lvl 5 stays short of sure. */
+export const CASEWORKER_SHARE_PER_LEVEL = 0.18;
 export const CASEWORKER_MAX_LEVEL = 5;
 /** A chance for a case worker candidate to start at lvl 2. The others start at lvl 1. */
 export const CASEWORKER_LVL2_SHARE = 0.3;

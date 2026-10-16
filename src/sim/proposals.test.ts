@@ -6,16 +6,22 @@ import {
   PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
 } from '../content/tuning';
-import { MILESTONE_BY_ID } from '../content/milestones';
+import {
+  FIT_OVERSKUDD_BOOST,
+  FIT_POOR_STRAIN,
+  FIT_TAX_MULT,
+  MILESTONE_BY_ID,
+} from '../content/milestones';
 import {
   accept,
-  caseWorkerSupport,
+  applyFit,
+  baseChance,
+  caseWorkerShare,
   chance,
   closeProposal,
   competence,
   decline,
   dealHand,
-  difficulty,
   fitOf,
   maxKr,
   maybePropose,
@@ -63,7 +69,6 @@ describe('overskudd', () => {
 });
 
 const nav = 'nav' as const;
-const trial = 'job' as const;
 
 describe('case worker', () => {
   const withCaseWorker = (level: number) => {
@@ -91,16 +96,18 @@ describe('case worker', () => {
     expect(s.proposal?.outcome).toBeUndefined();
     expect(accept(s, 100)).toBe(false);
     expect(accept(s, 0)).toBe(true);
-    expect(s.proposal?.chance).toBeCloseTo(odds(c, difficulty(nav, caseWorkerSupport(2))));
+    const base = odds(c, 10);
+    expect(s.proposal?.chance).toBeGreaterThan(base);
+    expect(s.proposal?.chance).toBeCloseTo(chance(s.beds[0]!, nav, caseWorkerShare(2) * 600));
     expect(s.proposal?.outcome).toMatch(/success|failure/);
     expect(s.budget).toBe(500);
     expect(s.beds[0]!.overskudd).toBe(30 - PROPOSAL_COST_MILESTONE);
   });
 
-  test('each level shrinks the difficulty, less each time, and never to 0', () => {
-    const d = [1, 2, 3, 4, 5].map((l) => difficulty(trial, caseWorkerSupport(l)));
-    expect(d[0]! - d[1]!).toBeGreaterThan(d[3]! - d[4]!);
-    expect(d[4]).toBeGreaterThan(0);
+  test('each level prepares more, and lvl 5 stays short of the full price', () => {
+    const shares = [1, 2, 3, 4, 5].map(caseWorkerShare);
+    for (let i = 1; i < 5; i++) expect(shares[i]).toBeGreaterThan(shares[i - 1]!);
+    expect(shares[4]).toBeLessThan(1);
   });
 
   test('odds are competence against difficulty', () => {
@@ -150,14 +157,18 @@ describe('proposals', () => {
     expect(s.proposal).toBeNull();
   });
 
-  test('kroner raise the odds, less for each krone, and never to certain', () => {
+  test('kroner raise the odds, a little less for each krone, and the full price is sure', () => {
     const s = ready();
     open(s);
     const r = s.beds[0]!;
     const subject = s.proposal!.pick!;
+    expect(chance(r, subject, 0)).toBeCloseTo(baseChance(r, subject));
     const [c0, c1, c2] = [0, 100, 200].map((kr) => chance(r, subject, kr));
     expect(c1! - c0!).toBeGreaterThan(c2! - c1!);
-    expect(chance(r, subject, maxKr(subject))).toBeLessThan(1);
+    // Gentle: the second 100 kr still do at least two thirds of the first.
+    expect(c2! - c1!).toBeGreaterThan((2 / 3) * (c1! - c0!));
+    expect(chance(r, subject, maxKr(subject) - 1)).toBeLessThan(1);
+    expect(chance(r, subject, maxKr(subject))).toBeCloseTo(1);
   });
 
   test('a wager costs kroner and rolls', () => {
@@ -312,14 +323,30 @@ describe('identity and fit', () => {
     expect(accept(s, 0)).toBe(false);
   });
 
-  test('quality grows with the fit of each success, and has a floor', () => {
+  test('a good purpose card raises the tax, nothing else does', () => {
     const r = newGame().beds[0]!;
     r.identity = { primary: 'white' };
     expect(quality(r)).toBe(1);
+    r.milestones = ['nav', 'course'];
+    expect(quality(r)).toBe(1);
     r.milestones = ['nav', 'course', 'volunteer'];
-    expect(quality(r)).toBeCloseTo(1.9);
+    expect(quality(r)).toBe(FIT_TAX_MULT);
     r.identity = { primary: 'black' };
-    r.milestones = ['retreat', 'garden', 'volunteer'];
-    expect(quality(r)).toBeCloseTo(0.3);
+    expect(quality(r)).toBe(1);
+  });
+
+  test('a good fit that works boosts overskudd, a poor fit strains whatever the roll', () => {
+    const r = newGame().beds[0]!;
+    r.identity = { primary: 'white' };
+    r.strain = 0;
+    expect(applyFit(r, 'nav', true)).toEqual({ kind: 'overskudd', boost: FIT_OVERSKUDD_BOOST });
+    expect(applyFit(r, 'nav', false)).toBeUndefined();
+    expect(r.boost).toBe(FIT_OVERSKUDD_BOOST);
+    expect(applyFit(r, 'volunteer', true)).toEqual({ kind: 'tax', mult: FIT_TAX_MULT });
+    expect(applyFit(r, 'trip', false)).toEqual({ kind: 'strain', strain: FIT_POOR_STRAIN });
+    expect(applyFit(r, 'trip', true)?.kind).toBe('strain');
+    expect(r.strain).toBeCloseTo(2 * FIT_POOR_STRAIN);
+    expect(applyFit(r, 'therapist', true)).toBeUndefined(); // neutral for white
+    expect(r.boost).toBe(FIT_OVERSKUDD_BOOST);
   });
 });

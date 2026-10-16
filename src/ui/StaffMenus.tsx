@@ -21,7 +21,7 @@ import {
 } from '../content/staff';
 import { MAX_SKILL } from '../content/tuning';
 import { canAffordWage, hireCost, inPayGrade, omsorgCap, wage } from '../sim/institution';
-import { caseWorkerSupport } from '../sim/proposals';
+import { caseWorkerShare } from '../sim/proposals';
 import {
   canHire,
   canPostAd,
@@ -146,15 +146,15 @@ function Profile({ x }: { x: Staff }) {
   );
 }
 
-/** The level, and how much smaller it makes the milestones in each phase. */
+/** The level, and how many kroner of preparation it is worth in each phase. */
 function CaseWorkerStats({ x }: { x: Staff }) {
-  const support = caseWorkerSupport(x.level ?? 1);
+  const share = caseWorkerShare(x.level ?? 1);
   return (
     <>
       <thead>
         <tr>
           <th />
-          <th>{STAFF_TEXT.difficulty}</th>
+          <th>{STAFF_TEXT.preparation}</th>
         </tr>
       </thead>
       <tbody>
@@ -162,15 +162,12 @@ function CaseWorkerStats({ x }: { x: Staff }) {
           <td>{STAFF_TEXT.level}</td>
           <td class="value">{UNITS.level(x.level ?? 1)}</td>
         </tr>
-        {PHASES.map((phase) => {
-          const d = PHASE_RULES[phase].difficulty;
-          return (
-            <tr>
-              <td>{PHASE_LABEL[phase]}</td>
-              <td class="value">{STAFF_TEXT.reduced(d, Math.round(d / (1 + support)))}</td>
-            </tr>
-          );
-        })}
+        {PHASES.map((phase) => (
+          <tr>
+            <td>{PHASE_LABEL[phase]}</td>
+            <td class="value">{STAFF_TEXT.worth(Math.round(share * PHASE_RULES[phase].maxKr))}</td>
+          </tr>
+        ))}
       </tbody>
     </>
   );
@@ -489,12 +486,12 @@ function CaseworkCourse({ i, x }: { i: number; x: Staff }) {
   const s = useGame();
   const level = x.level ?? 1;
   const done = level >= CASEWORKER_MAX_LEVEL;
-  const divisor = (l: number) => 1 + caseWorkerSupport(l);
+  const pct = (l: number) => Math.round(caseWorkerShare(l) * 100);
   return (
     <Course
       icon={ROLES.caseworker.icon}
       title={STAFF_TEXT.caseworkCourse}
-      effect={STAFF_TEXT.caseworkEffect(divisor(level), divisor(level + 1))}
+      effect={STAFF_TEXT.caseworkEffect(pct(level), pct(level + 1))}
       level={level}
       max={CASEWORKER_MAX_LEVEL}
       done={done}

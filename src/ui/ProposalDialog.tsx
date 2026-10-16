@@ -14,20 +14,19 @@ import {
   accept,
   canWager,
   closeProposal,
-  competence,
   decline,
-  difficulty,
   fitLevel,
   fitOf,
   maxKr,
   maxWager,
-  odds as oddsOf,
   phaseOf,
   pick,
-  proposalCaseWorkerSupport,
+  preparedChance,
+  prepShare,
+  proposalCaseWorkerShare,
   proposalCost,
   readiness,
-  wagerSupport,
+  type FitEffect,
 } from '../sim/proposals';
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
@@ -131,7 +130,7 @@ function SceneCard() {
         {step === 'attempt' && m && (
           <>
             <blockquote>{PROPOSAL.attempt(m.label, r.name)}</blockquote>
-            <Odds r={r} id={m.id} support={0} />
+            <Odds r={r} id={m.id} share={0} />
           </>
         )}
         {step === 'reaction' && m && <Reaction r={r} id={m.id} ready={ready} />}
@@ -211,11 +210,11 @@ function Answer({
 }) {
   const s = useGame();
   const m = MILESTONE_BY_ID[id];
-  const cwSupport = proposalCaseWorkerSupport(s);
+  const cwShare = proposalCaseWorkerShare(s);
   const cw = s.proposal!.caseWorker ? s.staff.find((x) => x.name === s.proposal!.caseWorker) : null;
-  const support = cwSupport ?? wagerSupport(id, kr);
-  const chance = oddsOf(competence(r, id), difficulty(id, support));
-  const lines = support > 0 ? PROPOSAL.readiness.prepared : PROPOSAL.readiness.alone;
+  const share = cwShare ?? prepShare(id, kr);
+  const chance = preparedChance(r, id, share);
+  const lines = share > 0 ? PROPOSAL.readiness.prepared : PROPOSAL.readiness.alone;
   return (
     <>
       <blockquote>
@@ -226,14 +225,14 @@ function Answer({
           <span aria-hidden="true">{cw.face}</span> {PROPOSAL.caseWorker(cw.name, r.name)}
         </p>
       )}
-      <Odds r={r} id={id} support={support} />
-      {cwSupport === null && <Wager id={id} kr={kr} setKr={setKr} />}
+      <Odds r={r} id={id} share={share} />
+      {cwShare === null && <Wager id={id} kr={kr} setKr={setKr} />}
       <div class="choices row">
         <button
           class="choice"
           data-tip="go"
-          disabled={!ready || (cwSupport === null && !canWager(s, kr))}
-          onClick={() => act((g) => accept(g, cwSupport === null ? kr : 0))}
+          disabled={!ready || (cwShare === null && !canWager(s, kr))}
+          onClick={() => act((g) => accept(g, cwShare === null ? kr : 0))}
         >
           <span>{PROPOSAL.go}</span>
           <span class="odds muted">
@@ -268,6 +267,11 @@ function Reaction({ r, id, ready }: { r: Resident; id: MilestoneId; ready: boole
           {REACTION_FACE[won ? 'success' : 'failure'][fit]} {PROPOSAL.fit[fit]}
         </span>
       </p>
+      {p.effect && (
+        <p class={`fit-effect ${p.effect.kind === 'strain' ? 'poor' : 'good'}`}>
+          {fitEffectText(p.effect, r.name)}
+        </p>
+      )}
       <Track r={r} current={id} ticking={won} />
       <button class="choice" disabled={!ready} onClick={() => act(closeProposal)}>
         {PROPOSAL.continue}
@@ -276,12 +280,20 @@ function Reaction({ r, id, ready }: { r: Resident; id: MilestoneId; ready: boole
   );
 }
 
+/** What the fit did, in one plain line. */
+function fitEffectText(e: FitEffect, name: string): string {
+  const pct = (x: number) => Math.round(x * 100);
+  if (e.kind === 'overskudd') return PROPOSAL.effect.overskudd(name, pct(e.boost));
+  if (e.kind === 'tax') return PROPOSAL.effect.tax(name, pct(e.mult - 1));
+  return PROPOSAL.effect.strain(name, pct(e.strain));
+}
+
 /** The odds as a bar. After the roll, a marker rolls along it and stops at the roll. */
-function Odds({ r, id, support }: { r: Resident; id: MilestoneId; support: number }) {
+function Odds({ r, id, share }: { r: Resident; id: MilestoneId; share: number }) {
   const s = useGame();
   const p = s.proposal!;
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
-  const odds = p.chance ?? oddsOf(competence(r, id), difficulty(id, support));
+  const odds = p.chance ?? preparedChance(r, id, share);
   return (
     <div class="odds-bar" data-tip="odds" aria-label={PROPOSAL.chance(Math.round(odds * 100))}>
       <span class="zone" style={{ width: `${odds * 100}%` }} />

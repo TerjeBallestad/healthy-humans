@@ -89,7 +89,7 @@ function declineWaiting(state: GameState) {
 function gainOverskudd(r: Resident, mult: number) {
   const needs = activeNeeds(r);
   const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
-  const boost = ((r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1) * mult;
+  const boost = ((r.trait && TRAIT_BY_ID[r.trait].overskudd) ?? 1) * mult * (1 + (r.boost ?? 0));
   r.overskudd = Math.min(
     OVERSKUDD_CAP,
     r.overskudd + (green * boost * OVERSKUDD_PER_SECOND * PACE) / TICKS_PER_SECOND,

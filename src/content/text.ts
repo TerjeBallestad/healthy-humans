@@ -67,8 +67,10 @@ export const STRIP = {
 
 export const RESIDENT = {
   emptyBed: 'Empty bed',
-  strain: (health: number, pct: number) =>
-    `Arrived at health ${health}. Needs drop ${pct}% faster for now.`,
+  // TODO(Terje): placeholder. Strain now comes from a poor arrival or a poor milestone fit.
+  strain: (pct: number) => `Needs drop ${pct}% faster for now.`,
+  // TODO(Terje): placeholder for the overskudd boost from milestones with a good fit.
+  boost: (pct: number) => ` · +${pct}% from milestones`,
   overskudd: 'Overskudd',
   growing: (pct: number) => ` · growing at ${pct}% while a need is low`,
   // TODO(Terje): placeholder label for the list of milestones tried.
@@ -195,9 +197,9 @@ export const STAFF_TEXT = {
   // TODO(Terje): placeholder labels for the case worker.
   level: 'Level',
   caseworkCourse: 'Casework course',
-  difficulty: 'Difficulty',
-  reduced: (from: number, to: number) => `${from} → ${to}`,
-  caseworkEffect: (from: number, to: number) => `Milestone difficulty ÷${from} → ÷${to}`,
+  preparation: 'Preparation',
+  worth: (kr: number) => `worth ${kr} kr`,
+  caseworkEffect: (from: number, to: number) => `Prepares like ${from}% → ${to}% of the full price`,
   // TODO(Terje): placeholder labels for the intake course and its rules.
   intakeCourse: 'Intake course',
   intakeEffect: 'Admits to a free bed by your rule',
@@ -259,6 +261,15 @@ export const PROPOSAL = {
   worked: 'It worked',
   failed: "It didn't work",
   fit: { good: 'A good fit', neutral: 'Neither', poor: 'Not a fit' },
+  /** What the fit did. Shown under the stamps. */
+  effect: {
+    overskudd: (name: string, pct: number) =>
+      `${name} found something that fits. Overskudd grows ${pct}% faster for the rest of the stay.`,
+    tax: (name: string, pct: number) =>
+      `${name} found a purpose that fits. The tax at discharge is ${pct}% higher.`,
+    strain: (name: string, pct: number) =>
+      `It took a lot out of ${name}. Needs drop ${pct}% faster for a while.`,
+  },
 };
 
 export const TOASTS = {

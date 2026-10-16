@@ -67,8 +67,11 @@ export const PROPOSAL_COST_MILESTONE = 20;
 export const PROPOSAL_COOLDOWN_WEEKS = 3;
 /** Competence a resident gains at a milestone for each earlier try at it. */
 export const ATTEMPT_BONUS = 3;
-/** Support at the top of the wager slider. Support divides the difficulty: D ÷ (1 + support). */
-export const WAGER_SUPPORT_AT_MAX = 10;
+/**
+ * How preparation closes the gap from the odds alone to certain. Higher front-loads the first kroner.
+ * Share x of the full price closes (1 - e^(-k x)) / (1 - e^(-k)) of the gap. The full price is sure.
+ */
+export const PREP_CURVE = 1.5;
 /** Odds at or above these make the patient sound sure, or only unsure. Below, they doubt it. */
 export const READY_SURE = 0.7;
 export const READY_UNSURE = 0.45;

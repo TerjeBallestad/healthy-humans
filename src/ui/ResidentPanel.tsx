@@ -34,11 +34,7 @@ export function ResidentPanel() {
         {r.trait && <span class="tag">{TRAIT_BY_ID[r.trait].label}</span>}
       </h2>
       <p class="muted intro">{r.intro}</p>
-      {r.strain > 0.005 && (
-        <p class="strain">
-          {RESIDENT.strain(Math.round(r.arrivalHealth), Math.round(r.strain * 100))}
-        </p>
-      )}
+      {r.strain > 0.005 && <p class="strain">{RESIDENT.strain(Math.round(r.strain * 100))}</p>}
       <p class="status">{statusLine(r)}</p>
 
       <ul class="needs">
@@ -66,6 +62,7 @@ export function ResidentPanel() {
           <span class="state">
             {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
             {green < 1 && RESIDENT.growing(Math.round(green * 100))}
+            {(r.boost ?? 0) > 0 && RESIDENT.boost(Math.round(r.boost! * 100))}
           </span>
         </div>
       )}
