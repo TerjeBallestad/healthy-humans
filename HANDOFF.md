@@ -1,6 +1,17 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-16 (step 11b: the proposal in four steps, personalities as an upgrade). Before that 2026-10-12 (9c, then step 11). Read this first, then `PLAN.md`.
+Last session: 2026-10-16 (11b, 11c, the training badge, and the decision to rewrite in Godot). Before that 2026-10-12 (9c, then step 11). Read this first, then `PLAN.md`, then `GODOT.md`.
+
+## Session 2026-10-16: what changed and what was decided
+
+- **Step 11 was played and did not work.** The identity was sprung on the player, the chip did not register, the hand got random clicks, and the reaction was too subtle. One panel held too many concepts.
+- **11b, the proposal in four steps (played, works).** The question with the hand, the patient's answer with preparation, the attempt, the reaction. Personalities are an upgrade the player buys ("Personality profiles", 800 kr, after the first milestone try), with a tip that explains the chip. The resident panel lists every try ("Tried:"). The reaction is two lines: a fit line, then a result line keyed by the fit (`REACTION_FIT_LINE`, `REACTION_RESULT_LINE`).
+- **11c, fit acts at once (played, works).** A good fit that works in identity or mastery: overskudd +25% for the stay. A good purpose card: tax ×1.5. A poor fit, whatever the roll: strain +0.2. The reaction screen says what happened in one line. Fit never changes the odds, so the odds bar cannot leak the hidden table. Preparation (the old wager) closes the gap to certain along a gentle curve (`PREP_CURVE` 1.5), and the full price is sure. Terje found the armor curve too steep. A case worker prepares like 18% of the full price per level.
+- **Training badge.** The Training button and each staff tab count the courses ready now (`coursesReady` in `src/sim/staff.ts`).
+- **Pairs count both colours at 50%** (`PRIMARY_WEIGHT` 0.5). With 60%, one chip hid two different fits. The neutral fit line is "It was OK, I guess."
+- **Terje on the result (2026-10-16):** the milestones work well mechanically and are fun to play with. The content needs a pass: the fit table does not follow the keywords, and there are too few cards. **Parked.** The rules for that pass are in `PLAN.md` under "Content production", and the list of placeholder lines is below under "Milestone content".
+- **Big decision: a Godot rewrite in a third repo, for Steam.** This web build stays for itch.io and market fit. The look is pixel art (Terje draws fast in Aseprite) with an RPG frame, in a 3D tilt-shift world like Octopath Traveler or Tunic, with assets taken from `lifelines-core-loop`. The UI is the biggest risk, so it goes first. **Everything is in `GODOT.md`:** the why, the UI rules, the pixel rules, the order of work, and the list of UI kit pieces for Terje to draw.
+- **Next step: step 0 in `GODOT.md`.** Terje draws the minimal UI kit and picks a pixel font and a base resolution. Then the UI spike in the new repo: a theme, a gallery scene, and the proposal dialog built from the kit. Ideas still open for the web build: the activity loadout (several activities per need, with requirements, as an ability bar), 9c's UI, 9d.
 
 ## Where things are
 
@@ -11,9 +22,9 @@ Last session: 2026-10-16 (step 11b: the proposal in four steps, personalities as
 - **Steps 1 to 7k are done.** 7k (2026-10-10) is the economy and onboarding pass: bed income, a House tab and a mestring course for overskudd, omsorg rate and cap upgrades, a skill-up pip, toasts, gradual reveal and tips, and one pause/play toggle.
 - **Last play (2026-10-10):** Terje played to Y3 M5 W4 (115 weeks, about 46 min at 1x) and found it "quite interesting tactically", with different ways to play. Pacing is good, not perfect. It ran out of fumes when every cap was reached (4 beds, 6 staff, all upgrades). The onboarding tips work well after two fixes (a 1.5 s click delay, and a pause while a tip shows). Not yet played: the pause/play toggle, omsorg without a box, and the hire pool with one of each role.
 - **Direction (Terje, 2026-10-09):** a classic incremental arc. Frantic clicking early, then upgrades that do more and more of the work, so play moves from execution to tactics to strategy. The end game is moving beds, staff and residents between facilities and rooms: "optimized little factories for healthy humans".
-- **Patient identity (step 11, built 2026-10-12, not played yet).** From a grilling with Terje (notes in `PLAN.md` under "Patient identity"). Each patient has an identity (`src/content/identity.ts`): one colour or a pair, shown as a split chip with a keyword. Milestones are 12 cards in three phases (`src/content/milestones.ts`): identity, mastery, purpose. A proposal offers a hand of 3 from the patient's phase. The player always picks the card. The pick is prefilled from the playbook (the last pick for that identity and phase). The case worker no longer takes the milestone. It only adds support, and the player clicks Go. Each card has a hidden fit per colour. After the roll, the patient's face shows the fit. Tiers: see step 11 in `PLAN.md`. Save version 25: old saves reset.
+- **Patient identity (step 11, built 2026-10-12, played and rebuilt as 11b and 11c on 2026-10-16, see above).** From a grilling with Terje (notes in `PLAN.md` under "Patient identity"). Each patient has an identity (`src/content/identity.ts`): one colour or a pair, shown as a split chip with a keyword. Milestones are 12 cards in three phases (`src/content/milestones.ts`): identity, mastery, purpose. A proposal offers a hand of 3 from the patient's phase. The player always picks the card. The pick is prefilled from the playbook (the last pick for that identity and phase). The case worker no longer takes the milestone. It only adds support, and the player clicks Go. Each card has a hidden fit per colour. After the roll, the patient's face shows the fit. Tiers: see step 11 in `PLAN.md`. Save version 25: old saves reset.
   - **Placeholders for Terje:** the 5 keywords and 10 pair names (Lifelines words), the phase names, the card names (from the grilling), the result lines for cards without lines (`LOG.milestoneDone`, `LOG.milestoneFailed`), the hand tip ("Pick one."), and the milestone tip (the milestone name went out). NAV and the job keep the old lines. The application card is gone.
-- **Next (designed 2026-10-11):** step 9 in `PLAN.md`. 9a is played: the game keeps going, with a fine tune later. **9b (office slots and the case worker) is played and works well (Terje, 2026-10-12). 9c (the intake course) works in play, but its UI is confusing for a new player and feels clunky. Best match is invisible on screen.** Then 9d discharge course. Then a second facility as a tab. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits, candidates of different quality.
+- **Next before the Godot decision (designed 2026-10-11):** step 9 in `PLAN.md`. 9a is played: the game keeps going, with a fine tune later. **9b (office slots and the case worker) is played and works well (Terje, 2026-10-12). 9c (the intake course) works in play, but its UI is confusing for a new player and feels clunky. Best match is invisible on screen.** Then 9d discharge course. Then a second facility as a tab. Smaller candidates: glanceable needs on the activity cards, joker cards, roommate traits, candidates of different quality.
 
 ## What the game does now
 
@@ -151,7 +162,7 @@ The milestone mechanics work. All the text around them is placeholder, marked `T
 
 ```
 npm run dev        # local dev server
-npm test           # vitest, 95 tests
+npm test           # vitest, 97 tests
 npm run sim        # balance bot: -- --taps-per-second=0.5 --shop=0 --weeks=120 --deep=1 --beds=1
 npm run build      # type check and build
 npm run deploy:itch  # build for itch.io and push with butler
