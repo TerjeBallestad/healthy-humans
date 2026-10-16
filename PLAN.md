@@ -38,6 +38,7 @@ One word, one meaning.
 | **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                  |
 | **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                   |
 | **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                          |
+| **Preparation**    | Kroner the player spends before a milestone to raise the odds (the old wager). After the hire, the case worker prepares the patient.    |
 
 ## Mechanics (Act 1)
 
@@ -210,6 +211,16 @@ Each step ends with something playable and one question to answer by playing.
 - "Fit for work" needs an identity and a mastery success and all routines. "Healthy human" needs a purpose success and pays that card's tax (job 100, business 60, kids' team 30, volunteering 20). Quality (1 + 0.1 per point of fit, at least 0.2) multiplies every tier's tax.
 - Not in it: primærkontakt, talking, the story timeline, more cards and unlocks, hidden identity, a planning course.
   _Question: do the patients feel like people, and does learning the fit feel like the Game Dev Tycoon table?_
+  Played 2026-10-16: it did not work. The identity is sprung on the player with no frame, the chip does not register, the hand gets random clicks, and the reaction is too subtle. One panel held too many concepts: milestone, phase, card, personality, overskudd, competence, difficulty and wager.
+  11b: **one decision at a time.** Built 2026-10-16, not played yet. The proposal is four short steps, and the patient tells the story:
+  1. **The question.** The phase as a question ("What do you recommend, so Arvid can find out who they really are?") and the hand. "Not now" is here.
+  2. **The answer.** The patient answers the pick, and sounds sure, unsure or doubtful from the odds (`READY_SURE` 0.7, `READY_UNSURE` 0.45). The odds bar stays, with words (Terje). The wager is now **preparation**: kroner for lessons, a plan, someone who goes along. It fits every card. After the hire, the case worker prepares the patient, and the slider goes. "Go" shows the overskudd cost. "Something else" goes back to the hand.
+  3. **The attempt.** One line, and the marker rolls on the odds bar.
+  4. **The reaction.** The reaction face, a line by result and fit, and two plain stamps ("✓ It worked", "😞 Not a fit"). The phase track ticks on a success.
+  - **Personalities are an upgrade the player buys** (Terje: the player has it, not the case worker). The "Personality profiles" line (Your work tab, 800 kr, one step) shows after the first milestone try. Before it, no chips show anywhere, and the playbook does not prefill (it is keyed by identity). After the buy, a tip points at the chip and explains it.
+  - **The resident panel lists every try** ("Tried:") with ✓ or ✗ and the reaction face, so what the player learned stays on screen.
+  - All new lines are placeholders marked `TODO(Terje)`.
+    _Question: does each step make sense to a first-time player, and does buying personalities feel like a light turning on?_
 
 ## After Act 1: several facilities
 

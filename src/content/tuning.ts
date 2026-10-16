@@ -69,6 +69,9 @@ export const PROPOSAL_COOLDOWN_WEEKS = 3;
 export const ATTEMPT_BONUS = 3;
 /** Support at the top of the wager slider. Support divides the difficulty: D ÷ (1 + support). */
 export const WAGER_SUPPORT_AT_MAX = 10;
+/** Odds at or above these make the patient sound sure, or only unsure. Below, they doubt it. */
+export const READY_SURE = 0.7;
+export const READY_UNSURE = 0.45;
 
 /** A new person joins the waiting list this often. */
 export const WAITLIST_WEEKS_PER_PERSON = 3;

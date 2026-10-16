@@ -1,6 +1,6 @@
 import { byId } from './byId';
 export type LineId =
-  'nudge' | 'omsorgRate' | 'omsorgCap' | 'staff' | 'payGrade' | 'grant' | 'house';
+  'nudge' | 'omsorgRate' | 'omsorgCap' | 'insight' | 'staff' | 'payGrade' | 'grant' | 'house';
 
 export type UpgradeTab = 'you' | 'staff' | 'funding' | 'house';
 
@@ -71,6 +71,16 @@ export const LINES: LineDef[] = [
         icon: '💻',
       },
     ],
+  },
+  {
+    // One step: the player sees each patient's personality. Offered after the first milestone try.
+    id: 'insight',
+    tab: 'you',
+    baseCost: 800,
+    grow: { plus: 1 },
+    max: 1,
+    // TODO(Terje): placeholder name and note for the personality upgrade.
+    steps: [{ label: 'Personality profiles', note: '', icon: '🪞' }],
   },
   {
     id: 'staff',

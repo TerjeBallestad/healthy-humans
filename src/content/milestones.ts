@@ -15,6 +15,16 @@ export const PHASE_LABEL: Record<Phase, string> = {
   purpose: 'Purpose',
 };
 
+/** The question the player answers when a proposal opens: what should the patient try in this phase? */
+// TODO(Terje): placeholder questions. The identity one is from Terje's draft on 2026-10-16.
+export const PHASE_QUESTION: Record<Phase, (name: string) => string> = {
+  identity: (name) =>
+    `${name} has been feeling a bit lost lately, and thinks a journey of self-discovery could help. What do you recommend, so ${name} can find out who they really are?`,
+  mastery: (name) =>
+    `${name} has found some footing and wants a real challenge. What should ${name} try to get good at?`,
+  purpose: (name) => `${name} wants to give something back. Where could ${name} make a difference?`,
+};
+
 export type MilestoneId =
   | 'nav'
   | 'therapist'
@@ -169,4 +179,23 @@ export type FitLevel = 'good' | 'neutral' | 'poor';
 export const REACTION_FACE: Record<'success' | 'failure', Record<FitLevel, string>> = {
   success: { good: '🤩', neutral: '🙂', poor: '😶' },
   failure: { good: '😤', neutral: '😕', poor: '😞' },
+};
+
+/** What the patient says afterwards, by result and fit. The card's label starts each line. */
+// TODO(Terje): placeholder reaction lines. The poor-fit failure is from Terje's draft.
+export const REACTION_LINE: Record<
+  'success' | 'failure',
+  Record<FitLevel, (label: string) => string>
+> = {
+  success: {
+    good: (label) => `${label} was exactly right. I feel more like myself.`,
+    neutral: (label) => `${label} went fine. I'm not sure what I think of it.`,
+    poor: (label) => `${label}: I did it. But I felt nothing.`,
+  },
+  failure: {
+    good: (label) => `${label} didn't work out this time. But I liked it. I want to try again.`,
+    neutral: (label) => `${label} didn't work out. Maybe another time.`,
+    poor: (label) =>
+      `${label} was terrible. I really hated it. But I learned a thing or two about myself.`,
+  },
 };

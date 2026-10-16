@@ -54,6 +54,8 @@ export interface Resident {
   milestones: MilestoneId[];
   /** Failed tries at each milestone. Each one adds competence at the next try. Missing in old saves. */
   attempts?: Partial<Record<MilestoneId, number>>;
+  /** Every milestone tried, in order, with the result. The resident panel lists them. Missing in old saves. */
+  tries?: { id: MilestoneId; won: boolean }[];
   /** Health when they moved in, 0 to 100. */
   arrivalHealth: number;
   /** Extra need decay from poor health at arrival, as a fraction. Fades over time. */
@@ -183,6 +185,8 @@ export interface GameState {
   identities: number;
   /** The player's last pick for each identity and phase, keyed "identityKey:phase". */
   playbook: Record<string, MilestoneId>;
+  /** Milestones tried in the whole game. The personality upgrade shows after the first. Missing: 0. */
+  milestoneTries?: number;
 }
 
 const perActivity = (value: number) =>

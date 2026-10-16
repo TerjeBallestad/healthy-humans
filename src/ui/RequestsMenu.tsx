@@ -1,7 +1,15 @@
 import { signal } from '@preact/signals';
 import { LINES, LINE_BY_ID, type LineId } from '../content/upgrades';
 import { buyUpgrade } from '../sim/actions';
-import { canBuy, lineLevel, lineOpen, lineValue, nextStep, upgradeCost } from '../sim/institution';
+import {
+  canBuy,
+  lineLevel,
+  lineOpen,
+  lineShown,
+  lineValue,
+  nextStep,
+  upgradeCost,
+} from '../sim/institution';
 import type { GameState } from '../sim/state';
 import { act, useGame } from '../store';
 import { closeModal, modal } from './modal';
@@ -47,7 +55,7 @@ export function RequestsMenu() {
           </button>
         </header>
         <div class="lines">
-          {LINES.filter((l) => l.tab === tab.value).map((l) => (
+          {LINES.filter((l) => l.tab === tab.value && lineShown(s, l.id)).map((l) => (
             <LineCard line={l.id} />
           ))}
         </div>
@@ -64,6 +72,7 @@ export function stepEffect(s: GameState, line: LineId): string {
   if (line === 'nudge') return e.nudge(v);
   if (line === 'omsorgCap') return e.omsorgCap(v);
   if (line === 'payGrade') return e.payGrade(v);
+  if (line === 'insight') return e.insight();
   return e[line](x);
 }
 

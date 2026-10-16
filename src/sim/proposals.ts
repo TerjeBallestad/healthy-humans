@@ -19,9 +19,12 @@ import {
   MAX_SKILL,
   PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
+  READY_SURE,
+  READY_UNSURE,
   WAGER_SUPPORT_AT_MAX,
 } from '../content/tuning';
 import { random } from './rng';
+import { identitiesShown } from './institution';
 import { bestCaseWorker } from './staff';
 import { unlockedActivities } from './selectors';
 import { occupied, type GameState, type Resident } from './state';
@@ -119,6 +122,13 @@ export function odds(c: number, d: number): number {
   return c + d > 0 ? c / (c + d) : 1;
 }
 
+export type Readiness = 'sure' | 'unsure' | 'doubt';
+
+/** How sure the patient feels about the odds, for their answer. */
+export function readiness(chance: number): Readiness {
+  return chance >= READY_SURE ? 'sure' : chance >= READY_UNSURE ? 'unsure' : 'doubt';
+}
+
 /** Odds for a wager in kroner. */
 export function chance(r: Resident, m: MilestoneId, kr: number): number {
   return odds(competence(r, m), difficulty(m, wagerSupport(m, kr)));
@@ -134,7 +144,8 @@ export function maybePropose(state: GameState) {
     const hand = dealHand(state, r, phase);
     const last = state.playbook[playbookKey(r, phase)];
     state.proposal = { bed, hand, overskuddBefore: r.overskudd };
-    if (last && hand.includes(last)) state.proposal.pick = last;
+    // The playbook is keyed by identity, so it prefills only once the player can see identities.
+    if (identitiesShown(state) && last && hand.includes(last)) state.proposal.pick = last;
     // After the hire, the case worker supports every milestone. The player has no wager.
     const cw = bestCaseWorker(state);
     if (cw) state.proposal.caseWorker = cw.name;
@@ -203,6 +214,8 @@ function resolve(state: GameState, support: number, kr: number) {
   const won = roll < chance;
   Object.assign(p, { kr, chance, competence: c, difficulty: d, roll });
   p.outcome = won ? 'success' : 'failure';
+  r.tries = [...(r.tries ?? []), { id, won }];
+  state.milestoneTries = (state.milestoneTries ?? 0) + 1;
   if (won) r.milestones.push(id);
   else r.attempts = { ...r.attempts, [id]: (r.attempts?.[id] ?? 0) + 1 };
   p.result = won

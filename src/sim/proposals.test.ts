@@ -24,7 +24,9 @@ import {
   phaseOpen,
   pick,
   quality,
+  readiness,
 } from './proposals';
+import { canBuy, identitiesShown, lineOpen, lineShown } from './institution';
 import { newGame, newReferral } from './state';
 import { tick } from './tick';
 import { TICKS_PER_WEEK } from './time';
@@ -256,6 +258,7 @@ describe('identity and fit', () => {
 
   test('the last pick is prefilled for the same identity and phase', () => {
     const s = ready();
+    s.levels.insight = 1;
     maybePropose(s);
     expect(s.proposal!.pick).toBeUndefined();
     pick(s, 'nav');
@@ -266,6 +269,41 @@ describe('identity and fit', () => {
     s.beds[0]!.lastProposalTick = -1e9;
     maybePropose(s);
     expect(s.proposal!.pick).toBe('nav');
+  });
+
+  test('no prefill before the player can see identities', () => {
+    const s = ready();
+    open(s);
+    accept(s, 0);
+    closeProposal(s);
+    s.beds[0]!.milestones = [];
+    s.beds[0]!.overskudd = 30;
+    s.beds[0]!.lastProposalTick = -1e9;
+    maybePropose(s);
+    expect(s.proposal!.pick).toBeUndefined();
+  });
+
+  test('each try is kept with its result, and the personality upgrade shows after the first', () => {
+    const s = ready();
+    expect(lineShown(s, 'insight')).toBe(false);
+    expect(canBuy(s, 'insight')).toBe(false);
+    open(s);
+    accept(s, 0);
+    const won = s.proposal!.outcome === 'success';
+    expect(s.beds[0]!.tries).toEqual([{ id: s.proposal!.pick, won }]);
+    expect(lineShown(s, 'insight')).toBe(true);
+    s.budget = 1e6;
+    expect(canBuy(s, 'insight')).toBe(true);
+    expect(identitiesShown(s)).toBe(false);
+    s.levels.insight = 1;
+    expect(identitiesShown(s)).toBe(true);
+    expect(lineOpen(s, 'insight')).toBe(false);
+  });
+
+  test('readiness follows the odds', () => {
+    expect(readiness(0.8)).toBe('sure');
+    expect(readiness(0.5)).toBe('unsure');
+    expect(readiness(0.2)).toBe('doubt');
   });
 
   test('no going without a pick', () => {

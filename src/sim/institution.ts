@@ -36,7 +36,14 @@ export function lineLevel(s: GameState, line: LineId): number {
 /** A line's value after some steps. Multiplier lines start at 1. Others start at their base. */
 export function lineValue(line: LineId, steps: number): number {
   const grow = LINE_BY_ID[line].grow;
-  const base = line === 'omsorgCap' ? OMSORG_CAP : line === 'payGrade' ? PAY_RAISE_START : 1;
+  const base =
+    line === 'omsorgCap'
+      ? OMSORG_CAP
+      : line === 'payGrade'
+        ? PAY_RAISE_START
+        : line === 'insight'
+          ? 0
+          : 1;
   return 'times' in grow ? base * grow.times ** steps : base + grow.plus * steps;
 }
 
@@ -146,8 +153,18 @@ export function lineOpen(s: GameState, line: LineId): boolean {
   return max === undefined || lineLevel(s, line) < max;
 }
 
+/** Lines that wait for a moment. The personality upgrade shows after the first milestone try. */
+export function lineShown(s: GameState, line: LineId): boolean {
+  return line !== 'insight' || (s.milestoneTries ?? 0) > 0 || lineLevel(s, line) > 0;
+}
+
+/** True once the player has bought the personality upgrade: the identity chips show. */
+export function identitiesShown(s: GameState): boolean {
+  return lineLevel(s, 'insight') > 0;
+}
+
 export function canBuy(s: GameState, line: LineId): boolean {
-  return lineOpen(s, line) && s.budget >= upgradeCost(s, line);
+  return lineShown(s, line) && lineOpen(s, line) && s.budget >= upgradeCost(s, line);
 }
 
 /** The next step in a line, or the last one when the line is done. */

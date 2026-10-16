@@ -1,6 +1,6 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-10-12 (9c, then step 11: patient identity). Read this first, then `PLAN.md`.
+Last session: 2026-10-16 (step 11b: the proposal in four steps, personalities as an upgrade). Before that 2026-10-12 (9c, then step 11). Read this first, then `PLAN.md`.
 
 ## Where things are
 

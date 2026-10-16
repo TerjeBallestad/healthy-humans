@@ -5,7 +5,7 @@ import { GRANT_PER_BED } from '../content/tuning';
 import { LINES } from '../content/upgrades';
 import { canNudge, canTrain, freeBed } from '../sim/actions';
 import { bestTier } from '../sim/discharge';
-import { canBuy, canBuyBed, grantMult, hireCost } from '../sim/institution';
+import { canBuy, canBuyBed, grantMult, hireCost, identitiesShown } from '../sim/institution';
 import { isSeen, markSeen } from '../sim/reveal';
 import { effort, unlockedActivities } from '../sim/selectors';
 import { proposalCost } from '../sim/proposals';
@@ -43,7 +43,7 @@ function proposalTips(s: GameState): (() => Tip | null)[] {
   return [
     () => ({
       key: 'tip:milestone',
-      target: '[data-tip="track"]',
+      target: '[data-tip="question"]',
       title: TIPS.milestoneTitle,
       side: 'right',
       text: TIPS.milestone(r.name, PHASES.length),
@@ -71,10 +71,9 @@ function proposalTips(s: GameState): (() => Tip | null)[] {
         ? {
             key: 'tip:go',
             target: '[data-tip="go"]',
-            also: '[data-tip="drain"]',
             title: TIPS.clickHere,
             side: 'right',
-            text: TIPS.go(proposalCost(), r.name),
+            text: TIPS.go(proposalCost()),
           }
         : null,
   ];
@@ -164,6 +163,15 @@ function screenTips(s: GameState): (() => Tip | null)[] {
             target: '[data-tip="admit"]',
             title: TIPS.clickHere,
             text: TIPS.admit,
+          }
+        : null,
+    () =>
+      identitiesShown(s)
+        ? {
+            key: 'tip:identity',
+            target: '[data-tip="identity"]',
+            title: TIPS.identityTitle,
+            text: TIPS.identity,
           }
         : null,
     () =>
