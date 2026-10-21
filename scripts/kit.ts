@@ -147,10 +147,11 @@ function css(pieces: KitPiece[]): string {
     const cls = `.kit-${p.name}`;
     const pad = CONTENT.find(([prefix]) => p.name.startsWith(prefix))?.[1] ?? '4px';
     // The image covers the whole box (border-image-width), and the border takes no space, so
-    // padding alone places the content. `repeat` tiles the edges and the middle, as Godot's
+    // padding alone places the content. No background, so the transparent corners stay
+    // transparent on a <button>. `repeat` tiles the edges and the middle, as Godot's
     // StyleBoxTexture does with axis_stretch TILE. Below the min size the corners would shrink.
     out.push(
-      `${cls} {\n  box-sizing: border-box;\n  border: 0 solid;\n` +
+      `${cls} {\n  box-sizing: border-box;\n  border: 0 solid;\n  background: none;\n` +
         `  border-image: url('./img/${p.name}-${p.states[0]}.png') ${t} ${r} ${b} ${l} fill / ${t}px ${r}px ${b}px ${l}px repeat;\n` +
         `  padding: ${pad};\n  min-width: ${l + r}px;\n  min-height: ${t + b}px;\n` +
         `  image-rendering: pixelated;\n}`,

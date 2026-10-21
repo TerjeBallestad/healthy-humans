@@ -3,6 +3,7 @@
 .kit-button-1 {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/button-1-normal.png') 8 12 6 17 fill / 8px 12px 6px 17px repeat;
   padding: 3px 6px;
   min-width: 29px;
@@ -26,6 +27,7 @@
 .kit-button-2 {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/button-2-normal.png') 8 3 6 3 fill / 8px 3px 6px 3px repeat;
   padding: 3px 6px;
   min-width: 6px;
@@ -49,6 +51,7 @@
 .kit-button-3 {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/button-3-normal.png') 7 13 6 12 fill / 7px 13px 6px 12px repeat;
   padding: 3px 6px;
   min-width: 25px;
@@ -72,6 +75,7 @@
 .kit-button-quiet {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/button-quiet-normal.png') 2 1 2 1 fill / 2px 1px 2px 1px repeat;
   padding: 3px 6px;
   min-width: 2px;
@@ -95,6 +99,7 @@
 .kit-card {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/card-normal.png') 10 14 11 13 fill / 10px 14px 11px 13px repeat;
   padding: 6px;
   min-width: 27px;
@@ -123,6 +128,7 @@
 .kit-window {
   box-sizing: border-box;
   border: 0 solid;
+  background: none;
   border-image: url('./img/window-normal.png') 16 20 16 20 fill / 16px 20px 16px 20px repeat;
   padding: 10px;
   min-width: 40px;
