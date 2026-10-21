@@ -15,6 +15,7 @@
     "econ": "vite --open /tools/econ/",
     "kit": "tsx scripts/kit.ts",
     "gallery": "vite --open /tools/kit/",
+    "layout": "vite --open /tools/layout/",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

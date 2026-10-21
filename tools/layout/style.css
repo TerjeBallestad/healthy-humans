@@ -1,0 +1,271 @@
+/* The layout prototype at the 960×540 base. Colours from the Resurrect 64 palette. */
+:root {
+  --ink: #c7dcd0;
+  --bright: #ffffff;
+  --muted: #9babb2;
+  --dim: #7f708a;
+  --night: #2e222f;
+  --world: #374e4a;
+  --pip: #484a77;
+  --pip-on: #30e1b9;
+  --alarm: #e83b3b;
+  --progress: #8fd3ff;
+}
+body {
+  margin: 0;
+  background: #1b1622;
+  overflow: hidden;
+}
+.screen {
+  position: relative;
+  width: 960px;
+  height: 540px;
+  margin: 0 auto;
+  overflow: hidden;
+  font-family: 'Salmon Sans 9', ui-sans-serif, sans-serif;
+  font-size: 9px;
+  line-height: 11px;
+  color: var(--ink);
+  -webkit-font-smoothing: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.muted {
+  color: var(--muted);
+}
+.num {
+  color: var(--muted);
+  min-width: 18px;
+  text-align: right;
+}
+.title,
+.name {
+  font-weight: 700;
+  color: var(--bright);
+}
+
+/* ---------- The house ---------- */
+.stage {
+  position: absolute;
+  inset: 0;
+  background: var(--world);
+}
+.stage-label {
+  position: absolute;
+  left: 50%;
+  top: 220px;
+  transform: translateX(-50%);
+  color: #547e64;
+  font-weight: 800;
+}
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 250px;
+  transform: translateX(-50%);
+  max-width: 240px;
+  white-space: nowrap;
+}
+
+/* ---------- Top left: the patient ---------- */
+.patient {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.beds {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.who {
+  margin-bottom: 2px;
+}
+.meter-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.meter-row .label {
+  width: 52px;
+}
+
+/* ---------- Top: time, omsorg, budget ---------- */
+.topbar {
+  position: absolute;
+  top: 8px;
+  left: 206px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sep {
+  width: 1px;
+  height: 11px;
+  background: var(--dim);
+}
+
+/* ---------- Top right: menus ---------- */
+.menus {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+/* ---------- Left edge: categories ---------- */
+.rail {
+  position: absolute;
+  left: 8px;
+  top: 172px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cat {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.cat .icon {
+  font-size: 14px;
+  line-height: 16px;
+}
+.cat:disabled .icon {
+  opacity: 0.4;
+}
+.badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 9px;
+  padding: 0 2px;
+  box-sizing: border-box;
+  background: var(--alarm);
+  color: var(--bright);
+  font-weight: 800;
+}
+/* A low need: a red square in the corner. */
+.cat.low::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  background: var(--alarm);
+}
+
+/* ---------- Bottom: actions ---------- */
+.actions {
+  position: absolute;
+  left: 44px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.act {
+  flex: none;
+  width: 124px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+}
+.act[data-state='disabled'] {
+  cursor: default;
+  color: var(--muted);
+}
+.act[data-state='disabled'] .title {
+  color: var(--ink);
+}
+.act .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.act .head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+.act .icon {
+  font-size: 14px;
+  line-height: 16px;
+  width: 16px;
+}
+.act .tag {
+  margin-left: auto;
+  color: var(--pip-on);
+  font-weight: 800;
+}
+.effort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pips {
+  display: flex;
+  gap: 1px;
+}
+.pip {
+  width: 3px;
+  height: 5px;
+  background: var(--pip);
+}
+.pips.small .pip {
+  width: 2px;
+}
+.pip.on {
+  background: var(--pip-on);
+}
+/* Out of omsorg: the empty pips go dark. */
+.starved .pip:not(.on) {
+  background: var(--night);
+}
+.progress {
+  width: 100%;
+  height: 2px;
+  background: var(--pip);
+}
+.progress > span {
+  display: block;
+  height: 2px;
+  background: var(--progress);
+}
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+/* ---------- Proposal stub ---------- */
+.proposal {
+  position: absolute;
+  left: 50%;
+  top: 150px;
+  transform: translateX(-50%);
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
