@@ -34,6 +34,7 @@ import {
 import { selectedResident, type GameState, type Resident } from '../../src/sim/state';
 import { TICKS_PER_SECOND, formatDate } from '../../src/sim/time';
 import { act, useGame } from '../../src/store';
+import room from './room.jpg';
 
 const W = 960;
 const H = 540;
@@ -67,8 +68,9 @@ export function App() {
   const r = selectedResident(s);
   return (
     <div class="screen" style={{ zoom: String(zoom) }}>
+      {/* A still from the Lifelines prototype, in place of the 3D house. */}
       <div class="stage">
-        <span class="stage-label">The house</span>
+        <img class="room" src={room} alt="" />
         {r && (
           <div class="kit-card bubble" data-state="subtle">
             {statusLine(r)}
@@ -89,7 +91,7 @@ export function App() {
 
 function PatientPanel({ s, r }: { s: GameState; r: Resident | null }) {
   return (
-    <section class="kit-window patient">
+    <section class="patient">
       <div class="beds">
         {s.beds.map((b, i) => (
           <button
@@ -152,7 +154,7 @@ function needState(v: number): string {
 function TopBar({ s }: { s: GameState }) {
   const cap = omsorgCap(s);
   return (
-    <section class="kit-card topbar" data-state="subtle">
+    <section class="topbar">
       <button
         class="kit-button-quiet"
         onClick={() => act((g) => (g.speed = g.speed === 0 ? 1 : 0))}

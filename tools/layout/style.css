@@ -51,22 +51,22 @@ button {
 .stage {
   position: absolute;
   inset: 0;
-  background: var(--world);
+  background: #000;
 }
-.stage-label {
+/* The room fills the width. The black bands above and below hold the HUD and the actions. */
+.room {
   position: absolute;
-  left: 50%;
-  top: 220px;
-  transform: translateX(-50%);
-  color: #547e64;
-  font-weight: 800;
+  left: 0;
+  top: 65px;
+  width: 960px;
+  height: 410px;
 }
+/* Over Arvid's head in the still. In the 3D house it follows the character. */
 .bubble {
   position: absolute;
-  left: 50%;
-  top: 250px;
-  transform: translateX(-50%);
-  max-width: 240px;
+  left: 605px;
+  top: 228px;
+  transform: translate(-50%, -100%);
   white-space: nowrap;
 }
 
