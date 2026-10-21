@@ -51,7 +51,28 @@ export const PIECES: KitPiece[] = [
       6,
       17
     ],
-    "fill": false
+    "fill": false,
+    "label": {
+      "normal": {
+        "color": "#ed8099",
+        "dy": 0,
+        "outline": "#ffffff"
+      },
+      "hover": {
+        "color": "#ae2334",
+        "dy": 0,
+        "outline": "#4d65b4"
+      },
+      "pressed": {
+        "color": "#ae2334",
+        "dy": 1,
+        "outline": "#4d65b4"
+      },
+      "disabled": {
+        "color": "#625565",
+        "dy": 1
+      }
+    }
   },
   {
     "name": "button-2",
@@ -69,7 +90,25 @@ export const PIECES: KitPiece[] = [
       6,
       3
     ],
-    "fill": false
+    "fill": false,
+    "label": {
+      "normal": {
+        "color": "#fbff86",
+        "dy": 0
+      },
+      "hover": {
+        "color": "#2e222f",
+        "dy": 0
+      },
+      "pressed": {
+        "color": "#2e222f",
+        "dy": 1
+      },
+      "disabled": {
+        "color": "#c7dcd0",
+        "dy": 0
+      }
+    }
   },
   {
     "name": "button-3",
@@ -87,7 +126,28 @@ export const PIECES: KitPiece[] = [
       6,
       12
     ],
-    "fill": false
+    "fill": false,
+    "label": {
+      "normal": {
+        "color": "#ed8099",
+        "dy": 0,
+        "outline": "#ffffff"
+      },
+      "hover": {
+        "color": "#ae2334",
+        "dy": 0,
+        "outline": "#323353"
+      },
+      "pressed": {
+        "color": "#ae2334",
+        "dy": 1,
+        "outline": "#323353"
+      },
+      "disabled": {
+        "color": "#c7dcd0",
+        "dy": 1
+      }
+    }
   },
   {
     "name": "button-quiet",
@@ -105,7 +165,25 @@ export const PIECES: KitPiece[] = [
       2,
       1
     ],
-    "fill": false
+    "fill": false,
+    "label": {
+      "normal": {
+        "color": "#9babb2",
+        "dy": 0
+      },
+      "hover": {
+        "color": "#2e222f",
+        "dy": 0
+      },
+      "pressed": {
+        "color": "#2e222f",
+        "dy": 1
+      },
+      "disabled": {
+        "color": "#c7dcd0",
+        "dy": 0
+      }
+    }
   },
   {
     "name": "card",
