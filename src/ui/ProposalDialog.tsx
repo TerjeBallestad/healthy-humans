@@ -4,33 +4,38 @@ import {
   MILESTONE_BY_ID,
   PHASES,
   PHASE_LABEL,
+  PHASE_QUESTION,
   REACTION_FACE,
+  REACTION_FIT_LINE,
+  REACTION_RESULT_LINE,
   type MilestoneId,
 } from '../content/milestones';
-import { OVERSKUDD_CAP } from '../content/tuning';
 import {
   accept,
-  baseDifficulty,
   canWager,
   closeProposal,
-  competence,
   decline,
-  difficulty,
   fitLevel,
   fitOf,
   maxKr,
   maxWager,
-  odds as oddsOf,
+  phaseOf,
   pick,
-  proposalCaseWorkerSupport,
+  preparedChance,
+  prepShare,
+  proposalCaseWorkerShare,
   proposalCost,
-  wagerSupport,
+  readiness,
+  type FitEffect,
 } from '../sim/proposals';
 import type { Resident } from '../sim/state';
 import { act, useGame } from '../store';
 import { PROPOSAL, UNITS } from '../content/text';
 import { GRACE_MS } from './Tips';
 import { IdentityChip } from './IdentityChip';
+
+/** Real milliseconds the roll shows before the patient's reaction. The marker takes 1.3 s. */
+const ATTEMPT_MS = 1800;
 
 export function ProposalDialog() {
   const s = useGame();
@@ -41,6 +46,10 @@ export function ProposalDialog() {
   return <SceneCard key={`${p.bed}-${r.lastProposalTick}`} />;
 }
 
+/**
+ * One decision at a time: the question and the hand, then the patient's answer and the preparation,
+ * then the attempt, then the reaction.
+ */
 function SceneCard() {
   // Read the state here, not from props: the props would not change, so the card would not re-render.
   const s = useGame();
@@ -48,86 +57,86 @@ function SceneCard() {
   const r = s.beds[p.bed]!;
   const m = p.pick ? MILESTONE_BY_ID[p.pick] : null;
   const [kr, setKr] = useState(0);
+  const [answering, setAnswering] = useState(false);
   const rolled = p.outcome === 'success' || p.outcome === 'failure';
-  const cw = p.caseWorker ? s.staff.find((x) => x.name === p.caseWorker) : undefined;
-  const cwSupport = proposalCaseWorkerSupport(s);
-  // Fast clicking on the cards must not skip the card or its result. Clicks wait GRACE_MS each time.
+  const [reacting, setReacting] = useState(false);
+  const step = rolled ? (reacting ? 'reaction' : 'attempt') : answering && m ? 'answer' : 'ask';
+  // Fast clicking must not skip a step or its result. Clicks wait GRACE_MS on each step.
   const [ready, setReady] = useState(false);
   useEffect(() => {
     setReady(false);
     const t = setTimeout(() => setReady(true), GRACE_MS);
     return () => clearTimeout(t);
-  }, [p.outcome]);
+  }, [step, p.outcome]);
+  useEffect(() => {
+    if (!rolled) return;
+    const t = setTimeout(() => setReacting(true), ATTEMPT_MS);
+    return () => clearTimeout(t);
+  }, [rolled]);
+  const done = step === 'reaction' || p.outcome === 'declined';
   const reaction =
-    rolled && m
+    step === 'reaction' && m
       ? REACTION_FACE[p.outcome as 'success' | 'failure'][fitLevel(fitOf(r.identity, m.id))]
       : null;
 
   return (
-    <div class="overlay" onClick={() => ready && p.outcome && act(closeProposal)}>
+    <div class="overlay" onClick={() => ready && done && act(closeProposal)}>
       <div
-        class="dialog scene"
+        class={`dialog scene ${step}`}
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
         <div class="stage">
           <span class="face" aria-label={r.name}>
-            <span class={reaction ? 'base gone' : 'base'}>{ARCHETYPE_BY_ID[r.archetype].face}</span>
-            {reaction && <span class="react">{reaction}</span>}
+            {reaction ? (
+              <span class="react">{reaction}</span>
+            ) : (
+              <span class="base">{ARCHETYPE_BY_ID[r.archetype].face}</span>
+            )}
           </span>
           <span class="path" aria-hidden="true" />
           <span class="place">
             <span class="place-icon" aria-hidden="true">
-              {m?.placeIcon ?? '?'}
+              {(step !== 'ask' && m?.placeIcon) || '?'}
             </span>
-            <span class="muted">{m?.place ?? m?.label ?? ''}</span>
+            <span class="muted">{step !== 'ask' ? (m?.place ?? m?.label) : ''}</span>
           </span>
         </div>
         <p class="who">
           {r.name} <IdentityChip id={r.identity} />
         </p>
-        {m?.ask && <blockquote>“{m.ask}”</blockquote>}
 
-        <Hand hand={p.hand} picked={p.pick} locked={!!p.outcome} />
-
-        <OverskuddDrain before={p.overskuddBefore} cost={proposalCost()} paid={rolled} />
-        <Track r={r} current={p.pick} ticking={p.outcome === 'success'} />
-
-        {cw && (
-          <p class="case-worker">
-            <span aria-hidden="true">{cw.face}</span> {cw.name}
-          </p>
+        {step === 'ask' && (
+          <Ask
+            r={r}
+            ready={ready}
+            onPick={(id) => {
+              act((g) => pick(g, id));
+              setAnswering(true);
+            }}
+          />
         )}
-        {m && <Odds r={r} id={m.id} support={cwSupport ?? wagerSupport(m.id, kr)} />}
-
-        {!p.outcome && (
+        {step === 'answer' && m && (
+          <Answer
+            r={r}
+            id={m.id}
+            kr={kr}
+            setKr={setKr}
+            ready={ready}
+            onBack={() => setAnswering(false)}
+          />
+        )}
+        {step === 'attempt' && m && (
           <>
-            {m && cwSupport === null && <Wager id={m.id} kr={kr} setKr={setKr} />}
-            <div class="choices row">
-              <button
-                class="choice"
-                data-tip="go"
-                disabled={!ready || !m || (cwSupport === null && !canWager(s, kr))}
-                onClick={() => act((g) => accept(g, cwSupport === null ? kr : 0))}
-              >
-                <span>{PROPOSAL.go}</span>
-                {cwSupport === null && (
-                  <span class="odds">{kr > 0 ? UNITS.kr(kr) : PROPOSAL.alone}</span>
-                )}
-              </button>
-              <button class="choice quiet" disabled={!ready} onClick={() => act(decline)}>
-                {PROPOSAL.notNow}
-              </button>
-            </div>
+            <blockquote>{PROPOSAL.attempt(m.label, r.name)}</blockquote>
+            <Odds r={r} id={m.id} share={0} />
           </>
         )}
-
-        {p.outcome && (
-          <div class={rolled ? 'result rolled' : 'result'}>
-            <p class={`outcome ${p.outcome}`}>
-              {p.outcome === 'declined' ? PROPOSAL.declined : p.result}
-            </p>
+        {step === 'reaction' && m && <Reaction r={r} id={m.id} ready={ready} />}
+        {p.outcome === 'declined' && (
+          <div class="result">
+            <p class="outcome">{PROPOSAL.declined}</p>
             <button class="choice" disabled={!ready} onClick={() => act(closeProposal)}>
               {PROPOSAL.continue}
             </button>
@@ -138,75 +147,170 @@ function SceneCard() {
   );
 }
 
-/** The cards the resident offers. The player picks one. */
-function Hand({
-  hand,
-  picked,
-  locked,
+/** Step 1: the phase as a question, and the hand to answer it with. */
+function Ask({
+  r,
+  ready,
+  onPick,
 }: {
-  hand: MilestoneId[];
-  picked?: MilestoneId;
-  locked: boolean;
+  r: Resident;
+  ready: boolean;
+  onPick: (id: MilestoneId) => void;
 }) {
+  const s = useGame();
+  const p = s.proposal!;
+  if (p.outcome) return null;
+  const phase = phaseOf(r)!;
   return (
-    <div class="hand" data-tip="hand" role="radiogroup">
-      {hand.map((id) => {
-        const m = MILESTONE_BY_ID[id];
-        return (
-          <button
-            class={id === picked ? 'mcard on' : 'mcard'}
-            role="radio"
-            aria-checked={id === picked}
-            disabled={locked && id !== picked}
-            onClick={() => !locked && act((g) => pick(g, id))}
-          >
-            <span class="mcard-icon" aria-hidden="true">
-              {m.placeIcon}
-            </span>
-            <span class="mcard-label">{m.label}</span>
-          </button>
-        );
-      })}
-    </div>
+    <>
+      <p class="question" data-tip="question">
+        {PHASE_QUESTION[phase](r.name)}
+      </p>
+      <div class="hand" data-tip="hand" role="radiogroup">
+        {p.hand.map((id) => {
+          const m = MILESTONE_BY_ID[id];
+          return (
+            <button
+              class={id === p.pick ? 'mcard on' : 'mcard'}
+              role="radio"
+              aria-checked={id === p.pick}
+              disabled={!ready}
+              onClick={() => onPick(id)}
+            >
+              <span class="mcard-icon" aria-hidden="true">
+                {m.placeIcon}
+              </span>
+              <span class="mcard-label">{m.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      <button class="choice quiet" disabled={!ready} onClick={() => act(decline)}>
+        {PROPOSAL.notNow}
+      </button>
+    </>
   );
 }
 
-/** The tug of war: the resident's competence against the card's difficulty after support. */
-function Odds({ r, id, support }: { r: Resident; id: MilestoneId; support: number }) {
+/** Step 2: the patient answers, sure or not, and the player prepares them or the case worker does. */
+function Answer({
+  r,
+  id,
+  kr,
+  setKr,
+  ready,
+  onBack,
+}: {
+  r: Resident;
+  id: MilestoneId;
+  kr: number;
+  setKr: (v: number) => void;
+  ready: boolean;
+  onBack: () => void;
+}) {
   const s = useGame();
-  const p = s.proposal!;
-  const rolled = p.outcome === 'success' || p.outcome === 'failure';
-  // After the roll, show what was rolled. A failed try has already raised the competence.
-  const c = p.competence ?? competence(r, id);
-  const d = p.difficulty ?? difficulty(id, support);
-  const odds = p.chance ?? oddsOf(c, d);
-  const base = baseDifficulty(id);
+  const m = MILESTONE_BY_ID[id];
+  const cwShare = proposalCaseWorkerShare(s);
+  const cw = s.proposal!.caseWorker ? s.staff.find((x) => x.name === s.proposal!.caseWorker) : null;
+  const share = cwShare ?? prepShare(id, kr);
+  const chance = preparedChance(r, id, share);
+  const lines = share > 0 ? PROPOSAL.readiness.prepared : PROPOSAL.readiness.alone;
   return (
     <>
-      <div class="odds-bar" data-tip="odds" aria-label={PROPOSAL.chance(Math.round(odds * 100))}>
-        <span class="zone" style={{ width: `${odds * 100}%` }} />
-        {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}
-        <span class="odds-label">{Math.round(odds * 100)}%</span>
-      </div>
-      <div class="tug muted">
-        <span>
-          {PROPOSAL.competence} <strong>{Math.round(c)}</strong>
-        </span>
-        <span>
-          {PROPOSAL.difficulty} {d < base - 0.5 && <s>{base}</s>} <strong>{Math.round(d)}</strong>
-        </span>
+      <blockquote>
+        “{PROPOSAL.answer(m.label)} {lines[readiness(chance)]}”
+      </blockquote>
+      {cw && (
+        <p class="case-worker">
+          <span aria-hidden="true">{cw.face}</span> {PROPOSAL.caseWorker(cw.name, r.name)}
+        </p>
+      )}
+      <Odds r={r} id={id} share={share} />
+      {cwShare === null && <Wager id={id} kr={kr} setKr={setKr} />}
+      <div class="choices row">
+        <button
+          class="choice"
+          data-tip="go"
+          disabled={!ready || (cwShare === null && !canWager(s, kr))}
+          onClick={() => act((g) => accept(g, cwShare === null ? kr : 0))}
+        >
+          <span>{PROPOSAL.go}</span>
+          <span class="odds muted">
+            {kr > 0 && `${UNITS.kr(kr)} · `}
+            {PROPOSAL.cost(proposalCost())}
+          </span>
+        </button>
+        <button class="choice quiet" disabled={!ready} onClick={onBack}>
+          {PROPOSAL.back}
+        </button>
       </div>
     </>
   );
 }
 
-/** The kroner slider, before the first case worker. */
+/** Step 4: what the patient says, a plain stamp for the result and the fit, and the phases. */
+function Reaction({ r, id, ready }: { r: Resident; id: MilestoneId; ready: boolean }) {
+  const s = useGame();
+  const p = s.proposal!;
+  const won = p.outcome === 'success';
+  const fit = fitLevel(fitOf(r.identity, id));
+  return (
+    <div class="result">
+      <blockquote>
+        “{REACTION_FIT_LINE[fit]} {REACTION_RESULT_LINE[won ? 'success' : 'failure'][fit]}”
+      </blockquote>
+      <p class="stamps">
+        <span class={won ? 'stamp good' : 'stamp poor'}>
+          {won ? '✓' : '✗'} {won ? PROPOSAL.worked : PROPOSAL.failed}
+        </span>
+        <span class={`stamp ${fit}`}>
+          {REACTION_FACE[won ? 'success' : 'failure'][fit]} {PROPOSAL.fit[fit]}
+        </span>
+      </p>
+      {p.effect && (
+        <p class={`fit-effect ${p.effect.kind === 'strain' ? 'poor' : 'good'}`}>
+          {fitEffectText(p.effect, r.name)}
+        </p>
+      )}
+      <Track r={r} current={id} ticking={won} />
+      <button class="choice" disabled={!ready} onClick={() => act(closeProposal)}>
+        {PROPOSAL.continue}
+      </button>
+    </div>
+  );
+}
+
+/** What the fit did, in one plain line. */
+function fitEffectText(e: FitEffect, name: string): string {
+  const pct = (x: number) => Math.round(x * 100);
+  if (e.kind === 'overskudd') return PROPOSAL.effect.overskudd(name, pct(e.boost));
+  if (e.kind === 'tax') return PROPOSAL.effect.tax(name, pct(e.mult - 1));
+  return PROPOSAL.effect.strain(name, pct(e.strain));
+}
+
+/** The odds as a bar. After the roll, a marker rolls along it and stops at the roll. */
+function Odds({ r, id, share }: { r: Resident; id: MilestoneId; share: number }) {
+  const s = useGame();
+  const p = s.proposal!;
+  const rolled = p.outcome === 'success' || p.outcome === 'failure';
+  const odds = p.chance ?? preparedChance(r, id, share);
+  return (
+    <div class="odds-bar" data-tip="odds" aria-label={PROPOSAL.chance(Math.round(odds * 100))}>
+      <span class="zone" style={{ width: `${odds * 100}%` }} />
+      {rolled && <span class="marker" style={{ '--roll': `${p.roll! * 100}%` }} />}
+      <span class="odds-label">{Math.round(odds * 100)}%</span>
+    </div>
+  );
+}
+
+/** The kroner slider for preparation, before the first case worker. */
 function Wager({ id, kr, setKr }: { id: MilestoneId; kr: number; setKr: (v: number) => void }) {
   const s = useGame();
   const sure = maxKr(id);
   const cap = maxWager(s);
   return (
     <div class="wager">
+      <span class="label muted">{PROPOSAL.preparation}</span>
       <div class="slider" data-tip="wager" style={{ '--val': kr / sure, '--cap': cap / sure }}>
         {cap < sure && <span class="beyond" aria-hidden="true" />}
         {cap < sure && <span class="cap-mark" aria-hidden="true" />}
@@ -226,32 +330,14 @@ function Wager({ id, kr, setKr }: { id: MilestoneId; kr: number; setKr: (v: numb
         />
       </div>
       <span class="wager-ends muted">
-        <span>{UNITS.kr(0)}</span>
+        <span>{PROPOSAL.none}</span>
         <span class={kr >= sure ? 'sure on' : 'sure'}>{UNITS.kr(sure)}</span>
       </span>
     </div>
   );
 }
 
-/** The overskudd bar with the cost marked at its end. The cost drains when the player goes. */
-function OverskuddDrain({ before, cost, paid }: { before: number; cost: number; paid: boolean }) {
-  const pct = (v: number) => `${(v / OVERSKUDD_CAP) * 100}%`;
-  return (
-    <div class="drain" data-tip="drain">
-      <span class="label">{PROPOSAL.overskudd}</span>
-      <div class="meter">
-        <div
-          class={paid ? 'fill paid' : 'fill'}
-          style={{ '--from': pct(before), '--to': pct(before - cost) }}
-        />
-        {!paid && <div class="price" style={{ left: pct(before - cost), width: pct(cost) }} />}
-      </div>
-      <span class="cost">−{cost}</span>
-    </div>
-  );
-}
-
-/** The three phases. A done phase shows its card. The current one ticks after the roll when it works. */
+/** The three phases. A done phase shows its card. The current one ticks when it works. */
 function Track({ r, current, ticking }: { r: Resident; current?: MilestoneId; ticking: boolean }) {
   const phaseNow = current ? MILESTONE_BY_ID[current].phase : null;
   return (

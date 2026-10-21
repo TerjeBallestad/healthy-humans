@@ -34,6 +34,7 @@ import {
 } from './institution';
 import {
   caseworkCost,
+  coursesReady,
   hire,
   postAd,
   rollCandidates,
@@ -120,6 +121,20 @@ describe('staff', () => {
     expect(netIncomePerWeek(s)).toBe(GRANT_PER_WEEK - wage(s.staff[0]!));
     expect(s.candidates).toHaveLength(0);
     expect(hireCost(s)).toBeGreaterThan(HIRE_COST_BASE);
+  });
+
+  test('courses ready counts what a staff member can take now', () => {
+    const s = newGame();
+    rollCandidates(s, 'worker');
+    hire(s, 0);
+    s.omsorg = 0;
+    expect(coursesReady(s, 0)).toBe(0);
+    s.omsorg = 1000;
+    const n = coursesReady(s, 0);
+    expect(n).toBeGreaterThan(1); // mestring and the specialities not yet learned
+    trainMestring(s, 0);
+    expect(coursesReady(s, 0)).toBe(n - 1);
+    expect(coursesReady(s, 5)).toBe(0);
   });
 
   test('turning everyone down closes the ad', () => {

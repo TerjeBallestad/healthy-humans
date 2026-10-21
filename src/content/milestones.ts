@@ -1,4 +1,5 @@
 import type { Colour } from './identity';
+import { byId } from './byId';
 
 // Milestones are cards in three phases: identity, then mastery, then purpose.
 // A proposal offers a hand of cards from the patient's phase. One success moves them to the next phase.
@@ -12,6 +13,16 @@ export const PHASE_LABEL: Record<Phase, string> = {
   identity: 'Identity',
   mastery: 'Mastery',
   purpose: 'Purpose',
+};
+
+/** The question the player answers when a proposal opens: what should the patient try in this phase? */
+// TODO(Terje): placeholder questions. The identity one is from Terje's draft on 2026-10-16.
+export const PHASE_QUESTION: Record<Phase, (name: string) => string> = {
+  identity: (name) =>
+    `${name} has been feeling a bit lost lately, and thinks a journey of self-discovery could help. What do you recommend, so ${name} can find out who they really are?`,
+  mastery: (name) =>
+    `${name} has found some footing and wants a real challenge. What should ${name} try to get good at?`,
+  purpose: (name) => `${name} wants to give something back. Where could ${name} make a difference?`,
 };
 
 export type MilestoneId =
@@ -41,7 +52,7 @@ export interface MilestoneDef {
   failure?: string;
   /** Hidden. How well the card fits each colour, from -3 to +3. */
   fit: Record<Colour, number>;
-  /** Purpose cards only: kroner per week after discharge as a healthy human, before quality and trait. */
+  /** Purpose cards only: kroner per week after discharge as a healthy human, before the fit and the trait. */
   tax?: number;
 }
 
@@ -152,18 +163,18 @@ export const MILESTONES: MilestoneDef[] = [
   },
 ];
 
-export const MILESTONE_BY_ID = Object.fromEntries(MILESTONES.map((m) => [m.id, m])) as Record<
-  MilestoneId,
-  MilestoneDef
->;
+export const MILESTONE_BY_ID = byId(MILESTONES);
 
 /** Cards in a hand. */
 export const HAND_SIZE = 3;
 /** Fit at or above this is good, at or below its negative is poor. */
 export const GOOD_FIT = 1;
-/** Each point of fit over the stay's successes adds this to the quality. Quality multiplies the tax. */
-export const QUALITY_PER_FIT = 0.1;
-export const QUALITY_MIN = 0.2;
+/** A good fit that works in identity or mastery: overskudd grows this much faster for the rest of the stay. */
+export const FIT_OVERSKUDD_BOOST = 0.25;
+/** A good purpose card that works multiplies the tax at discharge by this. */
+export const FIT_TAX_MULT = 1.5;
+/** A poor fit, whatever the roll, adds this strain: needs drop faster for a while, as after a long wait. */
+export const FIT_POOR_STRAIN = 0.2;
 
 export type FitLevel = 'good' | 'neutral' | 'poor';
 
@@ -171,4 +182,28 @@ export type FitLevel = 'good' | 'neutral' | 'poor';
 export const REACTION_FACE: Record<'success' | 'failure', Record<FitLevel, string>> = {
   success: { good: '🤩', neutral: '🙂', poor: '😶' },
   failure: { good: '😤', neutral: '😕', poor: '😞' },
+};
+
+/**
+ * What the patient says afterwards, in two parts. The fit line says how it felt. The result line
+ * says whether it worked, and is keyed by the fit too, so it can agree or contrast ("But ...").
+ */
+// TODO(Terje): placeholder reaction lines, from Terje's examples on 2026-10-16.
+export const REACTION_FIT_LINE: Record<FitLevel, string> = {
+  good: 'I had a great experience.',
+  neutral: 'It was OK, I guess.',
+  poor: 'I really hated it.',
+};
+
+export const REACTION_RESULT_LINE: Record<'success' | 'failure', Record<FitLevel, string>> = {
+  success: {
+    good: 'I feel like a new person.',
+    neutral: 'But I learned a thing or two.',
+    poor: 'But I learned a thing or two about myself.',
+  },
+  failure: {
+    good: "But I don't feel like I learned anything.",
+    neutral: "I don't feel like I learned anything.",
+    poor: "And I don't feel like I learned anything.",
+  },
 };

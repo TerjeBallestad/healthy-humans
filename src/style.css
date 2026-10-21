@@ -790,17 +790,8 @@ button:disabled {
   position: relative;
   margin-bottom: 18px;
 }
-.scene .face .base.gone {
-  animation: fade-out 0.3s ease-in 1.6s both;
-}
 .scene .face .react {
-  position: absolute;
-  animation: pop 0.4s ease-out 1.6s both;
-}
-@keyframes fade-out {
-  to {
-    opacity: 0;
-  }
+  animation: pop 0.4s ease-out 0.1s both;
 }
 @keyframes pop {
   from {
@@ -850,6 +841,50 @@ button:disabled {
 .scene blockquote {
   margin: 12px 0 16px;
   text-align: center;
+}
+.scene .question {
+  margin: 14px 0 4px;
+  font-size: 1.1rem;
+  line-height: 1.45;
+  text-align: center;
+}
+.scene .wager .label {
+  font-size: 0.8rem;
+}
+.scene .stamps {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+.scene .stamp {
+  padding: 4px 12px;
+  border-radius: 14px;
+  border: 1px solid currentColor;
+  font-weight: 600;
+  animation: pop 0.4s ease-out 0.2s both;
+}
+.scene .stamp.good {
+  color: var(--accent);
+}
+.scene .stamp.poor {
+  color: var(--warn);
+}
+.scene .stamp.neutral {
+  color: var(--muted);
+}
+.scene .fit-effect {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+  animation: pop 0.4s ease-out 0.4s both;
+}
+.scene .fit-effect.good {
+  color: var(--accent);
+}
+.scene .fit-effect.poor {
+  color: var(--warn);
 }
 .drain {
   display: grid;
@@ -926,7 +961,7 @@ button:disabled {
   border-color: var(--accent);
 }
 .track .tick .dot {
-  animation: tick 0.4s ease-out 1.6s both;
+  animation: tick 0.4s ease-out 0.5s both;
 }
 @keyframes tick {
   from {
@@ -1070,15 +1105,6 @@ button:disabled {
 }
 .choices.row {
   grid-template-columns: 2fr 1fr;
-}
-.result.rolled > * {
-  animation: appear 0.3s ease-out 1.4s both;
-}
-@keyframes appear {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
 }
 
 .stakes {
@@ -1852,4 +1878,25 @@ button:disabled {
     color-mix(in srgb, var(--a) 70%, white) 50%,
     color-mix(in srgb, var(--b) 70%, white) 50%
   );
+}
+
+/* Milestones tried, with the reaction to each. */
+.tries {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+.tries .try {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.tries .try.won {
+  color: var(--fg);
+  border-color: var(--accent);
 }

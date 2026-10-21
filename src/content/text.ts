@@ -67,11 +67,14 @@ export const STRIP = {
 
 export const RESIDENT = {
   emptyBed: 'Empty bed',
-  strain: (health: number, pct: number) =>
-    `Arrived at health ${health}. Needs drop ${pct}% faster for now.`,
+  // TODO(Terje): placeholder. Strain now comes from a poor arrival or a poor milestone fit.
+  strain: (pct: number) => `Needs drop ${pct}% faster for now.`,
+  // TODO(Terje): placeholder for the overskudd boost from milestones with a good fit.
+  boost: (pct: number) => ` · +${pct}% from milestones`,
   overskudd: 'Overskudd',
   growing: (pct: number) => ` · growing at ${pct}% while a need is low`,
-  milestones: 'Milestones: ',
+  // TODO(Terje): placeholder label for the list of milestones tried.
+  milestones: 'Tried: ',
   discharge: (tier: string) => `Discharge: ${tier.toLowerCase()}`,
   nextTier: (tier: string, tax: number, missing: string[]) =>
     `${tier} (+${tax} kr/week) needs ${missing.join(', ')}.`,
@@ -135,6 +138,8 @@ export const UPGRADES_MENU = {
     staff: (x: string) => `Staff nudge ×${x}`,
     grant: (x: string) => `Kommune grant ×${x}`,
     house: (x: string) => `Overskudd ×${x} for everyone`,
+    // TODO(Terje): placeholder effect for the personality upgrade.
+    insight: () => "See each patient's personality",
     // TODO(Terje): placeholder effect for the pay grade line.
     payGrade: (n: number) => `Wages can rise up to +${n} kr/week`,
   },
@@ -192,9 +197,9 @@ export const STAFF_TEXT = {
   // TODO(Terje): placeholder labels for the case worker.
   level: 'Level',
   caseworkCourse: 'Casework course',
-  difficulty: 'Difficulty',
-  reduced: (from: number, to: number) => `${from} → ${to}`,
-  caseworkEffect: (from: number, to: number) => `Milestone difficulty ÷${from} → ÷${to}`,
+  preparation: 'Preparation',
+  worth: (kr: number) => `worth ${kr} kr`,
+  caseworkEffect: (from: number, to: number) => `Prepares like ${from}% → ${to}% of the full price`,
   // TODO(Terje): placeholder labels for the intake course and its rules.
   intakeCourse: 'Intake course',
   intakeEffect: 'Admits to a free bed by your rule',
@@ -225,16 +230,46 @@ export const DISCHARGE = {
 
 export const PROPOSAL = {
   chance: (pct: number) => `Chance ${pct}%`,
-  krToSpend: 'Kroner to spend',
+  krToSpend: 'Kroner to spend on preparation',
   go: 'Go',
-  alone: 'alone',
   notNow: 'Not now',
   declined: 'Maybe another time.',
   continue: 'Continue',
-  overskudd: 'Overskudd',
-  // TODO(Terje): placeholder labels for the two sides of the odds bar.
-  competence: 'Competence',
-  difficulty: 'Difficulty',
+  // TODO(Terje): placeholder lines for the four steps of a proposal (2026-10-16).
+  /** Under Go: what going costs the patient. */
+  cost: (n: number) => `−${n} overskudd`,
+  back: 'Something else',
+  /** The patient's first answer to the card the player picked. */
+  answer: (label: string) => `${label}? Maybe that is what I need.`,
+  /** How sure the patient feels, from the odds. "prepared" is with a wager or a case worker. */
+  readiness: {
+    alone: {
+      sure: 'I think I can do that.',
+      unsure: "I'm not sure I can do that. Maybe I need some help first?",
+      doubt: "I don't think I can do that. Not yet. Not without help.",
+    },
+    prepared: {
+      sure: 'With some help, I think I can do it.',
+      unsure: "With the help, maybe. I'm still not sure.",
+      doubt: "Even with help, I don't know.",
+    },
+  },
+  preparation: 'Preparation',
+  none: 'None',
+  caseWorker: (cw: string, name: string) => `${cw} helps ${name} prepare.`,
+  attempt: (label: string, name: string) => `${label}: ${name} gives it a try.`,
+  worked: 'It worked',
+  failed: "It didn't work",
+  fit: { good: 'A good fit', neutral: 'Neither', poor: 'Not a fit' },
+  /** What the fit did. Shown under the stamps. */
+  effect: {
+    overskudd: (name: string, pct: number) =>
+      `${name} found something that fits. Overskudd grows ${pct}% faster for the rest of the stay.`,
+    tax: (name: string, pct: number) =>
+      `${name} found a purpose that fits. The tax at discharge is ${pct}% higher.`,
+    strain: (name: string, pct: number) =>
+      `It took a lot out of ${name}. Needs drop ${pct}% faster for a while.`,
+  },
 };
 
 export const TOASTS = {
@@ -268,14 +303,15 @@ export const TIPS = {
   discharge: (name: string) =>
     `${name} can go home now. A higher tier pays more tax, but the bed stays full while you wait.`,
   milestoneTitle: 'A milestone',
-  // TODO(Terje): the milestone name went out of this line with the hand of cards.
+  // TODO(Terje): placeholder tips for the proposal steps (2026-10-16).
   milestone: (name: string, count: number) =>
     `${name} wants to try something big. ${count} milestones lead to a healthy human.`,
-  // TODO(Terje): placeholder for the tip on the hand of milestone cards.
   hand: 'Pick one.',
   wagerTitle: 'Drag here',
-  // TODO(Terje): the second sentence ("At X kr it is sure to work") went with the sure price.
-  wager: 'Spend kroner on support to raise the odds.',
-  go: (cost: number, name: string) =>
-    `Go costs ${cost} overskudd (striped on the bar) and rolls the odds. "Not now" is free, and ${name} asks again later.`,
+  wager: 'Spend kroner on preparation to raise the odds.',
+  go: (cost: number) => `Go costs ${cost} overskudd and rolls the odds.`,
+  // TODO(Terje): placeholder for the pop-up when personalities unlock.
+  identityTitle: 'Personalities',
+  identity:
+    'Now you can see who each patient is. Each personality likes some milestones and dislikes others. Find out which ones fit.',
 };

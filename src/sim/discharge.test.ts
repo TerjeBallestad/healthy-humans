@@ -52,10 +52,11 @@ describe('tiers', () => {
     r.trait = null;
     r.identity = { primary: 'white' };
     automatic(r, 9);
-    r.milestones = ['trip', 'piano', 'job'];
-    const poor = tierTax(r, 'healthy');
     r.milestones = ['nav', 'course', 'job'];
-    expect(tierTax(r, 'healthy')).toBeGreaterThan(poor);
+    r.identity = { primary: 'black' }; // the job is neutral for black
+    const neutral = tierTax(r, 'healthy');
+    r.identity = { primary: 'white' }; // and good for white
+    expect(tierTax(r, 'healthy')).toBeGreaterThan(neutral);
     expect(tierTax(r, 'healthy')).toBe(Math.round(100 * quality(r)));
     r.milestones = ['nav', 'course', 'volunteer'];
     expect(tierTax(r, 'healthy')).toBe(Math.round(20 * quality(r)));

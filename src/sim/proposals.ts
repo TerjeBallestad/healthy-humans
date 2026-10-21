@@ -5,23 +5,27 @@ import {
   MILESTONE_BY_ID,
   PHASES,
   PHASE_RULES,
-  QUALITY_MIN,
-  QUALITY_PER_FIT,
+  FIT_OVERSKUDD_BOOST,
+  FIT_POOR_STRAIN,
+  FIT_TAX_MULT,
   type FitLevel,
   type MilestoneId,
   type Phase,
 } from '../content/milestones';
 import { ACTIVITIES } from '../content/activities';
 import { PRIMARY_WEIGHT, identityKey, type Identity } from '../content/identity';
-import { CASEWORKER_SUPPORT_PER_LEVEL } from '../content/staff';
+import { CASEWORKER_SHARE_PER_LEVEL } from '../content/staff';
 import {
   ATTEMPT_BONUS,
   MAX_SKILL,
   PROPOSAL_COOLDOWN_WEEKS,
   PROPOSAL_COST_MILESTONE,
-  WAGER_SUPPORT_AT_MAX,
+  READY_SURE,
+  PREP_CURVE,
+  READY_UNSURE,
 } from '../content/tuning';
 import { random } from './rng';
+import { identitiesShown } from './institution';
 import { bestCaseWorker } from './staff';
 import { unlockedActivities } from './selectors';
 import { occupied, type GameState, type Resident } from './state';
@@ -62,10 +66,32 @@ export function fitLevel(fit: number): FitLevel {
   return fit >= GOOD_FIT ? 'good' : fit <= -GOOD_FIT ? 'poor' : 'neutral';
 }
 
-/** The stay's quality: the fit of every success, added up. Multiplies the tax at discharge. */
+/** Multiplies the tax at discharge: FIT_TAX_MULT when the purpose card that worked was a good fit. */
 export function quality(r: Resident): number {
-  const sum = r.milestones.reduce((a, m) => a + fitOf(r.identity, m), 0);
-  return Math.max(QUALITY_MIN, 1 + QUALITY_PER_FIT * sum);
+  const purpose = r.milestones.find((m) => MILESTONE_BY_ID[m].phase === 'purpose');
+  return purpose && fitLevel(fitOf(r.identity, purpose)) === 'good' ? FIT_TAX_MULT : 1;
+}
+
+/** What a try did because of the fit, for the reaction screen. */
+export type FitEffect =
+  | { kind: 'overskudd'; boost: number }
+  | { kind: 'tax'; mult: number }
+  | { kind: 'strain'; strain: number };
+
+/**
+ * The fit acts at once. A good fit that works in identity or mastery makes overskudd grow faster for
+ * the rest of the stay. A good purpose card that works raises the tax. A poor fit hurts, whatever the roll.
+ */
+export function applyFit(r: Resident, m: MilestoneId, won: boolean): FitEffect | undefined {
+  const level = fitLevel(fitOf(r.identity, m));
+  if (level === 'poor') {
+    r.strain += FIT_POOR_STRAIN;
+    return { kind: 'strain', strain: FIT_POOR_STRAIN };
+  }
+  if (level !== 'good' || !won) return undefined;
+  if (MILESTONE_BY_ID[m].phase === 'purpose') return { kind: 'tax', mult: FIT_TAX_MULT };
+  r.boost = (r.boost ?? 0) + FIT_OVERSKUDD_BOOST;
+  return { kind: 'overskudd', boost: FIT_OVERSKUDD_BOOST };
 }
 
 /** The best fit, the worst fit and one other from the phase, in the order of the card list. */
@@ -99,19 +125,19 @@ export function competence(r: Resident, m: MilestoneId): number {
   return skills + ATTEMPT_BONUS * (r.attempts?.[m] ?? 0);
 }
 
-/** Support divides the difficulty. Each point of support helps less than the one before. */
-export function difficulty(m: MilestoneId, support: number): number {
-  return baseDifficulty(m) / (1 + support);
+/** Preparation as a share of the full price, 0 to 1. */
+export function prepShare(m: MilestoneId, kr: number): number {
+  return Math.min(1, Math.max(0, kr / maxKr(m)));
 }
 
-/** Support from a wager: WAGER_SUPPORT_AT_MAX at the top of the slider. */
-export function wagerSupport(m: MilestoneId, kr: number): number {
-  return (WAGER_SUPPORT_AT_MAX * Math.min(kr, maxKr(m))) / maxKr(m);
+/** A case worker of this level prepares the patient as well as this share of the full price. */
+export function caseWorkerShare(level: number): number {
+  return Math.min(1, CASEWORKER_SHARE_PER_LEVEL * level);
 }
 
-/** Support from a case worker of this level. */
-export function caseWorkerSupport(level: number): number {
-  return CASEWORKER_SUPPORT_PER_LEVEL * level;
+/** How much of the gap to certain a share of the full price closes. 0 gives 0, 1 gives 1. */
+export function prepCurve(share: number): number {
+  return (1 - Math.exp(-PREP_CURVE * share)) / (1 - Math.exp(-PREP_CURVE));
 }
 
 /** The share of the tug of war the resident wins. */
@@ -119,9 +145,27 @@ export function odds(c: number, d: number): number {
   return c + d > 0 ? c / (c + d) : 1;
 }
 
+export type Readiness = 'sure' | 'unsure' | 'doubt';
+
+/** How sure the patient feels about the odds, for their answer. */
+export function readiness(chance: number): Readiness {
+  return chance >= READY_SURE ? 'sure' : chance >= READY_UNSURE ? 'unsure' : 'doubt';
+}
+
+/** The odds alone: competence against the card's difficulty. */
+export function baseChance(r: Resident, m: MilestoneId): number {
+  return odds(competence(r, m), baseDifficulty(m));
+}
+
+/** Preparation closes the gap from the odds alone to certain. The full price makes it sure. */
+export function preparedChance(r: Resident, m: MilestoneId, share: number): number {
+  const base = baseChance(r, m);
+  return base + (1 - base) * prepCurve(share);
+}
+
 /** Odds for a wager in kroner. */
 export function chance(r: Resident, m: MilestoneId, kr: number): number {
-  return odds(competence(r, m), difficulty(m, wagerSupport(m, kr)));
+  return preparedChance(r, m, prepShare(m, kr));
 }
 
 /** Open a proposal for the first resident whose cooldown is over and who has the overskudd. */
@@ -134,7 +178,8 @@ export function maybePropose(state: GameState) {
     const hand = dealHand(state, r, phase);
     const last = state.playbook[playbookKey(r, phase)];
     state.proposal = { bed, hand, overskuddBefore: r.overskudd };
-    if (last && hand.includes(last)) state.proposal.pick = last;
+    // The playbook is keyed by identity, so it prefills only once the player can see identities.
+    if (identitiesShown(state) && last && hand.includes(last)) state.proposal.pick = last;
     // After the hire, the case worker supports every milestone. The player has no wager.
     const cw = bestCaseWorker(state);
     if (cw) state.proposal.caseWorker = cw.name;
@@ -153,11 +198,11 @@ export function pick(state: GameState, m: MilestoneId): boolean {
   return true;
 }
 
-/** The support the case worker in the proposal gives, or null before the first case worker. */
-export function proposalCaseWorkerSupport(state: GameState): number | null {
+/** The preparation share the case worker in the proposal gives, or null before the first case worker. */
+export function proposalCaseWorkerShare(state: GameState): number | null {
   const name = state.proposal?.caseWorker;
   const cw = name ? state.staff.find((x) => x.name === name) : undefined;
-  return cw ? caseWorkerSupport(cw.level ?? 1) : null;
+  return cw ? caseWorkerShare(cw.level ?? 1) : null;
 }
 
 /** The most the player can wager now: the budget in whole kroner, at most the top of the slider. */
@@ -175,26 +220,26 @@ export function accept(state: GameState, kr: number): boolean {
   const p = state.proposal;
   const r = p && state.beds[p.bed];
   if (!p || !r || !p.pick || p.outcome) return false;
-  const cw = proposalCaseWorkerSupport(state);
+  const cw = proposalCaseWorkerShare(state);
   if (cw !== null) {
     if (kr !== 0) return false;
     resolve(state, cw, 0);
     return true;
   }
   if (!canWager(state, kr)) return false;
-  resolve(state, wagerSupport(p.pick, kr), kr);
+  resolve(state, prepShare(p.pick, kr), kr);
   return true;
 }
 
 /** Pay the wager and the overskudd, and roll the outcome. A failed try adds competence for the next one. */
-function resolve(state: GameState, support: number, kr: number) {
+function resolve(state: GameState, share: number, kr: number) {
   const p = state.proposal!;
   const r = state.beds[p.bed]!;
   const id = p.pick!;
   const m = MILESTONE_BY_ID[id];
   const c = competence(r, id);
-  const d = difficulty(id, support);
-  const chance = odds(c, d);
+  const d = baseDifficulty(id);
+  const chance = preparedChance(r, id, share);
   state.budget -= kr;
   // The overskudd is the price of doing it. Saying no costs nothing.
   r.overskudd -= proposalCost();
@@ -203,6 +248,9 @@ function resolve(state: GameState, support: number, kr: number) {
   const won = roll < chance;
   Object.assign(p, { kr, chance, competence: c, difficulty: d, roll });
   p.outcome = won ? 'success' : 'failure';
+  r.tries = [...(r.tries ?? []), { id, won }];
+  p.effect = applyFit(r, id, won);
+  state.milestoneTries = (state.milestoneTries ?? 0) + 1;
   if (won) r.milestones.push(id);
   else r.attempts = { ...r.attempts, [id]: (r.attempts?.[id] ?? 0) + 1 };
   p.result = won

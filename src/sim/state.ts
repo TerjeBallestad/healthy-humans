@@ -27,6 +27,7 @@ import {
 import type { TierId } from '../content/tiers';
 import type { IntakeRule, StaffRole } from '../content/staff';
 import type { LineId } from '../content/upgrades';
+import type { FitEffect } from './proposals';
 
 export const SAVE_VERSION = 25;
 
@@ -54,6 +55,10 @@ export interface Resident {
   milestones: MilestoneId[];
   /** Failed tries at each milestone. Each one adds competence at the next try. Missing in old saves. */
   attempts?: Partial<Record<MilestoneId, number>>;
+  /** Extra overskudd growth from milestones with a good fit, added: 0.25 is 25% faster. Missing: 0. */
+  boost?: number;
+  /** Every milestone tried, in order, with the result. The resident panel lists them. Missing in old saves. */
+  tries?: { id: MilestoneId; won: boolean }[];
   /** Health when they moved in, 0 to 100. */
   arrivalHealth: number;
   /** Extra need decay from poor health at arrival, as a fraction. Fades over time. */
@@ -103,12 +108,14 @@ export interface Proposal {
   /** Kroner wagered and the chance it gave. Set once the player has chosen. */
   kr?: number;
   chance?: number;
-  /** The resident's competence and the milestone's difficulty after support, at the roll. */
+  /** The resident's competence and the milestone's difficulty, at the roll. */
   competence?: number;
   difficulty?: number;
   /** The roll, 0 to 1. Below the chance is a success. */
   roll?: number;
-  /** The case worker who supports it. Missing before the first case worker: the player wagers. */
+  /** What the fit did, for the reaction screen. Missing when the fit did nothing. */
+  effect?: FitEffect;
+  /** The case worker who prepares the patient. Missing before the first case worker: the player wagers. */
   caseWorker?: string;
   /** Set once the player has chosen. */
   outcome?: 'success' | 'failure' | 'declined';
@@ -183,6 +190,8 @@ export interface GameState {
   identities: number;
   /** The player's last pick for each identity and phase, keyed "identityKey:phase". */
   playbook: Record<string, MilestoneId>;
+  /** Milestones tried in the whole game. The personality upgrade shows after the first. Missing: 0. */
+  milestoneTries?: number;
 }
 
 const perActivity = (value: number) =>

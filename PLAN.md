@@ -38,6 +38,7 @@ One word, one meaning.
 | **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                  |
 | **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                   |
 | **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                          |
+| **Preparation**    | Kroner the player spends before a milestone to raise the odds (the old wager). After the hire, the case worker prepares the patient.    |
 
 ## Mechanics (Act 1)
 
@@ -210,11 +211,27 @@ Each step ends with something playable and one question to answer by playing.
 - "Fit for work" needs an identity and a mastery success and all routines. "Healthy human" needs a purpose success and pays that card's tax (job 100, business 60, kids' team 30, volunteering 20). Quality (1 + 0.1 per point of fit, at least 0.2) multiplies every tier's tax.
 - Not in it: primærkontakt, talking, the story timeline, more cards and unlocks, hidden identity, a planning course.
   _Question: do the patients feel like people, and does learning the fit feel like the Game Dev Tycoon table?_
+  Played 2026-10-16: it did not work. The identity is sprung on the player with no frame, the chip does not register, the hand gets random clicks, and the reaction is too subtle. One panel held too many concepts: milestone, phase, card, personality, overskudd, competence, difficulty and wager.
+  11b: **one decision at a time.** Built 2026-10-16, not played yet. The proposal is four short steps, and the patient tells the story:
+  1. **The question.** The phase as a question ("What do you recommend, so Arvid can find out who they really are?") and the hand. "Not now" is here.
+  2. **The answer.** The patient answers the pick, and sounds sure, unsure or doubtful from the odds (`READY_SURE` 0.7, `READY_UNSURE` 0.45). The odds bar stays, with words (Terje). The wager is now **preparation**: kroner for lessons, a plan, someone who goes along. It fits every card. After the hire, the case worker prepares the patient, and the slider goes. "Go" shows the overskudd cost. "Something else" goes back to the hand.
+  3. **The attempt.** One line, and the marker rolls on the odds bar.
+  4. **The reaction.** The reaction face, then two lines: one for the fit ("I really hated it."), then one for the result ("But I learned a thing or two."). The result line is keyed by the fit too, so it can agree or contrast. Then two plain stamps ("✓ It worked", "😞 Not a fit"). The phase track ticks on a success.
+  - **Personalities are an upgrade the player buys** (Terje: the player has it, not the case worker). The "Personality profiles" line (Your work tab, 800 kr, one step) shows after the first milestone try. Before it, no chips show anywhere, and the playbook does not prefill (it is keyed by identity). After the buy, a tip points at the chip and explains it.
+  - **The resident panel lists every try** ("Tried:") with ✓ or ✗ and the reaction face, so what the player learned stays on screen.
+  - All new lines are placeholders marked `TODO(Terje)`.
+    _Question: does each step make sense to a first-time player, and does buying personalities feel like a light turning on?_
+    11c: **fit acts at once, and a gentler wager.** Built 2026-10-16, not played yet. Terje: the fit did nothing you could feel (only a tax multiplier at discharge), and the armor wager was too steep.
+  - **Fit effects, shown on the reaction screen in one plain line.** A good fit that works in identity or mastery: overskudd grows 25% faster for the rest of the stay (`FIT_OVERSKUDD_BOOST`, adds up). A good purpose card that works: tax ×1.5 at discharge (`FIT_TAX_MULT`). This replaces the old quality sum. A poor fit, whatever the roll: strain +0.2, so needs drop 20% faster for a while, as after a long wait (`FIT_POOR_STRAIN`). Neutral: nothing. Fit still does not change the odds, so the odds bar cannot leak the hidden table.
+  - **Preparation closes the gap to certain.** Competence against difficulty gives the odds alone. Kroner close the gap to 100% along a gentle curve, `(1 − e^(−1.5x)) / (1 − e^(−1.5))` for share x of the full price (`PREP_CURVE`). The full price is sure. Arvid at competence 13 on an identity card: 57% alone, 65% at 60 kr, 71% at 120 kr, 86% at 300 kr, 100% at 600 kr.
+  - **A case worker prepares like a share of the full price:** 18% per level (`CASEWORKER_SHARE_PER_LEVEL`). Lvl 1 gives 70% in the example above, lvl 5 gives 98%, never sure.
+    Played 2026-10-16 (11b, 11c and the training badge): the milestones work well mechanically, and they are fun to play with. Next: a content pass by Terje on all milestone text (see "Milestone content" in `HANDOFF.md`).
 
 ## After Act 1: several facilities
 
 Terje's direction (2026-10-10). Not built, not final.
 
+- **Decided 2026-10-16: a Godot rewrite in a third repo, for Steam.** See `GODOT.md`. This web build stays for itch.io and market fit.
 - In the end the game joins the Godot sim in `../lifelines-core-loop`. Facilities are places on a map, and you see residents move and do activities. In this UI, facilities can be tabs.
 - The top-level play: which staff go to which facility, and which patient goes to which bed. Moves should cost something.
 - Facilities are blank slates. The furniture and objects you put in them specialise them. A label such as "works as a rusbolig" can emerge from the objects. Objects change rules. Staff skills change rates.
@@ -228,7 +245,7 @@ Terje: patients are too anonymous. The game should in the end focus on the patie
 Settled so far:
 
 - **Identity is visible, fit is discovered.** The referral shows the patient's identity. The player learns what fits it. Hiding the identity can come later, if it feels too easy.
-- **The fit table is hidden data.** Each milestone is a row, and the five colours are the columns, with a value from −3 to +3 per cell. A patient's fit with a milestone is the sum of their two colours, with the primary weighted higher. Five columns give all ten pairs, so what the player learns about one colour carries over to new pairs.
+- **The fit table is hidden data.** Each milestone is a row, and the five colours are the columns, with a value from −3 to +3 per cell. A patient's fit with a milestone is the sum of their two colours, with both colours counted the same (changed 2026-10-16: with the primary at 60%, one chip could hide two different fits, so the player could not learn it). Five columns give all ten pairs, so what the player learns about one colour carries over to new pairs.
 - **The player learns the fit from a reaction after the milestone.** It shows whether the milestone fit, apart from whether the roll succeeded. Terje writes the reaction lines.
 - **Two results, four outcomes.** Competence decides whether a milestone works (the roll). Fit decides what it means (the reaction). Success with a good fit: flourishing. Success with a poor fit: it worked, but left the patient empty (a Crooked Rung, as in Lifelines). Failure with a good fit: they want to try again. Failure with a poor fit: it hurt.
 - **The patient offers a hand of 2 or 3 milestones.** When a proposal comes, the player picks one or says "Not now". The hand comes from the patient's identity: usually one good fit, one neutral, one poor. Milestones become cards from a pool that grows with unlocks, not fixed steps on one path. A case worker course can later pick from the hand by a rule.
@@ -242,7 +259,15 @@ Settled so far:
 
 Open: what the outcomes change in the game, Ikigai as the score, colours or keywords on screen, more milestones and how they unlock, the primærkontakt, talking, and a visible story.
 
-## Open questions to answer in play
+## Content production (parked, 2026-10-16)
+
+The milestone mechanics work and are fun (Terje, 2026-10-16). The content is placeholder and does not hold together yet. In play, a Contemplative patient got a neutral fit on the meditation retreat, and the neutral line ("Not my cup of tea") read as a poor fit. Two fixes are in: pairs count both colours at 50%, and the neutral line sounds neutral. The rest waits for a content pass. Keep these rules in mind, so the content work stays clear and has an end:
+
+- **More cards per phase.** Four cards per phase give a hand of three that hardly changes. More cards also give the fit table more to teach.
+- **Lines per card by default, with an override per archetype.** Each card has its own lines (the answer, the attempt, the reactions) that work for every patient. An archetype can override the lines that matter ("Arvid on the retreat"). The code looks for the archetype line first, then the card line, then a generic line. Lines can then come one at a time, and the game always has something to show.
+- **The fit table and the keywords are written together.** Each card's fit row must match the words on the chips, so that "Contemplative likes the retreat" makes sense to a player. The current table is from the first grilling and does not follow the keywords (for example Self-care, Black, hates the retreat).
+- **Each identity needs a clear like and a clear dislike in each phase.** Today pairs such as Protective and Dutiful are neutral on almost every card, so the player learns nothing from them.
+- **A coverage script.** It lists the cards and identities with missing lines or flat fits, and prints the fit of every card for every identity, so the content pass has a checklist and an end.
 
 - Is the omsorg cap needed? (There are now cap upgrades, so it is part of the economy.)
 - Is a need at 0 for 30% of the time too harsh for a relaxed player? (`npm run sim -- --taps-per-second=2`)

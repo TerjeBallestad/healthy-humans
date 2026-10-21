@@ -46,8 +46,12 @@ export const COLOUR_CSS: Record<Colour, string> = {
   green: '#7fb069',
 };
 
-/** How much the primary counts in a pair. The secondary counts the rest. A single colour counts fully. */
-export const PRIMARY_WEIGHT = 0.6;
+/**
+ * How much the primary counts in a pair. The secondary counts the rest. A single colour counts fully.
+ * At 0.5 the chip alone decides the fit, so the player can learn it (2026-10-16). Above 0.5, two
+ * patients with the same chip can react differently to the same card.
+ */
+export const PRIMARY_WEIGHT = 0.5;
 /** The first patients have one colour each, all different, so the player learns the colours one at a time. */
 export const FIRST_SINGLES = 3;
 /** After the first few, the share of new patients with one colour. */

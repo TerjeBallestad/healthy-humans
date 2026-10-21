@@ -1,13 +1,14 @@
 import { NEEDS } from '../content/needs';
-import { MILESTONE_BY_ID } from '../content/milestones';
+import { MILESTONE_BY_ID, REACTION_FACE } from '../content/milestones';
 import { TRAIT_BY_ID } from '../content/traits';
 import { NEED_THRESHOLD, OVERSKUDD_CAP } from '../content/tuning';
 import { bestTier, nextTier, openDischarge, tierMissing, tierTax } from '../sim/discharge';
+import { fitLevel, fitOf } from '../sim/proposals';
 import { isSeen } from '../sim/reveal';
 import { activeNeeds, statusLine } from '../sim/selectors';
 import { selectedResident } from '../sim/state';
 import { act, useGame } from '../store';
-import { RESIDENT, UNITS } from '../content/text';
+import { PROPOSAL, RESIDENT, UNITS } from '../content/text';
 import { IdentityChip } from './IdentityChip';
 
 export function ResidentPanel() {
@@ -22,20 +23,18 @@ export function ResidentPanel() {
   const best = bestTier(r);
   const better = nextTier(r);
   const needs = activeNeeds(r);
+  // Old saves have only the successes.
+  const tries = r.tries ?? r.milestones.map((id) => ({ id, won: true }));
   const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
   return (
     <section class="panel resident">
       <h2>
         {r.name}
-        <IdentityChip id={r.identity} />
+        <IdentityChip id={r.identity} tip="identity" />
         {r.trait && <span class="tag">{TRAIT_BY_ID[r.trait].label}</span>}
       </h2>
       <p class="muted intro">{r.intro}</p>
-      {r.strain > 0.005 && (
-        <p class="strain">
-          {RESIDENT.strain(Math.round(r.arrivalHealth), Math.round(r.strain * 100))}
-        </p>
-      )}
+      {r.strain > 0.005 && <p class="strain">{RESIDENT.strain(Math.round(r.strain * 100))}</p>}
       <p class="status">{statusLine(r)}</p>
 
       <ul class="needs">
@@ -63,14 +62,29 @@ export function ResidentPanel() {
           <span class="state">
             {Math.floor(r.overskudd)} / {OVERSKUDD_CAP}
             {green < 1 && RESIDENT.growing(Math.round(green * 100))}
+            {(r.boost ?? 0) > 0 && RESIDENT.boost(Math.round(r.boost! * 100))}
           </span>
         </div>
       )}
 
-      {r.milestones.length > 0 && (
-        <p class="alone">
+      {tries.length > 0 && (
+        <p class="tries">
           <span class="muted">{RESIDENT.milestones}</span>
-          {r.milestones.map((id) => MILESTONE_BY_ID[id].label).join(', ')}
+          {tries.map((x) => {
+            const m = MILESTONE_BY_ID[x.id];
+            const face =
+              REACTION_FACE[x.won ? 'success' : 'failure'][fitLevel(fitOf(r.identity, x.id))];
+            return (
+              <span class={x.won ? 'try won' : 'try'} title={m.label}>
+                <span aria-hidden="true">{m.placeIcon}</span>
+                {m.label}
+                <span aria-label={x.won ? PROPOSAL.worked : PROPOSAL.failed}>
+                  {x.won ? '✓' : '✗'}
+                </span>
+                <span aria-hidden="true">{face}</span>
+              </span>
+            );
+          })}
         </p>
       )}
 
