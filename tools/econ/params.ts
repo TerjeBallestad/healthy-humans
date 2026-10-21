@@ -84,7 +84,7 @@ export interface Params {
 }
 
 const lineStart = (id: LineId) =>
-  id === 'omsorgCap' ? OMSORG_CAP : id === 'payGrade' ? PAY_RAISE_START : 1;
+  id === 'omsorgCap' ? OMSORG_CAP : id === 'payGrade' ? PAY_RAISE_START : id === 'insight' ? 0 : 1;
 
 export function defaultParams(): Params {
   const lines = Object.fromEntries(

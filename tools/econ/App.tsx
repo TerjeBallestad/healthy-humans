@@ -15,6 +15,7 @@ const LABEL: Record<ItemId, string> = {
   nudge: 'Nudge',
   omsorgRate: 'Omsorg rate',
   omsorgCap: 'Omsorg cap',
+  insight: 'Insight',
   staff: 'Staff speed',
   payGrade: 'Pay grade',
   grant: 'Grant',
