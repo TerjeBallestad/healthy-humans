@@ -163,6 +163,3 @@ export const PIECES: KitPiece[] = [
     "fill": false
   }
 ];
-
-/** Font families from src/kit/fonts/, named by file. */
-export const FONTS: string[] = [];

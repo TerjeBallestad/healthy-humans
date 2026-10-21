@@ -77,7 +77,9 @@ input {
   font-size: 14px;
   line-height: 16px;
 }
-.act .title {
+.act .title,
+.kit-window > :first-child {
+  font-family: var(--title-font);
   color: #fff;
 }
 .act .rate {
@@ -96,6 +98,9 @@ input {
 .act[data-state='disabled'] .title {
   color: #a69cb0;
 }
+.specimen {
+  margin-bottom: 8px;
+}
 .specimen p {
-  margin: 0 0 4px;
+  margin: 0;
 }

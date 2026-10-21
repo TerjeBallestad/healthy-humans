@@ -2,9 +2,21 @@
 // UI rule 4 in GODOT.md: polish the pieces here, then build screens from finished pieces.
 import { useEffect, useState } from 'preact/hooks';
 import { KitBar, KitRing } from '../../src/kit/components';
-import { FONTS, PIECES } from '../../src/kit/manifest';
+import { KIT_FAMILIES, KIT_FONTS, loadKitFonts } from '../../src/kit/fonts';
+import { PIECES } from '../../src/kit/manifest';
 
 const FALLBACK = 'ui-monospace, Menlo, monospace';
+const stack = (family: string) => (family ? `'${family}', ${FALLBACK}` : FALLBACK);
+const pick = (prefer: string) =>
+  KIT_FAMILIES.find((f) => f.startsWith(prefer)) ?? KIT_FAMILIES[0] ?? '';
+
+const SPECIMEN = [
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÆØÅ',
+  'abcdefghijklmnopqrstuvwxyz æøå',
+  '0123456789 −20 +25% ×1.5 · ✓ ✗ … « » kr',
+  'Arvid lagde middag selv i dag. Det gikk greit, sånn passe.',
+  'A good fit that works in identity or mastery: overskudd +25% for the stay.',
+];
 
 function useZoom(): [number, (z: number) => void] {
   const fit = () => Math.max(1, Math.floor(window.innerWidth / 960));
@@ -20,7 +32,10 @@ function useZoom(): [number, (z: number) => void] {
 
 export function App() {
   const [zoom, setZoom] = useZoom();
-  const [font, setFont] = useState(FONTS[0] ?? '');
+  const [font, setFont] = useState(pick('Salmon Sans'));
+  const [title, setTitle] = useState(pick('Salmon Serif 9'));
+  const [, setLoaded] = useState(false);
+  useEffect(() => void loadKitFonts().then(() => setLoaded(true)), []);
   const [value, setValue] = useState(0.6);
   const slices = PIECES.filter((p) => p.slice);
   const buttons = slices.filter((p) => p.name.startsWith('button'));
@@ -29,16 +44,12 @@ export function App() {
   return (
     <div
       class="stage"
-      style={{ zoom: String(zoom), '--font': font ? `'${font}', ${FALLBACK}` : FALLBACK }}
+      style={{ zoom: String(zoom), '--font': stack(font), '--title-font': stack(title) }}
     >
       <div class="bar">
         <span>UI kit</span>
-        <select value={font} onChange={(e) => setFont(e.currentTarget.value)}>
-          <option value="">Fallback (no font in src/kit/fonts/)</option>
-          {FONTS.map((f) => (
-            <option value={f}>{f}</option>
-          ))}
-        </select>
+        <FontSelect label="Text" value={font} onChange={setFont} />
+        <FontSelect label="Titles" value={title} onChange={setTitle} />
         {[1, 2, 3, 4].map((z) => (
           <button
             class={z === zoom ? 'kit-button-2' : 'kit-button-quiet'}
@@ -148,14 +159,21 @@ export function App() {
         )}
       </div>
 
-      <h2>Font</h2>
-      <div class="specimen">
-        <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ ÆØÅ</p>
-        <p>abcdefghijklmnopqrstuvwxyz æøå</p>
-        <p>0123456789 −20 +25% ×1.5 · ✓ ✗ … « » kr</p>
-        <p>Arvid lagde middag selv i dag. Det gikk greit, sånn passe.</p>
-        <p>A good fit that works in identity or mastery: overskudd +25% for the stay.</p>
-      </div>
+      <h2>Fonts{KIT_FONTS.length ? '' : ': none in src/kit/fonts/, so the fallback shows'}</h2>
+      {(KIT_FONTS.length ? KIT_FONTS : [{ family: '', weight: 400 }]).map((f) => (
+        <div
+          class="specimen"
+          key={f.family + f.weight}
+          style={{ fontFamily: stack(f.family), fontWeight: f.weight }}
+        >
+          <span class="cap">
+            {f.family || 'Fallback'} {f.weight}
+          </span>
+          {SPECIMEN.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -187,5 +205,19 @@ function ActivityCard(props: {
         )}
       </div>
     </div>
+  );
+}
+
+function FontSelect(props: { label: string; value: string; onChange: (f: string) => void }) {
+  return (
+    <label>
+      <span class="cap">{props.label} </span>
+      <select value={props.value} onChange={(e) => props.onChange(e.currentTarget.value)}>
+        <option value="">Fallback</option>
+        {KIT_FAMILIES.map((f) => (
+          <option value={f}>{f}</option>
+        ))}
+      </select>
+    </label>
   );
 }
