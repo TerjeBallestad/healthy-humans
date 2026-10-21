@@ -5,15 +5,18 @@
   --muted: #9babb2;
   --dim: #7f708a;
   --night: #2e222f;
-  --world: #374e4a;
-  --pip: #484a77;
-  --pip-on: #30e1b9;
   --alarm: #e83b3b;
-  --progress: #8fd3ff;
+  /* Omsorg: the player's care, spent on nudges. */
+  --omsorg: #ed8099;
+  --omsorg-empty: #694f62;
+  /* Overskudd: the patient's surplus, spent on training. */
+  --overskudd: #f79617;
+  --overskudd-dark: #9e4539;
+  --overskudd-ink: #2e222f;
 }
 body {
   margin: 0;
-  background: #1b1622;
+  background: #000;
   overflow: hidden;
 }
 .screen {
@@ -68,6 +71,18 @@ button {
   top: 228px;
   transform: translate(-50%, -100%);
   white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.scene-progress {
+  height: 2px;
+  background: var(--night);
+}
+.scene-progress > span {
+  display: block;
+  height: 2px;
+  background: var(--bright);
 }
 
 /* ---------- Top left: the patient ---------- */
@@ -96,12 +111,17 @@ button {
 .meter-row .label {
   width: 52px;
 }
+.meter-row.overskudd .label,
+.meter-row.overskudd .num {
+  color: var(--overskudd);
+}
 
-/* ---------- Top: time, omsorg, budget ---------- */
+/* ---------- Top: time and budget ---------- */
 .topbar {
   position: absolute;
   top: 8px;
-  left: 206px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -119,6 +139,90 @@ button {
   right: 8px;
   display: flex;
   gap: 4px;
+}
+
+/* ---------- Pips: omsorg in the bar and in the cards ---------- */
+.pips {
+  display: flex;
+  gap: 1px;
+}
+.pip {
+  width: 3px;
+  height: 5px;
+  background: var(--omsorg-empty);
+}
+.pip.on {
+  background: var(--omsorg);
+}
+/* Out of omsorg: the empty pips in the cards go dark. */
+.starved .pip:not(.on) {
+  background: var(--night);
+}
+
+/* ---------- Bottom: omsorg, above the loadout ---------- */
+.omsorg {
+  position: absolute;
+  left: 44px;
+  bottom: 50px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.omsorg .label,
+.omsorg .num {
+  color: var(--omsorg);
+  font-weight: 700;
+}
+.omsorg-pips .pip {
+  height: 6px;
+}
+
+/* ---------- Bottom: the loadout ---------- */
+.actions {
+  position: absolute;
+  left: 44px;
+  bottom: 8px;
+  display: flex;
+  gap: 6px;
+}
+.act {
+  flex: none;
+  width: 132px;
+  height: 36px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  grid-template-rows: 11px 11px;
+  column-gap: 4px;
+  row-gap: 2px;
+  align-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.act .icon {
+  grid-row: span 2;
+  position: relative;
+  font-size: 14px;
+  line-height: 18px;
+}
+/* The level on the icon's corner. */
+.act .lvl {
+  position: absolute;
+  left: -2px;
+  bottom: -4px;
+  font-size: 9px;
+  line-height: 9px;
+  font-weight: 800;
+  color: var(--bright);
+  text-shadow:
+    1px 0 var(--night),
+    -1px 0 var(--night),
+    0 1px var(--night),
+    0 -1px var(--night);
+}
+.act .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- Left edge: categories ---------- */
@@ -148,13 +252,14 @@ button {
 .badge {
   position: absolute;
   top: -3px;
-  right: -3px;
-  min-width: 9px;
+  right: -6px;
   padding: 0 2px;
-  box-sizing: border-box;
-  background: var(--alarm);
-  color: var(--bright);
   font-weight: 800;
+}
+/* Training ready: the overskudd colour, so the badge names its currency. */
+.badge.train {
+  background: var(--overskudd);
+  color: var(--overskudd-ink);
 }
 /* A low need: a red square in the corner. */
 .cat.low::after {
@@ -167,94 +272,74 @@ button {
   background: var(--alarm);
 }
 
-/* ---------- Bottom: actions ---------- */
-.actions {
+/* ---------- The category drawer ---------- */
+.drawer {
   position: absolute;
   left: 44px;
-  right: 8px;
-  bottom: 8px;
-  display: flex;
-  gap: 6px;
-  align-items: flex-end;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.act {
-  flex: none;
-  width: 124px;
-  min-height: 64px;
+  bottom: 66px;
+  width: 340px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  cursor: pointer;
-}
-.act[data-state='disabled'] {
-  cursor: default;
-  color: var(--muted);
-}
-.act[data-state='disabled'] .title {
-  color: var(--ink);
-}
-.act .title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.act .head {
-  display: flex;
-  min-width: 0;
-  align-items: center;
   gap: 4px;
 }
-.act .icon {
+.drawer header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.drawer header .kit-button-quiet {
+  margin-left: auto;
+}
+.overskudd-have {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--overskudd);
+}
+.drawer .row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+}
+.drawer .row .icon {
   font-size: 14px;
   line-height: 16px;
   width: 16px;
 }
-.act .tag {
+.drawer .row .what {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.drawer .row.locked {
+  color: var(--muted);
+}
+.drawer .row.locked .muted {
   margin-left: auto;
-  color: var(--pip-on);
+}
+/* Placeholder until the kit has an orange button: CSS in the overskudd colours. */
+.train-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--overskudd-dark);
+  background: var(--overskudd);
+  color: var(--overskudd-ink);
   font-weight: 800;
+  padding: 1px 6px;
 }
-.effort {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.train-button:hover:not(:disabled) {
+  background: #fbb954;
 }
-.pips {
-  display: flex;
-  gap: 1px;
+.train-button:disabled {
+  background: var(--overskudd-dark);
+  color: var(--night);
+  cursor: default;
 }
-.pip {
-  width: 3px;
-  height: 5px;
-  background: var(--pip);
-}
-.pips.small .pip {
-  width: 2px;
-}
-.pip.on {
-  background: var(--pip-on);
-}
-/* Out of omsorg: the empty pips go dark. */
-.starved .pip:not(.on) {
-  background: var(--night);
-}
-.progress {
-  width: 100%;
-  height: 2px;
-  background: var(--pip);
-}
-.progress > span {
-  display: block;
-  height: 2px;
-  background: var(--progress);
-}
-.foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
+.train-button .effect {
+  font-weight: 400;
 }
 
 /* ---------- Proposal stub ---------- */

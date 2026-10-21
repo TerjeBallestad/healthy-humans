@@ -1,9 +1,18 @@
 // The layout prototype: the real game at the 960×540 base, built from Terje's kit.
-// Top left: the patient (beds, needs, overskudd). Top: time, omsorg, budget. Top right: menus.
-// Left edge: categories, one per need. Bottom: the actions in the chosen category.
-// The middle stays free for the house.
+// Top left: the patient (beds, needs, overskudd). Top: time and budget. Top right: menus.
+// Bottom: the loadout, the actions the player nudges, with the omsorg pips above it.
+// Left edge: categories, one per need. A category opens a drawer to train actions and to swap
+// them in and out of the loadout. The middle stays free for the house.
+//
+// Colour follows the currency: omsorg is pink (the pips), overskudd is orange (training).
+// The loadout lives in this page only. The sim still treats every unlocked activity as active.
 import { useEffect, useState } from 'preact/hooks';
-import { ACTIVITIES, type ActivityDef } from '../../src/content/activities';
+import {
+  ACTIVITIES,
+  ACTIVITY_BY_ID,
+  type ActivityDef,
+  type ActivityId,
+} from '../../src/content/activities';
 import { NEEDS, NEED_ORDER, type NeedId } from '../../src/content/needs';
 import {
   GRANT_PER_BED,
@@ -38,6 +47,10 @@ import room from './room.jpg';
 
 const W = 960;
 const H = 540;
+/** Slots in the loadout. */
+const SLOTS = 6;
+/** Width the omsorg pips may fill, about half the screen. */
+const OMSORG_WIDTH = 470;
 
 /** Placeholder icons until icon set 1 exists. */
 const NEED_ICON: Record<NeedId, string> = {
@@ -47,8 +60,6 @@ const NEED_ICON: Record<NeedId, string> = {
   home: '🧹',
   social: '📞',
 };
-
-type Category = NeedId | 'all';
 
 function useZoom() {
   const fit = () => Math.max(1, Math.floor(Math.min(innerWidth / W, innerHeight / H)));
@@ -61,28 +72,76 @@ function useZoom() {
   return zoom;
 }
 
+/** The loadout per bed. Until the player edits it, it is the first unlocked rungs. */
+function useLoadouts() {
+  const [edited, setEdited] = useState<Record<number, ActivityId[]>>({});
+  const get = (bed: number, r: Resident): ActivityId[] =>
+    edited[bed]?.filter((id) => r.unlockedRung >= ACTIVITY_BY_ID[id].rung) ??
+    unlockedActivities(r)
+      .slice(0, SLOTS)
+      .map((a) => a.id);
+  const toggle = (bed: number, r: Resident, id: ActivityId) => {
+    const now = get(bed, r);
+    const next = now.includes(id)
+      ? now.filter((x) => x !== id)
+      : now.length < SLOTS
+        ? [...now, id]
+        : now;
+    setEdited({ ...edited, [bed]: next });
+  };
+  return { get, toggle };
+}
+
 export function App() {
   const s = useGame();
   const zoom = useZoom();
-  const [category, setCategory] = useState<Category>('all');
+  const [drawer, setDrawer] = useState<NeedId | null>(null);
+  const loadouts = useLoadouts();
   const r = selectedResident(s);
+  const loadout = r ? loadouts.get(s.selected, r) : [];
   return (
     <div class="screen" style={{ zoom: String(zoom) }}>
       {/* A still from the Lifelines prototype, in place of the 3D house. */}
       <div class="stage">
         <img class="room" src={room} alt="" />
-        {r && (
-          <div class="kit-card bubble" data-state="subtle">
-            {statusLine(r)}
-          </div>
-        )}
+        {r && <SceneBubble r={r} />}
       </div>
       <PatientPanel s={s} r={r} />
       <TopBar s={s} />
       <Menus />
-      {r && <Rail r={r} s={s} category={category} setCategory={setCategory} />}
-      {r && <ActionBar r={r} s={s} category={category} />}
+      {r && <Rail s={s} r={r} open={drawer} setOpen={setDrawer} />}
+      {r && drawer && (
+        <Drawer
+          s={s}
+          r={r}
+          need={drawer}
+          loadout={loadout}
+          toggle={(id) => loadouts.toggle(s.selected, r, id)}
+          close={() => setDrawer(null)}
+        />
+      )}
+      <OmsorgPips s={s} />
+      {r && <ActionBar s={s} r={r} loadout={loadout} />}
       {s.proposal && <ProposalStub s={s} />}
+    </div>
+  );
+}
+
+// ---------- The scene: what the patient does now ----------
+
+/** The running activity lives in the scene: the status line and its progress over the head. */
+function SceneBubble({ r }: { r: Resident }) {
+  const cur = r.current;
+  const a = cur && ACTIVITY_BY_ID[cur.id];
+  const progress = cur && a ? 1 - cur.remaining / (a.duration * TICKS_PER_SECOND) : 0;
+  return (
+    <div class="kit-card bubble" data-state="subtle">
+      <span>{statusLine(r)}</span>
+      {cur && (
+        <span class="scene-progress">
+          <span style={{ width: `${progress * 100}%` }} />
+        </span>
+      )}
     </div>
   );
 }
@@ -129,7 +188,7 @@ function PatientPanel({ s, r }: { s: GameState; r: Resident | null }) {
               <KitBar piece="bar-need" state={needState(r.needs[n])} value={r.needs[n] / 100} />
             </div>
           ))}
-          <div class="meter-row">
+          <div class="meter-row overskudd">
             <span class="label">Overskudd</span>
             <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
             <span class="num">{Math.floor(r.overskudd)}</span>
@@ -149,10 +208,9 @@ function needState(v: number): string {
   return 'good';
 }
 
-// ---------- Top: time, omsorg, budget ----------
+// ---------- Top: time and budget ----------
 
 function TopBar({ s }: { s: GameState }) {
-  const cap = omsorgCap(s);
   return (
     <section class="topbar">
       <button
@@ -163,13 +221,6 @@ function TopBar({ s }: { s: GameState }) {
         {s.speed === 0 ? 'Play' : 'Pause'}
       </button>
       <span>{formatDate(s.tick)}</span>
-      <span class="sep" />
-      <span class="label">Omsorg</span>
-      {/* Placeholder: the kit has no omsorg (mana) bar yet. */}
-      <KitBar piece="bar-health" value={s.omsorg / cap} />
-      <span class="num">
-        {Math.floor(s.omsorg)}/{cap}
-      </span>
       <span class="sep" />
       <span>{UNITS.kr(Math.floor(s.budget))}</span>
       <span class="muted">{UNITS.signedPerW(netIncomePerWeek(s))}</span>
@@ -192,70 +243,46 @@ function Menus() {
   );
 }
 
-// ---------- Left edge: categories ----------
+// ---------- Bottom: omsorg ----------
 
-function inCategory(a: ActivityDef, c: Category) {
-  return c === 'all' || a.trigger === c;
-}
-
-function Rail(props: {
-  s: GameState;
-  r: Resident;
-  category: Category;
-  setCategory: (c: Category) => void;
-}) {
-  const { s, r, category, setCategory } = props;
-  const unlocked = unlockedActivities(r);
-  const ready = readyQueue(r);
-  const items: { id: Category; icon: string; label: string }[] = [
-    { id: 'all', icon: '✦', label: 'All' },
-    ...NEED_ORDER.map((n) => ({ id: n, icon: NEED_ICON[n], label: NEEDS[n].label })),
-  ];
+/**
+ * One pip per omsorg, the same pink as the pips in the cards: a nudge moves a pip from here into a
+ * card. The pips get narrower as the cap grows, so the bar keeps its length.
+ */
+function OmsorgPips({ s }: { s: GameState }) {
+  const cap = omsorgCap(s);
+  const have = Math.floor(s.omsorg);
+  const w = Math.max(2, Math.floor(OMSORG_WIDTH / cap) - 1);
   return (
-    <nav class="rail">
-      {items.map((c) => {
-        const acts = unlocked.filter((a) => inCategory(a, c.id));
-        const low =
-          c.id !== 'all' && activeNeeds(r).includes(c.id) && r.needs[c.id] < NEED_THRESHOLD;
-        const count = acts.filter((a) => ready.includes(a) || canTrain(s, s.selected, a.id)).length;
-        return (
-          <button
-            class={`kit-card cat${low ? ' low' : ''}`}
-            data-state={!acts.length ? 'disabled' : category === c.id ? 'selected' : 'subtle'}
-            disabled={!acts.length}
-            title={c.label}
-            onClick={() => setCategory(c.id)}
-          >
-            <span class="icon">{c.icon}</span>
-            {count > 0 && <span class="badge">{count}</span>}
-          </button>
-        );
-      })}
-    </nav>
+    <div class="omsorg" title="Omsorg: 1 per nudge">
+      <span class="label">Omsorg</span>
+      <span class="pips omsorg-pips">
+        {Array.from({ length: cap }, (_, i) => (
+          <span class={i < have ? 'pip on' : 'pip'} style={{ width: `${w}px` }} />
+        ))}
+      </span>
+      <span class="num">
+        {have}/{cap}
+      </span>
+    </div>
   );
 }
 
-// ---------- Bottom: actions ----------
+// ---------- Bottom: the loadout ----------
 
-function ActionBar({ s, r, category }: { s: GameState; r: Resident; category: Category }) {
+function ActionBar({ s, r, loadout }: { s: GameState; r: Resident; loadout: ActivityId[] }) {
   const queue = readyQueue(r);
-  const shown = unlockedActivities(r).filter((a) => inCategory(a, category));
-  // Locked rungs in this category show as a teaser, dim, as in the Wildermark bar.
-  const next = ACTIVITIES.find((a) => a.rung > r.unlockedRung && inCategory(a, category));
   return (
     <section class="actions">
-      {shown.map((a) => (
-        <ActionCard s={s} r={r} a={a} priority={queue.indexOf(a) + 1} key={a.id} />
+      {loadout.map((id) => (
+        <ActionCard
+          s={s}
+          r={r}
+          a={ACTIVITY_BY_ID[id]}
+          queued={queue.some((a) => a.id === id)}
+          key={id}
+        />
       ))}
-      {next && (
-        <div class="kit-card act" data-state="disabled">
-          <div class="head">
-            <span class="icon">{next.icon}</span>
-            <span class="title">{next.label}</span>
-          </div>
-          <span class="muted">Opens when the last rung is independent</span>
-        </div>
-      )}
     </section>
   );
 }
@@ -264,87 +291,159 @@ function ActionCard({
   s,
   r,
   a,
-  priority,
+  queued,
 }: {
   s: GameState;
   r: Resident;
   a: ActivityDef;
-  priority: number;
+  queued: boolean;
 }) {
   const bed = s.selected;
   const size = effort(r, a.id);
   const auto = size === 0;
   const doing = r.current?.id === a.id;
-  const progress =
-    doing && r.current ? 1 - r.current.remaining / (a.duration * TICKS_PER_SECOND) : 0;
-  const skill = r.skill[a.id];
-  // Queued (bar full, waiting to start) glows, the running one is outlined, the rest stay quiet.
-  const state = doing ? 'selected' : priority > 0 ? 'hover' : 'subtle';
   const starved = !auto && !canNudge(s, bed, a.id) && r.bars[a.id] < size;
+  // Queued (bar full, waiting its turn) is dashed. Running shows in the scene, so the card only dims.
+  const state = auto || doing ? 'subtle' : queued ? 'dashed' : 'normal';
   const go = () => act((g) => nudge(g, bed, a.id));
   return (
     <div
-      class="kit-card act"
+      class={`kit-card act${doing ? ' doing' : ''}`}
       data-state={state}
       role="button"
       tabIndex={0}
       onClick={go}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), go())}
     >
-      <div class="head">
-        <span class="icon">{a.icon}</span>
-        <span class="title">{a.label}</span>
-        <span class="tag">{doing ? 'doing' : priority > 0 ? `#${priority}` : ''}</span>
-      </div>
+      <span class="icon">
+        {a.icon}
+        <span class="lvl">{r.skill[a.id] + 1}</span>
+      </span>
+      <span class="title">{a.label}</span>
       {auto ? (
         <span class="muted">Independent</span>
       ) : (
-        <div class={starved ? 'effort starved' : 'effort'}>
-          <Pips size={size} filled={r.bars[a.id]} />
-          <span class="num">
-            {r.bars[a.id]}/{size}
-          </span>
-        </div>
-      )}
-      <div class="progress">
-        <span style={{ width: `${progress * 100}%` }} />
-      </div>
-      {!auto && (
-        <div class="foot">
-          <span class="muted">lvl {skill + 1}</span>
-          <button
-            class="kit-button-1"
-            disabled={!canTrain(s, bed, a.id)}
-            title={
-              skill + 1 >= MAX_SKILL
-                ? 'Becomes automatic'
-                : `${size} → ${effort(r, a.id, skill + 1)} nudges`
-            }
-            onClick={(e) => {
-              e.stopPropagation();
-              act((g) => train(g, bed, a.id));
-            }}
-          >
-            Train {trainCost(skill)}
-          </button>
-        </div>
+        <span class={starved ? 'pips starved' : 'pips'}>
+          {Array.from({ length: size }, (_, i) => (
+            <span class={i < r.bars[a.id] ? 'pip on' : 'pip'} />
+          ))}
+        </span>
       )}
     </div>
   );
 }
 
-/**
- * The nudges as a row of pips, in place of the effort ring: a straight row stays crisp in pixel
- * art at any count, where a ring of 12 or 24 segments does not. Placeholder CSS until Terje draws
- * a pip sprite.
- */
-function Pips({ size, filled }: { size: number; filled: number }) {
+// ---------- Left edge: categories ----------
+
+function Rail(props: {
+  s: GameState;
+  r: Resident;
+  open: NeedId | null;
+  setOpen: (n: NeedId | null) => void;
+}) {
+  const { s, r, open, setOpen } = props;
+  const unlocked = unlockedActivities(r);
   return (
-    <span class={`pips${size > 12 ? ' small' : ''}`}>
-      {Array.from({ length: size }, (_, i) => (
-        <span class={i < filled ? 'pip on' : 'pip'} />
-      ))}
-    </span>
+    <nav class="rail">
+      {NEED_ORDER.map((n) => {
+        const acts = unlocked.filter((a) => a.trigger === n);
+        const low = activeNeeds(r).includes(n) && r.needs[n] < NEED_THRESHOLD;
+        const trainable = acts.filter((a) => canTrain(s, s.selected, a.id)).length;
+        return (
+          <button
+            class={`kit-card cat${low ? ' low' : ''}`}
+            data-state={!acts.length ? 'disabled' : open === n ? 'selected' : 'subtle'}
+            disabled={!acts.length}
+            title={NEEDS[n].label}
+            onClick={() => setOpen(open === n ? null : n)}
+          >
+            <span class="icon">{NEED_ICON[n]}</span>
+            {trainable > 0 && <span class="badge train">▲{trainable}</span>}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** A category: train its actions with overskudd, and swap them in and out of the loadout. */
+function Drawer(props: {
+  s: GameState;
+  r: Resident;
+  need: NeedId;
+  loadout: ActivityId[];
+  toggle: (id: ActivityId) => void;
+  close: () => void;
+}) {
+  const { s, r, need, loadout, toggle, close } = props;
+  const bed = s.selected;
+  const acts = ACTIVITIES.filter((a) => a.trigger === need);
+  return (
+    <section class="kit-window drawer">
+      <header>
+        <span class="title">{NEEDS[need].label}</span>
+        <span class="overskudd-have">
+          <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
+          <span>{Math.floor(r.overskudd)} overskudd</span>
+        </span>
+        <button class="kit-button-quiet" onClick={close}>
+          Close
+        </button>
+      </header>
+      {acts.map((a) => {
+        const locked = a.rung > r.unlockedRung;
+        if (locked) {
+          return (
+            <div class="row locked" key={a.id}>
+              <span class="icon">{a.icon}</span>
+              <span>{a.label}</span>
+              <span class="muted">Opens later</span>
+            </div>
+          );
+        }
+        const skill = r.skill[a.id];
+        const size = effort(r, a.id);
+        const inBar = loadout.includes(a.id);
+        const maxed = size === 0;
+        return (
+          <div class="row" key={a.id}>
+            <span class="icon">{a.icon}</span>
+            <span class="what">
+              <span class="title">{a.label}</span>
+              <span class="muted">
+                lvl {skill + 1}
+                {maxed ? ' · independent' : ` · ${size} nudges`}
+              </span>
+            </span>
+            {!maxed && (
+              <button
+                class="train-button"
+                disabled={!canTrain(s, bed, a.id)}
+                onClick={() => act((g) => train(g, bed, a.id))}
+                title={`Spend ${trainCost(skill)} overskudd`}
+              >
+                ▲ Train · {trainCost(skill)}
+                <span class="effect">
+                  {skill + 1 >= MAX_SKILL
+                    ? 'independent'
+                    : `${size} → ${effort(r, a.id, skill + 1)}`}
+                </span>
+              </button>
+            )}
+            <button
+              class={inBar ? 'kit-button-quiet' : 'kit-button-2'}
+              disabled={!inBar && loadout.length >= SLOTS}
+              onClick={() => toggle(a.id)}
+            >
+              {inBar ? 'In bar' : 'Add'}
+            </button>
+          </div>
+        );
+      })}
+      <span class="muted">
+        Bar {loadout.length}/{SLOTS}
+      </span>
+    </section>
   );
 }
 
