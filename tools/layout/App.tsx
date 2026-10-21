@@ -1,4 +1,4 @@
-// The layout prototype: the real game at the 960×540 base, built from Terje's kit.
+// The layout prototype: the real game at the 640×360 base, built from Terje's kit.
 // Top left: the patient (beds, needs, overskudd). Top: time and budget. Top right: menus.
 // Bottom: the loadout, the actions the player nudges, with the omsorg pips above it.
 // Left edge: categories, one per need. A category opens a drawer to train actions and to swap
@@ -45,12 +45,12 @@ import { TICKS_PER_SECOND, formatDate } from '../../src/sim/time';
 import { act, useGame } from '../../src/store';
 import room from './room.jpg';
 
-const W = 960;
-const H = 540;
+const W = 640;
+const H = 360;
 /** Slots in the loadout. */
 const SLOTS = 6;
 /** Width the omsorg pips may fill, about half the screen. */
-const OMSORG_WIDTH = 470;
+const OMSORG_WIDTH = 300;
 
 /** Placeholder icons until icon set 1 exists. */
 const NEED_ICON: Record<NeedId, string> = {

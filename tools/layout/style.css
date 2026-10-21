@@ -1,4 +1,4 @@
-/* The layout prototype at the 960×540 base. Colours from the Resurrect 64 palette. */
+/* The layout prototype at the 640×360 base. Colours from the Resurrect 64 palette. */
 :root {
   --ink: #c7dcd0;
   --bright: #ffffff;
@@ -21,8 +21,8 @@ body {
 }
 .screen {
   position: relative;
-  width: 960px;
-  height: 540px;
+  width: 640px;
+  height: 360px;
   margin: 0 auto;
   overflow: hidden;
   font-family: 'Salmon Sans 9', ui-sans-serif, sans-serif;
@@ -56,19 +56,19 @@ button {
   inset: 0;
   background: #000;
 }
-/* The room fills the width. The black bands above and below hold the HUD and the actions. */
+/* The room fills the width. The HUD and the actions sit on the black above and below it. */
 .room {
   position: absolute;
   left: 0;
-  top: 65px;
-  width: 960px;
-  height: 410px;
+  top: 40px;
+  width: 640px;
+  height: 273px;
 }
 /* Over Arvid's head in the still. In the 3D house it follows the character. */
 .bubble {
   position: absolute;
-  left: 605px;
-  top: 228px;
+  left: 403px;
+  top: 152px;
   transform: translate(-50%, -100%);
   white-space: nowrap;
   display: flex;
@@ -88,9 +88,9 @@ button {
 /* ---------- Top left: the patient ---------- */
 .patient {
   position: absolute;
-  left: 8px;
-  top: 8px;
-  width: 190px;
+  left: 4px;
+  top: 4px;
+  width: 160px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -119,12 +119,13 @@ button {
 /* ---------- Top: time and budget ---------- */
 .topbar {
   position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 24px;
+  left: auto;
+  transform: none;
   display: flex;
   align-items: center;
   gap: 6px;
+  right: 4px;
 }
 .sep {
   width: 1px;
@@ -135,10 +136,10 @@ button {
 /* ---------- Top right: menus ---------- */
 .menus {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 4px;
+  right: 4px;
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 /* ---------- Pips: omsorg in the bar and in the cards ---------- */
@@ -162,8 +163,8 @@ button {
 /* ---------- Bottom: omsorg, above the loadout ---------- */
 .omsorg {
   position: absolute;
-  left: 44px;
-  bottom: 50px;
+  left: 32px;
+  bottom: 42px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -180,19 +181,19 @@ button {
 /* ---------- Bottom: the loadout ---------- */
 .actions {
   position: absolute;
-  left: 44px;
-  bottom: 8px;
+  left: 32px;
+  bottom: 4px;
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 .act {
   flex: none;
-  width: 132px;
-  height: 36px;
+  width: 97px;
+  height: 34px;
   display: grid;
-  grid-template-columns: 18px 1fr;
+  grid-template-columns: 16px 1fr;
   grid-template-rows: 11px 11px;
-  column-gap: 4px;
+  column-gap: 3px;
   row-gap: 2px;
   align-content: center;
   align-items: center;
@@ -228,16 +229,16 @@ button {
 /* ---------- Left edge: categories ---------- */
 .rail {
   position: absolute;
-  left: 8px;
-  top: 172px;
+  left: 4px;
+  top: 124px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 .cat {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   display: grid;
   place-items: center;
@@ -275,9 +276,9 @@ button {
 /* ---------- The category drawer ---------- */
 .drawer {
   position: absolute;
-  left: 44px;
-  bottom: 66px;
-  width: 340px;
+  left: 32px;
+  bottom: 56px;
+  width: 300px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -346,7 +347,7 @@ button {
 .proposal {
   position: absolute;
   left: 50%;
-  top: 150px;
+  top: 80px;
   transform: translateX(-50%);
   width: 260px;
   display: flex;
