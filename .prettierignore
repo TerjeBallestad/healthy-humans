@@ -1,2 +1,4 @@
 dist
 package-lock.json
+src/kit/kit.css
+src/kit/manifest.ts

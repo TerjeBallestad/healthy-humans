@@ -1,0 +1,101 @@
+/* The gallery draws at the base resolution, 960 px wide, and zooms by a whole number. */
+:root {
+  --font: ui-monospace, Menlo, monospace;
+}
+body {
+  margin: 0;
+  background: #1b1622;
+  color: #e8e0f0;
+}
+.stage {
+  width: 960px;
+  margin: 0 auto;
+  padding: 8px;
+  box-sizing: border-box;
+  font-family: var(--font);
+  font-size: 9px;
+  line-height: 11px;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+.bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #1b1622;
+  padding: 4px 0;
+}
+h2 {
+  font-size: inherit;
+  font-weight: normal;
+  color: #9a8fb0;
+  margin: 16px 0 4px;
+  text-transform: uppercase;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+.cap {
+  color: #7d7390;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+select,
+input {
+  font: inherit;
+}
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* The activity card mock, after the Wildermark bottom bar. */
+.act {
+  width: 170px;
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 2px 4px;
+}
+.act .icon {
+  grid-row: span 2;
+  font-size: 14px;
+  line-height: 16px;
+}
+.act .title {
+  color: #fff;
+}
+.act .rate {
+  color: #b8acc8;
+}
+.act .foot {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: space-between;
+}
+.act[data-state='disabled'] {
+  color: #8c8296;
+}
+.act[data-state='disabled'] .title {
+  color: #a69cb0;
+}
+.specimen p {
+  margin: 0 0 4px;
+}

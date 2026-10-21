@@ -1,0 +1,21 @@
+/* Rules for the kit pieces in components.tsx. kit.css next to this file is generated. */
+.kit-sprite {
+  position: relative;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.kit-sprite > .kit-sprite {
+  position: absolute;
+  inset: 0;
+}
+.kit-ring {
+  position: relative;
+}
+.kit-ring > .kit-sprite {
+  position: absolute;
+  inset: 0;
+}
+/* The empty part of a ring without its own track: the sprite, grey and dark. */
+.kit-track {
+  filter: grayscale(1) brightness(0.45);
+}

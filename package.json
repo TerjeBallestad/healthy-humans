@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit",
     "sim": "tsx scripts/balance.ts",
     "econ": "vite --open /tools/econ/",
+    "kit": "tsx scripts/kit.ts",
+    "gallery": "vite --open /tools/kit/",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
