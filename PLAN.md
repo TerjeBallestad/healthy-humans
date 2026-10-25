@@ -16,29 +16,33 @@ You are the welfare state, a benevolent guardian that sees everything. Residents
 
 One word, one meaning.
 
-| Term               | Meaning                                                                                                                                 |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Omsorg**         | The player's resource. Builds up over time to a cap. Spent on nudges and on staff training.                                             |
-| **Budget**         | Kroner. From a weekly kommune grant (more for each bed) plus tax from discharged residents. Pays for job ads, wages, beds and upgrades. |
-| **Need**           | A resident value that decays over time: food, hygiene, energy, home, social.                                                            |
-| **Overskudd**      | The resident's resource. Builds up with the share of needs above their threshold. Buys skill levels and milestones.                     |
-| **Activity**       | Something a resident does. Each activity is one rung.                                                                                   |
-| **Rung**           | One step on the ladder. The resident learns the lowest rungs that are not yet automatic.                                                |
-| **Nudge**          | One click on an activity. Puts omsorg into its effort ring. A full ring makes the activity ready.                                       |
-| **Skill level**    | Per activity, 0 to 3. Each level halves the nudges. Level 3 means automatic ("independent").                                            |
-| **Proposal**       | A milestone the resident suggests (NAV, application, work trial). Go or "Not now". Wager kroner for better odds.                        |
-| **Discharge tier** | Fit to live alone, fit for work, healthy human. Sets tax yield.                                                                         |
-| **Venteliste**     | The waiting list. Referrals with a trait, a skill sheet and health that drops each week. At 0 health the person is lost.                |
-| **Staff**          | Hired from a job ad. A miljøarbeider nudges bars, best on a speciality. A coach spends overskudd on skill levels.                       |
-| **Upgrade**        | A one-off purchase with kroner, in lines: your nudge, omsorg rate and cap, staff speed, funding, the house.                             |
-| **Mestring**       | A staff course, paid with omsorg. Each staff member with it adds overskudd for every resident.                                          |
-| **Identity**       | A patient's colour, or a pair of colours with a primary. Shown as one chip with a keyword.                                              |
-| **Phase**          | Identity, mastery, purpose. A patient needs one successful milestone in each, in order.                                                 |
-| **Hand**           | The 2 or 3 milestone cards a patient offers at a proposal, from their phase. The player picks one.                                      |
-| **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                  |
-| **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                   |
-| **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                          |
-| **Preparation**    | Kroner the player spends before a milestone to raise the odds (the old wager). After the hire, the case worker prepares the patient.    |
+| Term               | Meaning                                                                                                                                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Omsorg**         | The player's resource. Builds up over time to a cap. Spent on nudges and on staff training.                                                                                                                                              |
+| **Budget**         | Kroner. From a weekly kommune grant (more for each bed) plus tax from discharged residents. Pays for job ads, wages, beds and upgrades.                                                                                                  |
+| **Need**           | A resident value that decays over time: food, hygiene, energy, home, social.                                                                                                                                                             |
+| **Overskudd**      | The resident's resource. Builds up with the share of needs above their threshold. Buys skill levels and milestones.                                                                                                                      |
+| **Activity**       | Something a resident does. Each activity is one rung.                                                                                                                                                                                    |
+| **Rung**           | Internal only, not shown to the player (see Layer). One step on the ladder. The resident learns the lowest rungs that are not yet automatic.                                                                                             |
+| **Nudge**          | One click on an activity. Puts omsorg into its effort ring. A full ring makes the activity ready.                                                                                                                                        |
+| **Skill level**    | Per activity, 0 to 3. Each level halves the nudges. Level 3 means automatic ("independent").                                                                                                                                             |
+| **Proposal**       | A milestone the resident suggests (NAV, application, work trial). Go or "Not now". Wager kroner for better odds.                                                                                                                         |
+| **Discharge tier** | Fit to live alone, fit for work, healthy human. Sets tax yield.                                                                                                                                                                          |
+| **Venteliste**     | The waiting list. Referrals with a trait, a skill sheet and health that drops each week. At 0 health the person is lost.                                                                                                                 |
+| **Staff**          | Hired from a job ad. A miljøarbeider nudges bars, best on a speciality. A coach spends overskudd on skill levels.                                                                                                                        |
+| **Upgrade**        | A one-off purchase with kroner, in lines: your nudge, omsorg rate and cap, staff speed, funding, the house.                                                                                                                              |
+| **Mestring**       | A staff course, paid with omsorg. Each staff member with it adds overskudd for every resident.                                                                                                                                           |
+| **Identity**       | A patient's colour, or a pair of colours with a primary. Shown as one chip with a keyword.                                                                                                                                               |
+| **Layer**          | One of five Maslow steps a patient climbs: body, home, belonging, esteem, purpose. Player-facing, in place of rungs. A layer opens when each need in it has an independent action. Esteem and purpose open with milestone successes.     |
+| **Profile**        | One patient's Ikigai diagram in their character menu: good at, loves, who they are, world needs, paid for. Per patient. Each part opens with a layer, or earlier with a test. The layers show here too.                                  |
+| **Test**           | Something the player orders for one patient in the character menu (an aptitude test, a personality test) to open a part of the profile before its layer. Costs kroner, and the result comes after one week. A test opens one whole part. |
+| **Prerequisite**   | A specific condition one action needs besides its layer: another action at some level, or a colour. Ordering takeaway needs the phone. A gourmet meal needs other cooking actions and a certain personality.                             |
+| **Phase**          | Identity, mastery, purpose. A patient needs one successful milestone in each, in order.                                                                                                                                                  |
+| **Hand**           | The 2 or 3 milestone cards a patient offers at a proposal, from their phase. The player picks one.                                                                                                                                       |
+| **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                                                                                                                   |
+| **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                                                                                                                    |
+| **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                                                                                                                           |
+| **Preparation**    | Kroner the player spends before a milestone to raise the odds (the old wager). After the hire, the case worker prepares the patient.                                                                                                     |
 
 ## Mechanics (Act 1)
 
@@ -258,6 +262,17 @@ Settled so far:
 - **Maslow is the shape of the ladder** (routines, then belonging, then milestones, then identity). **Ikigai is a candidate score** for the whole stay: love (fit), good at (competence), world needs (the milestone's value), paid for (tax). Not settled.
 
 Open: what the outcomes change in the game, Ikigai as the score, colours or keywords on screen, more milestones and how they unlock, the primærkontakt, talking, and a visible story.
+
+## Profile and layers (grilling, 2026-10-25)
+
+Terje: rungs make no sense to the player. Several actions per need is a given. The question is how the choice gets interesting. Settled in a short grilling, to build one step at a time.
+
+- **Five layers, from Maslow:** body, home, belonging, esteem, purpose. A layer opens when each need in it has an independent action. Esteem opens with identity and mastery milestone successes, purpose with a purpose success. The patient reaches a layer through whichever action the player chose for each need.
+- **The profile is an Ikigai diagram, per patient, in the character menu.** The layers show there too. Each layer opens one part: body opens good at (aptitude per action, how far it trains), home opens loves (liking per action), belonging opens who they are (the colour chip), esteem opens world needs (milestone fit), purpose opens paid for (the discharge). Before a part opens, the player guesses from what they know of the colours.
+- **Tests, per patient:** the player orders a test (aptitude, personality, ...) in the character menu. It costs kroner, the result comes after one week, and it opens one whole part before its layer. The global "Personality profiles" upgrade goes.
+- **Action choice:** liking pays or costs now (overskudd), aptitude sets the potential. Not settled: the sizes, and whether a disliked action drains overskudd while it runs.
+- **Unlocks:** the actions of a layer open when the layer below opens. Some actions also have a prerequisite (another action, or a colour). This replaces the learning window in the sim. The furniture detail shows a locked action's layer as a small pyramid, and the needs of the layer below with a full or empty mark.
+- **Open, next steps:** how prerequisites show in the furniture detail. The character menu layout (mock in Aseprite first). The list of actions per need, with names by Terje. The sizes of liking and aptitude.
 
 ## Content production (parked, 2026-10-16)
 

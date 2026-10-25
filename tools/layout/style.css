@@ -8,7 +8,13 @@
   --alarm: #e83b3b;
   /* Omsorg: the player's care, spent on nudges. */
   --omsorg: #ed8099;
-  --omsorg-empty: #694f62;
+  /* The rings, the empty pips and the discs. */
+  --empty: #484a77;
+  --disc: #323353;
+  --highlight: #8fd3ff;
+  --frame: #4d65b4;
+  --frame-bright: #4d9be6;
+  --gain: #1ebc73;
   /* Overskudd: the patient's surplus, spent on training. */
   --overskudd: #f79617;
   --overskudd-dark: #9e4539;
@@ -142,205 +148,394 @@ button {
   gap: 2px;
 }
 
-/* ---------- Pips: omsorg in the bar and in the cards ---------- */
-.pips {
-  display: flex;
-  gap: 1px;
-}
-.pip {
-  width: 3px;
-  height: 5px;
-  background: var(--omsorg-empty);
-}
-.pip.on {
-  background: var(--omsorg);
-}
-/* Out of omsorg: the empty pips in the cards go dark. */
-.starved .pip:not(.on) {
-  background: var(--night);
-}
-
-/* ---------- Bottom: omsorg, above the loadout ---------- */
+/* ---------- Bottom: omsorg, below the loadout ---------- */
 .omsorg {
   position: absolute;
-  left: 32px;
-  bottom: 42px;
+  left: 11px;
+  top: 348px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.omsorg .label,
-.omsorg .num {
+.omsorg .label {
   color: var(--omsorg);
-  font-weight: 700;
+  width: 71px;
 }
-.omsorg-pips .pip {
+.omsorg-bar {
+  display: flex;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--empty);
+}
+.pip {
   height: 6px;
+  background: var(--empty);
+}
+.pip.on {
+  background: var(--omsorg);
 }
 
 /* ---------- Bottom: the loadout ---------- */
 .actions {
   position: absolute;
-  left: 32px;
-  bottom: 4px;
+  top: 301px;
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
-.act {
-  flex: none;
-  width: 97px;
+.slot {
+  position: relative;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+}
+.disc {
+  position: relative;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  /* A finger that pokes: the nudge. Placeholder art in cursor-poke.png. */
+  cursor:
+    url('./cursor-poke.png') 11 1,
+    pointer;
+}
+.disc:active {
+  cursor:
+    url('./cursor-poke-down.png') 11 3,
+    pointer;
+}
+/* The disc sits inside the ring, with a 1 px gap. */
+.disc::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--disc);
+}
+.slot.hover .disc {
+  box-shadow: 0 0 0 1px var(--highlight);
+}
+.disc .icon {
+  position: relative;
+  font-size: 18px;
+  line-height: 20px;
+}
+/* Independent: no ring, a smaller disc, and no clicks. */
+.slot.auto .disc {
+  cursor: default;
+}
+.slot.empty {
+  box-sizing: border-box;
+  border: 1px dashed var(--empty);
+  border-radius: 50%;
+}
+/* An empty slot shows its number while the furniture panel is open. */
+.slot-n {
+  display: none;
+  color: var(--muted);
+}
+.placing .slot-n {
+  display: grid;
+}
+.dragging .slot {
+  outline: 1px dashed var(--highlight);
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 43px;
+  height: 43px;
+}
+.ring .seg {
+  fill: none;
+  stroke: var(--empty);
+}
+.ring .seg.on {
+  stroke: var(--omsorg);
+}
+/* Out of omsorg: the empty segments go dark. */
+.ring.starved .seg:not(.on) {
+  stroke: var(--night);
+}
+
+/* The train arrow: an orange arrow with the price, in the overskudd colours. */
+.train-arrow {
+  width: 22px;
+  height: 24px;
+  padding: 7px 0 0;
+  border: none;
+  background: var(--overskudd);
+  color: var(--overskudd-ink);
+  font-weight: 800;
+  clip-path: polygon(50% 0, 100% 45%, 77% 45%, 77% 100%, 23% 100%, 23% 45%, 0 45%);
+}
+.train-arrow:hover:not(:disabled) {
+  background: #fbb954;
+}
+.train-arrow:disabled {
+  background: var(--overskudd-dark);
+  color: var(--night);
+  cursor: default;
+}
+.train-arrow.over {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+}
+
+/* ---------- The card over a hovered button ---------- */
+/* The padding reaches down to the buttons, so the mouse keeps the hover on its way up. */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  width: 256px;
+  padding-bottom: 10px;
+  z-index: 2;
+}
+.tip-card {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  grid-template-rows: 11px 11px;
+  column-gap: 5px;
+  row-gap: 8px;
+  padding: 4px 6px 4px 5px;
+  min-height: 60px;
+  background: var(--night);
+  border: 1px solid var(--frame);
+}
+.tip-icon {
+  grid-row: span 2;
+  box-sizing: border-box;
+  width: 34px;
   height: 34px;
   display: grid;
-  grid-template-columns: 16px 1fr;
-  grid-template-rows: 11px 11px;
-  column-gap: 3px;
-  row-gap: 2px;
-  align-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-.act .icon {
-  grid-row: span 2;
-  position: relative;
-  font-size: 14px;
+  place-items: center;
+  border: 2px solid var(--frame-bright);
+  border-radius: 50%;
+  background: var(--disc);
+  font-size: 16px;
   line-height: 18px;
 }
-/* The level on the icon's corner. */
-.act .lvl {
-  position: absolute;
-  left: -2px;
-  bottom: -4px;
-  font-size: 9px;
-  line-height: 9px;
-  font-weight: 800;
-  color: var(--bright);
-  text-shadow:
-    1px 0 var(--night),
-    -1px 0 var(--night),
-    0 1px var(--night),
-    0 -1px var(--night);
+.tip-card .lvl {
+  justify-self: end;
 }
-.act .title {
+.refills {
+  display: flex;
+  gap: 6px;
+  justify-self: end;
+}
+.refill {
+  color: var(--gain);
+}
+.need-icon {
+  margin-right: 3px;
+}
+.train-arrow.in-card {
+  grid-column: 3;
+  justify-self: end;
+  align-self: end;
+}
+.pointer {
+  position: absolute;
+  bottom: 5px;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-bottom: none;
+  border-top: 5px solid var(--highlight);
+}
+
+/* ---------- The room: furniture ---------- */
+/* No frame at rest: the furniture is the button. Hover and open show the highlight. */
+.spot {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+}
+.spot:hover,
+.spot.open {
+  outline: 1px solid var(--highlight);
+  background: rgb(143 211 255 / 0.12);
+}
+/* An action here that the bar does not hold. */
+.fresh {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background: var(--highlight);
+}
+/* Two panes over the middle of the room, clear of the train arrows over the bar. */
+.furniture {
+  position: absolute;
+  left: 150px;
+  top: 64px;
+  width: 340px;
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 8px;
+  z-index: 1;
+}
+.f-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.f-list .title {
+  margin-bottom: 2px;
+}
+.f-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 2px;
+  cursor: grab;
+}
+.f-row:active {
+  cursor: grabbing;
+}
+.f-row:hover,
+.f-row.picked {
+  background: var(--disc);
+}
+.f-row.picked {
+  outline: 1px solid var(--frame-bright);
+}
+.f-row.locked {
+  color: var(--dim);
+  cursor: pointer;
+}
+.f-row.locked .mini-disc {
+  opacity: 0.4;
+}
+.mini-disc {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--disc);
+  font-size: 11px;
+  line-height: 12px;
+}
+.f-name {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ---------- Left edge: categories ---------- */
-.rail {
-  position: absolute;
-  left: 4px;
-  top: 124px;
+.f-detail {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  grid-template-rows: 11px 11px;
+  column-gap: 5px;
+  row-gap: 8px;
+  align-content: start;
+}
+.f-detail .tip-icon {
+  cursor: grab;
+}
+.f-detail .tip-icon:active {
+  cursor: grabbing;
+}
+.f-detail.locked .tip-icon {
+  cursor: default;
+  opacity: 0.4;
+  border-style: dashed;
+}
+.f-detail .lvl {
+  grid-column: 3;
+  justify-self: end;
+}
+.f-detail .muted:not(.lvl) {
+  grid-column: 2;
+}
+.ladder,
+.places,
+.unlock {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 4px;
 }
-.cat {
+/* The ladder: the levels ahead are light, the current level is bright, past levels go dark. */
+.step {
   position: relative;
   width: 24px;
   height: 24px;
+}
+.step .ring {
+  width: 24px;
+  height: 24px;
+}
+.step .seg {
+  stroke: var(--muted);
+}
+.step.now .seg {
+  stroke: var(--bright);
+}
+.step.past .seg {
+  stroke: var(--empty);
+}
+/* Independent: a full disc, the goal. */
+.step:not(:has(.ring)) {
+  box-sizing: border-box;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+}
+.cost {
+  padding: 0 3px;
+  background: var(--overskudd);
+  color: var(--overskudd-ink);
+  font-weight: 800;
+}
+.place {
+  box-sizing: border-box;
+  width: 19px;
+  height: 19px;
   padding: 0;
   display: grid;
   place-items: center;
-}
-.cat .icon {
-  font-size: 14px;
-  line-height: 16px;
-}
-.cat:disabled .icon {
-  opacity: 0.4;
-}
-.badge {
-  position: absolute;
-  top: -3px;
-  right: -6px;
-  padding: 0 2px;
-  font-weight: 800;
-}
-/* Training ready: the overskudd colour, so the badge names its currency. */
-.badge.train {
-  background: var(--overskudd);
-  color: var(--overskudd-ink);
-}
-/* A low need: a red square in the corner. */
-.cat.low::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  bottom: 3px;
-  width: 4px;
-  height: 4px;
-  background: var(--alarm);
-}
-
-/* ---------- The category drawer ---------- */
-.drawer {
-  position: absolute;
-  left: 32px;
-  bottom: 56px;
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.drawer header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-}
-.drawer header .kit-button-quiet {
-  margin-left: auto;
-}
-.overskudd-have {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--overskudd);
-}
-.drawer .row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 22px;
-}
-.drawer .row .icon {
-  font-size: 14px;
-  line-height: 16px;
-  width: 16px;
-}
-.drawer .row .what {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-.drawer .row.locked {
+  border: 1px dashed var(--empty);
+  border-radius: 50%;
+  background: none;
   color: var(--muted);
+  font-size: 9px;
 }
-.drawer .row.locked .muted {
-  margin-left: auto;
+.place.taken {
+  border-style: solid;
+  background: var(--disc);
+  font-size: 10px;
 }
-/* Placeholder until the kit has an orange button: CSS in the overskudd colours. */
-.train-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid var(--overskudd-dark);
-  background: var(--overskudd);
-  color: var(--overskudd-ink);
-  font-weight: 800;
-  padding: 1px 6px;
+.place.here {
+  border: 1px solid var(--highlight);
+  background: var(--disc);
+  font-size: 10px;
 }
-.train-button:hover:not(:disabled) {
-  background: #fbb954;
+.place:hover {
+  border-color: var(--highlight);
 }
-.train-button:disabled {
-  background: var(--overskudd-dark);
-  color: var(--night);
-  cursor: default;
-}
-.train-button .effect {
-  font-weight: 400;
+.waiting {
+  box-sizing: border-box;
+  width: 19px;
+  height: 19px;
+  border: 1px dashed var(--empty);
+  border-radius: 50%;
 }
 
 /* ---------- Proposal stub ---------- */
