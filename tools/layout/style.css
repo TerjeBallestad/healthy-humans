@@ -239,6 +239,168 @@ button {
   color: var(--bright);
 }
 
+/* The needs open the character window. */
+.patient {
+  cursor: pointer;
+}
+.face.open {
+  box-shadow: 0 0 0 1px var(--highlight);
+}
+.low-state {
+  color: var(--alarm);
+}
+
+/* ---------- Left: the character window, grown from the needs ---------- */
+/* Over the left edge and the bar. The game is paused while it is open. */
+.character {
+  position: absolute;
+  left: 4px;
+  top: 40px;
+  bottom: 4px;
+  width: 236px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 3;
+}
+.c-head {
+  display: grid;
+  grid-template-columns: 33px 1fr auto;
+  grid-template-rows: 11px auto;
+  column-gap: 6px;
+  row-gap: 4px;
+}
+.c-face {
+  grid-row: span 2;
+}
+.c-face img {
+  display: block;
+  image-rendering: pixelated;
+}
+.c-face .initial {
+  box-sizing: border-box;
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--disc);
+  color: var(--bright);
+  font-weight: 700;
+}
+.c-tags {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.c-close {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+}
+.tag {
+  padding: 0 3px;
+  border: 1px solid var(--empty);
+}
+/* A pair splits the background between its two colours. */
+.tag.chip {
+  border: none;
+  color: var(--night);
+  background: linear-gradient(90deg, var(--a) 50%, var(--b) 50%);
+}
+.c-tabs {
+  display: flex;
+  gap: 2px;
+}
+.c-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.c-effects,
+.parts,
+.tries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.good {
+  color: var(--gain);
+}
+.bad {
+  color: var(--alarm);
+}
+
+/* The layers, top first, narrow at the top. */
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin: 2px 0 4px;
+}
+.layer {
+  text-align: center;
+  border: 1px dashed var(--empty);
+  color: var(--dim);
+}
+.layer.reached {
+  border: 1px solid var(--frame-bright);
+  background: var(--disc);
+  color: var(--bright);
+}
+.part {
+  display: grid;
+  grid-template-columns: 66px 1fr auto;
+  align-items: center;
+  gap: 4px;
+  min-height: 15px;
+}
+.part .label {
+  color: var(--bright);
+}
+.part.closed .label {
+  color: var(--muted);
+}
+.c-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.intro {
+  margin: 0;
+  color: var(--muted);
+}
+.phases {
+  display: flex;
+  gap: 2px;
+}
+.phase {
+  flex: 1;
+  text-align: center;
+  border: 1px dashed var(--empty);
+  color: var(--dim);
+}
+.phase.done {
+  border: 1px solid var(--gain);
+  color: var(--gain);
+}
+.c-discharge {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
 /* ---------- Top: time and budget ---------- */
 .topbar {
   position: absolute;

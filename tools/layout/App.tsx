@@ -1,6 +1,7 @@
 // The layout prototype: the real game at the 640×360 base, built from Terje's kit.
 // Top left: the roster, a portrait per bed. Bottom left: the selected patient's needs and
-// overskudd. Top right: menus, time and budget.
+// overskudd. A click on the selected portrait or on the needs opens the character window over the
+// left edge, with tabs. Left is the person, right is the house, the middle is the room. Top right: menus, time and budget.
 // Bottom: the loadout, round buttons the player nudges, with the omsorg bar below it.
 // Bottom right: the card for the hovered button.
 // The room: a click on the furniture shows its actions, to put them on the bar or take them off.
@@ -11,7 +12,17 @@
 // so staff still nudge actions that are not on the bar.
 import { useEffect, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityDef, type ActivityId } from '../../src/content/activities';
+import { ARCHETYPE_BY_ID } from '../../src/content/archetypes';
+import { COLOUR_CSS, identityLabel } from '../../src/content/identity';
+import {
+  MILESTONE_BY_ID,
+  PHASES,
+  PHASE_LABEL,
+  REACTION_FACE,
+  type Phase,
+} from '../../src/content/milestones';
 import { NEEDS, NEED_ORDER, type NeedId } from '../../src/content/needs';
+import { TRAIT_BY_ID } from '../../src/content/traits';
 import {
   GRANT_PER_BED,
   MAX_BEDS,
@@ -19,17 +30,19 @@ import {
   OVERSKUDD_CAP,
   trainCost,
 } from '../../src/content/tuning';
-import { UNITS } from '../../src/content/text';
+import { RESIDENT, UNITS } from '../../src/content/text';
 import { KitBar } from '../../src/kit/components';
 import { admit, buyBed, canNudge, canTrain, nudge, train } from '../../src/sim/actions';
 import {
   bedCost,
   canBuyBed,
   grantMult,
+  identitiesShown,
   netIncomePerWeek,
   omsorgCap,
 } from '../../src/sim/institution';
-import { closeProposal, decline } from '../../src/sim/proposals';
+import { bestTier, nextTier, tierMissing, tierTax } from '../../src/sim/discharge';
+import { closeProposal, decline, fitLevel, fitOf } from '../../src/sim/proposals';
 import { activeNeeds, effort, statusLine, unlockedActivities } from '../../src/sim/selectors';
 import { selectedResident, type GameState, type Resident } from '../../src/sim/state';
 import { TICKS_PER_SECOND, formatDate } from '../../src/sim/time';
@@ -107,17 +120,33 @@ function useLoadouts() {
 export function App() {
   const s = useGame();
   const zoom = useZoom();
-  const [inspect, setInspect] = useState<number | null>(null);
+  const [inspect, setInspectRaw] = useState<number | null>(null);
+  const [tab, setTabRaw] = useState<Tab | null>(null);
+  // The character window and the furniture panel overlap, so one closes the other.
+  const setTab = (t: Tab | null) => {
+    if (t && !tab) pause();
+    if (!t && tab) resume();
+    setTabRaw(t);
+    if (t) setInspectRaw(null);
+  };
+  const setInspect = (i: number | null) => {
+    setInspectRaw(i);
+    if (i !== null) setTab(null);
+  };
   const [dragging, setDragging] = useState(false);
   const loadouts = useLoadouts();
   const r = selectedResident(s);
   const loadout = r ? loadouts.get(s.selected, r) : [];
   const place = (id: ActivityId, slot: number) => r && loadouts.place(s.selected, r, id, slot);
   useEffect(() => {
-    const on = (e: KeyboardEvent) => e.key === 'Escape' && setInspect(null);
+    const on = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setInspect(null);
+      setTab(null);
+    };
     addEventListener('keydown', on);
     return () => removeEventListener('keydown', on);
-  }, []);
+  }, [tab]);
   return (
     <div class="screen" style={{ zoom: String(zoom) }}>
       {/* A still from the Lifelines prototype, in place of the 3D house. */}
@@ -126,8 +155,8 @@ export function App() {
         {r && <SceneBubble r={r} />}
         {r && <FurnitureSpots r={r} loadout={loadout} open={inspect} setOpen={setInspect} />}
       </div>
-      <Roster s={s} />
-      <PatientPanel r={r} />
+      <Roster s={s} open={tab !== null} toggle={() => setTab(tab ? null : 'needs')} />
+      {tab === null && <PatientPanel r={r} open={() => setTab('needs')} />}
       <TopBar s={s} />
       <Menus />
       {r && inspect !== null && (
@@ -151,6 +180,7 @@ export function App() {
           place={place}
         />
       )}
+      {r && tab && <CharacterWindow s={s} r={r} tab={tab} setTab={setTab} />}
       {s.proposal && <ProposalStub s={s} />}
     </div>
   );
@@ -178,17 +208,22 @@ function SceneBubble({ r }: { r: Resident }) {
 // ---------- Top left: the roster ----------
 
 /** One portrait per bed. The pip shows the lowest need, so the player sees who needs help. */
-function Roster({ s }: { s: GameState }) {
+function Roster(props: { s: GameState; open: boolean; toggle: () => void }) {
+  const { s, open, toggle } = props;
   return (
     <nav class="roster">
       {s.beds.map((b, i) => (
         <button
-          class={`face${i === s.selected ? ' picked' : ''}${b ? '' : ' empty'}`}
+          class={`face${i === s.selected ? ' picked' : ''}${b ? '' : ' empty'}${i === s.selected && open ? ' open' : ''}`}
           onClick={() =>
-            act((g) => {
-              g.selected = i;
-              if (!g.beds[i] && g.waiting.length) admit(g, 0);
-            })
+            // A click on the selected patient opens or closes the character window. Another
+            // patient keeps the window as it is.
+            b && i === s.selected
+              ? toggle()
+              : act((g) => {
+                  g.selected = i;
+                  if (!g.beds[i] && g.waiting.length) admit(g, 0);
+                })
           }
           title={b ? b.name : 'Empty bed: admit the first on the venteliste'}
         >
@@ -229,17 +264,31 @@ function lowestNeed(r: Resident): number {
 
 // ---------- Bottom left: the selected patient ----------
 
-/** One row per need and one for overskudd: the icon on the left, the name over the bar. */
-function PatientPanel({ r }: { r: Resident | null }) {
+/** The needs and overskudd on the left edge. A click opens the character window. */
+function PatientPanel({ r, open }: { r: Resident | null; open: () => void }) {
   if (!r) return null;
   return (
-    <section class="patient">
+    <section class="patient" onClick={open} title="Open the character window">
+      <NeedRows r={r} />
+    </section>
+  );
+}
+
+/** One row per need and one for overskudd: the icon on the left, the name over the bar. */
+function NeedRows({ r, low }: { r: Resident; low?: boolean }) {
+  return (
+    <>
       {NEED_ORDER.filter((n) => activeNeeds(r).includes(n)).map((n) => (
         <div class="need" key={n}>
           <span class="need-art">
             {NEED_ART[n] ? <img src={NEED_ART[n]} alt="" /> : NEED_ICON[n]}
           </span>
-          <span class="label">{NEEDS[n].label}</span>
+          <span class="label">
+            {NEEDS[n].label}
+            {low && r.needs[n] < NEED_THRESHOLD && (
+              <span class="low-state"> {NEEDS[n].lowState}</span>
+            )}
+          </span>
           <KitBar piece="bar-need" state={needState(r.needs[n])} value={r.needs[n] / 100} />
         </div>
       ))}
@@ -251,7 +300,7 @@ function PatientPanel({ r }: { r: Resident | null }) {
         <span class="label">Overskudd {Math.floor(r.overskudd)}</span>
         <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
       </div>
-    </section>
+    </>
   );
 }
 
@@ -260,6 +309,256 @@ function needState(v: number): string {
   if (v < NEED_THRESHOLD) return 'warning';
   if (v < 60) return 'neutral';
   return 'good';
+}
+
+// ---------- Left: the character window ----------
+
+type Tab = 'needs' | 'profile' | 'story';
+
+// TODO(Terje): placeholder tab names, layer names and profile part names, from PLAN.md.
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'needs', label: 'Needs' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'story', label: 'Story' },
+];
+
+/** The Maslow layers, top first, as the pyramid draws them. */
+const LAYERS: { label: string; needs?: NeedId[]; phases?: Phase[] }[] = [
+  { label: 'Purpose', phases: ['purpose'] },
+  { label: 'Esteem', phases: ['identity', 'mastery'] },
+  { label: 'Belonging', needs: ['social'] },
+  { label: 'Home', needs: ['home'] },
+  { label: 'Body', needs: ['food', 'hygiene', 'energy'] },
+];
+
+/**
+ * Rough: the sim has no layers yet. A need layer counts as reached when each of its needs has an
+ * independent action. The esteem and purpose layers count milestone successes.
+ */
+function layerReached(r: Resident, l: (typeof LAYERS)[number]): boolean {
+  if (l.phases)
+    return l.phases.every((p) => r.milestones.some((m) => MILESTONE_BY_ID[m].phase === p));
+  return l.needs!.every((n) =>
+    unlockedActivities(r).some((a) => a.refills[n] && effort(r, a.id) === 0),
+  );
+}
+
+function pause() {
+  act((g) => {
+    g.resumeSpeed = g.speed || g.resumeSpeed;
+    g.speed = 0;
+  });
+}
+
+function resume() {
+  // A proposal or a vedtak keeps the game paused.
+  act((g) => (g.speed = g.proposal || g.discharge ? 0 : g.resumeSpeed));
+}
+
+/**
+ * Everything about one patient in one window over the left edge. It grows from the needs panel, so
+ * the needs stay in the same place. The game pauses while it is open.
+ */
+function CharacterWindow(props: {
+  s: GameState;
+  r: Resident;
+  tab: Tab;
+  setTab: (t: Tab | null) => void;
+}) {
+  const { s, r, tab, setTab } = props;
+  return (
+    <section class="kit-window character">
+      <header class="c-head">
+        <span class="c-face">
+          {PORTRAIT[r.name] ? (
+            <img src={PORTRAIT[r.name]} alt="" />
+          ) : (
+            <span class="initial">{r.name[0]}</span>
+          )}
+        </span>
+        <span class="title">{r.name}</span>
+        <span class="c-tags">
+          <Identity s={s} r={r} />
+          {r.trait && (
+            <span class="tag" title={TRAIT_BY_ID[r.trait].effect}>
+              {TRAIT_BY_ID[r.trait].label}
+            </span>
+          )}
+        </span>
+        <button class="kit-button-quiet c-close" onClick={() => setTab(null)} title="Close (Esc)">
+          x
+        </button>
+      </header>
+      <nav class="c-tabs">
+        {TABS.map((t) => (
+          <button
+            class={t.id === tab ? 'kit-button-2' : 'kit-button-quiet'}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+      <div class="c-body">
+        {tab === 'needs' && <NeedsTab r={r} />}
+        {tab === 'profile' && <ProfileTab s={s} r={r} />}
+        {tab === 'story' && <StoryTab r={r} />}
+      </div>
+    </section>
+  );
+}
+
+/** The identity chip, split between two colours. A "?" until the player can see it. */
+function Identity({ s, r }: { s: GameState; r: Resident }) {
+  if (!identitiesShown(s)) return <span class="tag muted">?</span>;
+  const id = r.identity;
+  return (
+    <span
+      class="tag chip"
+      style={{
+        '--a': COLOUR_CSS[id.primary],
+        '--b': COLOUR_CSS[id.secondary ?? id.primary],
+      }}
+    >
+      {identityLabel(id)}
+    </span>
+  );
+}
+
+function NeedsTab({ r }: { r: Resident }) {
+  const needs = activeNeeds(r);
+  const green = needs.filter((n) => r.needs[n] >= NEED_THRESHOLD).length / needs.length;
+  return (
+    <>
+      <span class="muted">{statusLine(r)}</span>
+      <NeedRows r={r} low />
+      <ul class="c-effects">
+        {green < 1 && <li>{RESIDENT.growing(Math.round(green * 100)).replace(' · ', '')}</li>}
+        {(r.boost ?? 0) > 0 && (
+          <li class="good">{RESIDENT.boost(Math.round(r.boost! * 100)).replace(' · ', '')}</li>
+        )}
+        {r.strain > 0.005 && <li class="bad">{RESIDENT.strain(Math.round(r.strain * 100))}</li>}
+      </ul>
+    </>
+  );
+}
+
+/** The layers as a pyramid, and the five profile parts with a test for each one still closed. */
+function ProfileTab({ s, r }: { s: GameState; r: Resident }) {
+  const arch = ARCHETYPE_BY_ID[r.archetype];
+  const good = unlockedActivities(r).filter((a) => r.skill[a.id] > 0);
+  const best = bestTier(r);
+  const parts: { label: string; layer: string; open: boolean; body: preact.ComponentChildren }[] = [
+    {
+      label: 'Good at',
+      layer: 'Body',
+      open: layerReached(r, LAYERS[4]!),
+      body: (
+        <span class="c-icons">
+          {good.map((a) => (
+            <span title={a.label}>
+              {a.icon}
+              {r.skill[a.id]}
+            </span>
+          ))}
+          {arch.hard.map((id) => (
+            <span class="bad" title={`${ACTIVITY_BY_ID[id].label} is hard`}>
+              {ACTIVITY_BY_ID[id].icon}x2
+            </span>
+          ))}
+        </span>
+      ),
+    },
+    { label: 'Loves', layer: 'Home', open: false, body: 'Not in the sim yet' },
+    {
+      label: 'Who they are',
+      layer: 'Belonging',
+      open: identitiesShown(s),
+      body: <Identity s={s} r={r} />,
+    },
+    { label: 'World needs', layer: 'Esteem', open: false, body: 'Not in the sim yet' },
+    {
+      label: 'Paid for',
+      layer: 'Purpose',
+      open: best !== null,
+      body: best && `${best.label}, ${UNITS.plusKrPerW(tierTax(r, best.id))}`,
+    },
+  ];
+  return (
+    <>
+      <div class="pyramid">
+        {LAYERS.map((l, i) => (
+          <span
+            class={`layer${layerReached(r, l) ? ' reached' : ''}`}
+            style={{ width: `${60 + i * 25}px` }}
+          >
+            {l.label}
+          </span>
+        ))}
+      </div>
+      <ul class="parts">
+        {parts.map((p) => (
+          <li class={p.open ? 'part' : 'part closed'}>
+            <span class="label">{p.label}</span>
+            {p.open ? (
+              <span>{p.body}</span>
+            ) : (
+              <>
+                <span class="muted">opens with {p.layer.toLowerCase()}</span>
+                <button class="kit-button-1 test" disabled title="Tests are not built yet">
+                  Test
+                </button>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** Who they are, how far they have come, every try, and what discharge pays. */
+function StoryTab({ r }: { r: Resident }) {
+  const tries = r.tries ?? r.milestones.map((id) => ({ id, won: true }));
+  const best = bestTier(r);
+  const better = nextTier(r);
+  return (
+    <>
+      <p class="intro">{r.intro}</p>
+      <div class="phases">
+        {PHASES.map((p) => {
+          const done = r.milestones.some((m) => MILESTONE_BY_ID[m].phase === p);
+          return <span class={done ? 'phase done' : 'phase'}>{PHASE_LABEL[p]}</span>;
+        })}
+      </div>
+      {tries.length > 0 && (
+        <ul class="tries">
+          {tries.map((x) => {
+            const m = MILESTONE_BY_ID[x.id];
+            const face =
+              REACTION_FACE[x.won ? 'success' : 'failure'][fitLevel(fitOf(r.identity, x.id))];
+            return (
+              <li class={x.won ? 'good' : 'bad'}>
+                {m.placeIcon} {m.label} {face}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <div class="c-discharge">
+        {best && (
+          <button class="kit-button-1" disabled title="Discharge in the main game">
+            {RESIDENT.discharge(best.label)} {UNITS.plusKrPerW(tierTax(r, best.id))}
+          </button>
+        )}
+        {better && (
+          <span class="muted">
+            {RESIDENT.nextTier(better.label, tierTax(r, better.id), tierMissing(r, better.id))}
+          </span>
+        )}
+      </div>
+    </>
+  );
 }
 
 // ---------- Top: time and budget ----------
