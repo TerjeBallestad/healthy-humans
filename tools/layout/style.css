@@ -47,13 +47,7 @@ button {
 .muted {
   color: var(--muted);
 }
-.num {
-  color: var(--muted);
-  min-width: 18px;
-  text-align: right;
-}
-.title,
-.name {
+.title {
   font-weight: 700;
   color: var(--bright);
 }
@@ -93,35 +87,156 @@ button {
   background: var(--bright);
 }
 
-/* ---------- Top left: the patient ---------- */
-.patient {
+/* ---------- Top left: the roster, one row that grows to the right ---------- */
+.roster {
   position: absolute;
   left: 4px;
   top: 4px;
-  width: 160px;
+  display: flex;
+  gap: 2px;
+}
+.face {
+  position: relative;
+  box-sizing: border-box;
+  width: 33px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  background: none;
+}
+.face:hover {
+  border-color: var(--frame);
+}
+.face.picked {
+  border-color: var(--highlight);
+}
+.face img {
+  display: block;
+  image-rendering: pixelated;
+}
+.face .initial,
+.face.empty {
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--disc);
+  color: var(--bright);
+  font-weight: 700;
+}
+.face.empty {
+  border: 1px dashed var(--empty);
+  color: var(--muted);
+}
+/* The lowest need, in the colours of the need bars. */
+.r-pip {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 5px;
+  height: 5px;
+  outline: 1px solid var(--night);
+}
+.r-pip.good {
+  background: var(--gain);
+}
+.r-pip.neutral {
+  background: var(--muted);
+}
+.r-pip.warning {
+  background: var(--overskudd);
+}
+.r-pip.emergency {
+  background: var(--alarm);
+}
+/* A new bed: the bed with a plus over it, the price below. */
+.buy-bed {
+  box-sizing: border-box;
+  width: 33px;
+  height: 32px;
+  padding: 1px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px dashed var(--frame);
+  background: var(--night);
+}
+.buy-bed:hover:not(:disabled) {
+  border-style: solid;
+  border-color: var(--highlight);
+}
+.buy-bed:disabled {
+  cursor: default;
+  border-color: var(--empty);
+  color: var(--dim);
+}
+.buy-bed:disabled .bed-icon {
+  opacity: 0.4;
+}
+.bed-icon {
+  position: relative;
+  font-size: 14px;
+  line-height: 18px;
+}
+.plus {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--bright);
+  font-size: 13px;
+  font-weight: 800;
+  text-shadow:
+    1px 0 var(--night),
+    -1px 0 var(--night),
+    0 1px var(--night),
+    0 -1px var(--night);
+}
+
+/* ---------- Bottom left: the needs, clear of the train arrows ---------- */
+.patient {
+  position: absolute;
+  left: 4px;
+  bottom: 92px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.beds {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 4px;
+/* As in panels.aseprite: the icon on the left, the name over the bar. */
+.need {
+  display: grid;
+  grid-template-columns: 18px auto;
+  grid-template-rows: 11px 11px;
+  column-gap: 3px;
 }
-.who {
-  margin-bottom: 2px;
+.need-art {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  line-height: 14px;
 }
-.meter-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.need-art img {
+  display: block;
+  image-rendering: pixelated;
 }
-.meter-row .label {
-  width: 52px;
-}
-.meter-row.overskudd .label,
-.meter-row.overskudd .num {
+.need.overskudd .label {
   color: var(--overskudd);
+}
+/* The train arrow in small. */
+.mini-arrow {
+  width: 10px;
+  height: 12px;
+  background: var(--overskudd);
+  clip-path: polygon(50% 0, 100% 45%, 77% 45%, 77% 100%, 23% 100%, 23% 45%, 0 45%);
+}
+.need .label {
+  color: var(--bright);
 }
 
 /* ---------- Top: time and budget ---------- */
@@ -180,6 +295,7 @@ button {
 /* ---------- Bottom: the loadout ---------- */
 .actions {
   position: absolute;
+  left: 25px;
   top: 301px;
   display: flex;
   gap: 2px;
@@ -284,7 +400,7 @@ button {
   color: var(--night);
   cursor: default;
 }
-.train-arrow.over {
+.slot .train-arrow {
   position: absolute;
   left: 50%;
   bottom: 100%;
@@ -292,25 +408,24 @@ button {
   margin-bottom: 5px;
 }
 
-/* ---------- The card over a hovered button ---------- */
-/* The padding reaches down to the buttons, so the mouse keeps the hover on its way up. */
-.tooltip {
-  position: absolute;
-  bottom: 100%;
-  width: 256px;
-  padding-bottom: 10px;
-  z-index: 2;
-}
+/* ---------- Bottom right: the card for the hovered button ---------- */
+/* Right of the bar, below the room. It covers nothing the player needs. */
 .tip-card {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 196px;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 34px 1fr auto;
-  grid-template-rows: 11px 11px;
+  grid-template-rows: 11px 11px 11px;
   column-gap: 5px;
-  row-gap: 8px;
-  padding: 4px 6px 4px 5px;
-  min-height: 60px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 5px 6px;
   background: var(--night);
   border: 1px solid var(--frame);
+  z-index: 2;
 }
 .tip-icon {
   grid-row: span 2;
@@ -324,6 +439,9 @@ button {
   background: var(--disc);
   font-size: 16px;
   line-height: 18px;
+}
+.tip-card .tip-icon {
+  grid-row: 1 / span 3;
 }
 .tip-card .lvl {
   justify-self: end;
@@ -339,20 +457,12 @@ button {
 .need-icon {
   margin-right: 3px;
 }
-.train-arrow.in-card {
-  grid-column: 3;
-  justify-self: end;
-  align-self: end;
+.tip-train {
+  grid-column: 2 / -1;
+  color: var(--overskudd);
 }
-.pointer {
-  position: absolute;
-  bottom: 5px;
-  width: 0;
-  height: 0;
-  margin-left: -6px;
-  border: 6px solid transparent;
-  border-bottom: none;
-  border-top: 5px solid var(--highlight);
+.tip-train.short {
+  color: var(--overskudd-dark);
 }
 
 /* ---------- The room: furniture ---------- */

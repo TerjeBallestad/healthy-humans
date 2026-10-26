@@ -1,13 +1,15 @@
 // The layout prototype: the real game at the 640×360 base, built from Terje's kit.
-// Top left: the patient (beds, needs, overskudd). Top: time and budget. Top right: menus.
+// Top left: the roster, a portrait per bed. Bottom left: the selected patient's needs and
+// overskudd. Top right: menus, time and budget.
 // Bottom: the loadout, round buttons the player nudges, with the omsorg bar below it.
+// Bottom right: the card for the hovered button.
 // The room: a click on the furniture shows its actions, to put them on the bar or take them off.
 // Only the bar nudges and trains. Independent activities still run by themselves.
 //
 // Colour follows the currency: omsorg is pink (the pips and rings), overskudd is orange (training).
 // The loadout lives in this page only. The sim still treats every unlocked activity as active,
 // so staff still nudge actions that are not on the bar.
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { ACTIVITY_BY_ID, type ActivityDef, type ActivityId } from '../../src/content/activities';
 import { NEEDS, NEED_ORDER, type NeedId } from '../../src/content/needs';
 import {
@@ -32,6 +34,8 @@ import { activeNeeds, effort, statusLine, unlockedActivities } from '../../src/s
 import { selectedResident, type GameState, type Resident } from '../../src/sim/state';
 import { TICKS_PER_SECOND, formatDate } from '../../src/sim/time';
 import { act, useGame } from '../../src/store';
+import needFood from './need-food.png';
+import portraitArvid from './portrait-arvid.png';
 import room from './room.jpg';
 
 const W = 640;
@@ -40,6 +44,12 @@ const H = 360;
 const SLOTS = 9;
 /** Width the omsorg pips may fill, inside the bar's border. */
 const OMSORG_WIDTH = 159;
+
+/** Portraits from panels.aseprite. The others show an initial until they have one. */
+const PORTRAIT: Record<string, string> = { Arvid: portraitArvid };
+
+/** Need art from panels.aseprite. The others use the emoji until they have art. */
+const NEED_ART: Partial<Record<NeedId, string>> = { food: needFood };
 
 /** Placeholder icons until icon set 1 exists. */
 const NEED_ICON: Record<NeedId, string> = {
@@ -116,7 +126,8 @@ export function App() {
         {r && <SceneBubble r={r} />}
         {r && <FurnitureSpots r={r} loadout={loadout} open={inspect} setOpen={setInspect} />}
       </div>
-      <PatientPanel s={s} r={r} />
+      <Roster s={s} />
+      <PatientPanel r={r} />
       <TopBar s={s} />
       <Menus />
       {r && inspect !== null && (
@@ -164,57 +175,82 @@ function SceneBubble({ r }: { r: Resident }) {
   );
 }
 
-// ---------- Top left: the patient ----------
+// ---------- Top left: the roster ----------
 
-function PatientPanel({ s, r }: { s: GameState; r: Resident | null }) {
+/** One portrait per bed. The pip shows the lowest need, so the player sees who needs help. */
+function Roster({ s }: { s: GameState }) {
+  return (
+    <nav class="roster">
+      {s.beds.map((b, i) => (
+        <button
+          class={`face${i === s.selected ? ' picked' : ''}${b ? '' : ' empty'}`}
+          onClick={() =>
+            act((g) => {
+              g.selected = i;
+              if (!g.beds[i] && g.waiting.length) admit(g, 0);
+            })
+          }
+          title={b ? b.name : 'Empty bed: admit the first on the venteliste'}
+        >
+          {b ? (
+            <>
+              {PORTRAIT[b.name] ? (
+                <img src={PORTRAIT[b.name]} alt={b.name} />
+              ) : (
+                <span class="initial">{b.name[0]}</span>
+              )}
+              <span class={`r-pip ${needState(lowestNeed(b))}`} />
+            </>
+          ) : (
+            '+'
+          )}
+        </button>
+      ))}
+      {s.beds.length < MAX_BEDS && (
+        <button
+          class="buy-bed"
+          disabled={!canBuyBed(s)}
+          title={`New bed: ${UNITS.plusKrPerW(GRANT_PER_BED * grantMult(s))} from the kommune`}
+          onClick={() => act(buyBed)}
+        >
+          <span class="bed-icon">
+            🛏️<span class="plus">+</span>
+          </span>
+          <span class="price">{bedCost(s)}</span>
+        </button>
+      )}
+    </nav>
+  );
+}
+
+function lowestNeed(r: Resident): number {
+  return Math.min(...activeNeeds(r).map((n) => r.needs[n]));
+}
+
+// ---------- Bottom left: the selected patient ----------
+
+/** One row per need and one for overskudd: the icon on the left, the name over the bar. */
+function PatientPanel({ r }: { r: Resident | null }) {
+  if (!r) return null;
   return (
     <section class="patient">
-      <div class="beds">
-        {s.beds.map((b, i) => (
-          <button
-            class={i === s.selected ? 'kit-button-2' : 'kit-button-quiet'}
-            onClick={() =>
-              act((g) => {
-                g.selected = i;
-                if (!g.beds[i] && g.waiting.length) admit(g, 0);
-              })
-            }
-            title={b ? b.name : 'Empty bed: admit the first on the venteliste'}
-          >
-            {b ? b.name : '+'}
-          </button>
-        ))}
-        {s.beds.length < MAX_BEDS && (
-          <button
-            class="kit-button-1"
-            disabled={!canBuyBed(s)}
-            title={`${UNITS.plusKrPerW(GRANT_PER_BED * grantMult(s))} from the kommune`}
-            onClick={() => act(buyBed)}
-          >
-            Bed {bedCost(s)}
-          </button>
-        )}
+      {NEED_ORDER.filter((n) => activeNeeds(r).includes(n)).map((n) => (
+        <div class="need" key={n}>
+          <span class="need-art">
+            {NEED_ART[n] ? <img src={NEED_ART[n]} alt="" /> : NEED_ICON[n]}
+          </span>
+          <span class="label">{NEEDS[n].label}</span>
+          <KitBar piece="bar-need" state={needState(r.needs[n])} value={r.needs[n] / 100} />
+        </div>
+      ))}
+      {/* The arrow, as over the buttons: overskudd pays for training. */}
+      <div class="need overskudd" title="Overskudd: spent on training">
+        <span class="need-art">
+          <span class="mini-arrow" />
+        </span>
+        <span class="label">Overskudd {Math.floor(r.overskudd)}</span>
+        <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
       </div>
-      {r ? (
-        <>
-          <div class="who">
-            <span class="name">{r.name}</span>
-          </div>
-          {NEED_ORDER.filter((n) => activeNeeds(r).includes(n)).map((n) => (
-            <div class="meter-row" key={n}>
-              <span class="label">{NEEDS[n].label}</span>
-              <KitBar piece="bar-need" state={needState(r.needs[n])} value={r.needs[n] / 100} />
-            </div>
-          ))}
-          <div class="meter-row overskudd">
-            <span class="label">Overskudd</span>
-            <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
-            <span class="num">{Math.floor(r.overskudd)}</span>
-          </div>
-        </>
-      ) : (
-        <div class="muted">Empty bed</div>
-      )}
     </section>
   );
 }
@@ -287,19 +323,17 @@ function OmsorgBar({ s }: { s: GameState }) {
 
 // ---------- Bottom: the loadout ----------
 
-/** Diameter of a button with its ring, and the step from one button to the next. */
+/** Diameter of a button with its ring. */
 const BUTTON = 43;
-const STEP = BUTTON + 2;
-const TOOLTIP_W = 256;
 
-/**
- * Round buttons with the effort ring around the icon. The rings are drawn in SVG at screen
- * resolution, not in pixels: a ring of 12 segments must stay readable. Hover shows the card above
- * the bar, and the bar and the card share one hover area, so the mouse can reach the train arrow.
- */
 /** Drag data type for an action dragged from the furniture to the bar. */
 const DRAG_TYPE = 'text/x-activity';
 
+/**
+ * Round buttons with the effort ring around the icon. The rings are drawn in SVG at screen
+ * resolution, not in pixels: a ring of 12 segments must stay readable. Hover shows the card in the
+ * bottom right corner at once. The card is out of the way, so it needs no delay.
+ */
 function ActionBar(props: {
   s: GameState;
   r: Resident;
@@ -310,104 +344,43 @@ function ActionBar(props: {
   place: (id: ActivityId, slot: number) => void;
 }) {
   const { s, r, loadout, placing, dragging, place } = props;
-  const tip = useHoverTip();
-  const open = tip.open;
-  const hovered = open !== null ? loadout[open] : undefined;
-  const barLeft = 25;
-  const tipLeft =
-    open === null
-      ? 0
-      : Math.max(
-          4 - barLeft,
-          Math.min(W - 4 - barLeft - TOOLTIP_W, open * STEP + BUTTON / 2 - TOOLTIP_W / 2),
-        );
-  return (
-    <section
-      class={`actions${placing ? ' placing' : ''}${dragging ? ' dragging' : ''}`}
-      style={{ left: `${barLeft}px` }}
-      onMouseLeave={tip.close}
-    >
-      {Array.from({ length: SLOTS }, (_, i) => {
-        const id = loadout[i];
-        const drop = {
-          onDragOver: (e: DragEvent) => e.preventDefault(),
-          onDrop: (e: DragEvent) => {
-            const dropped = e.dataTransfer?.getData(DRAG_TYPE) as ActivityId | undefined;
-            if (dropped) place(dropped, i);
-          },
-        };
-        return id ? (
-          <ActionButton
-            s={s}
-            r={r}
-            a={ACTIVITY_BY_ID[id]}
-            open={open === i}
-            disc={tip.target(i)}
-            onArrow={tip.close}
-            drop={drop}
-            key={id}
-          />
-        ) : (
-          <span class="slot empty" onMouseEnter={tip.close} {...drop}>
-            <span class="slot-n">{i + 1}</span>
-          </span>
-        );
-      })}
-      {hovered && open !== null && (
-        <Tooltip
-          s={s}
-          r={r}
-          a={ACTIVITY_BY_ID[hovered]}
-          left={tipLeft}
-          pointer={open * STEP + BUTTON / 2 - tipLeft}
-        />
-      )}
-    </section>
-  );
-}
-
-type HoverHandlers = Record<
-  'onMouseEnter' | 'onMouseMove' | 'onMouseLeave' | 'onMouseDown',
-  () => void
->;
-
-/** Idle time on a button before its card opens, so clicks to nudge do not open it. */
-const TIP_DELAY_MS = 1000;
-
-/**
- * The card opens after the mouse rests on a button. A click cancels it until the mouse leaves and
- * comes back. Once a card is open, the next button shows its card at once.
- */
-function useHoverTip() {
   const [open, setOpen] = useState<number | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const clicked = useRef(false);
-  const stop = () => clearTimeout(timer.current);
-  const wait = (i: number) => {
-    stop();
-    if (!clicked.current) timer.current = setTimeout(() => setOpen(i), TIP_DELAY_MS);
-  };
-  useEffect(() => stop, []);
-  return {
-    open,
-    close: () => {
-      stop();
-      setOpen(null);
-    },
-    target: (i: number): HoverHandlers => ({
-      onMouseEnter: () => {
-        clicked.current = false;
-        if (open !== null) setOpen(i);
-        else wait(i);
-      },
-      onMouseMove: () => open === null && wait(i),
-      onMouseLeave: stop,
-      onMouseDown: () => {
-        clicked.current = true;
-        stop();
-      },
-    }),
-  };
+  const hovered = open !== null ? loadout[open] : undefined;
+  return (
+    <>
+      <section
+        class={`actions${placing ? ' placing' : ''}${dragging ? ' dragging' : ''}`}
+        onMouseLeave={() => setOpen(null)}
+      >
+        {Array.from({ length: SLOTS }, (_, i) => {
+          const id = loadout[i];
+          const drop = {
+            onDragOver: (e: DragEvent) => e.preventDefault(),
+            onDrop: (e: DragEvent) => {
+              const dropped = e.dataTransfer?.getData(DRAG_TYPE) as ActivityId | undefined;
+              if (dropped) place(dropped, i);
+            },
+          };
+          return id ? (
+            <ActionButton
+              s={s}
+              r={r}
+              a={ACTIVITY_BY_ID[id]}
+              open={open === i}
+              onEnter={() => setOpen(i)}
+              drop={drop}
+              key={id}
+            />
+          ) : (
+            <span class="slot empty" onMouseEnter={() => setOpen(null)} {...drop}>
+              <span class="slot-n">{i + 1}</span>
+            </span>
+          );
+        })}
+      </section>
+      {hovered && <Tooltip s={s} r={r} a={ACTIVITY_BY_ID[hovered]} />}
+    </>
+  );
 }
 
 function ActionButton(props: {
@@ -415,26 +388,23 @@ function ActionButton(props: {
   r: Resident;
   a: ActivityDef;
   open: boolean;
-  disc: HoverHandlers;
-  onArrow: () => void;
+  onEnter: () => void;
   drop: Record<'onDragOver' | 'onDrop', (e: DragEvent) => void>;
 }) {
-  const { s, r, a, open, disc, onArrow, drop } = props;
+  const { s, r, a, open, onEnter, drop } = props;
   const bed = s.selected;
   const size = effort(r, a.id);
   const auto = size === 0;
   const starved = !auto && !canNudge(s, bed, a.id) && r.bars[a.id] < size;
   const go = () => act((g) => nudge(g, bed, a.id));
   return (
-    <span class={`slot${auto ? ' auto' : ''}${open ? ' hover' : ''}`} {...drop}>
-      {/* With the card open, the arrow moves into the card. The arrow never opens the card. */}
-      {!auto && !open && canTrain(s, bed, a.id) && (
-        <span onMouseEnter={onArrow}>
-          <TrainArrow s={s} r={r} a={a} class="over" />
-        </span>
-      )}
+    <span
+      class={`slot${auto ? ' auto' : ''}${open ? ' hover' : ''}`}
+      onMouseEnter={onEnter}
+      {...drop}
+    >
+      {!auto && canTrain(s, bed, a.id) && <TrainArrow s={s} r={r} a={a} />}
       <span
-        {...disc}
         class="disc"
         role="button"
         tabIndex={auto ? -1 : 0}
@@ -484,13 +454,13 @@ function EffortRing(props: { size: number; filled: number; starved: boolean }) {
 }
 
 /** Spends overskudd on the next level. The colour names the currency. */
-function TrainArrow(props: { s: GameState; r: Resident; a: ActivityDef; class: string }) {
+function TrainArrow(props: { s: GameState; r: Resident; a: ActivityDef }) {
   const { s, r, a } = props;
   const bed = s.selected;
   const skill = r.skill[a.id];
   return (
     <button
-      class={`train-arrow ${props.class}`}
+      class="train-arrow"
       disabled={!canTrain(s, bed, a.id)}
       title={`${trainCost(skill)} overskudd`}
       onClick={(e) => {
@@ -503,33 +473,34 @@ function TrainArrow(props: { s: GameState; r: Resident; a: ActivityDef; class: s
   );
 }
 
-/** The card over a hovered button, with a pointer down to it. */
-function Tooltip(props: {
-  s: GameState;
-  r: Resident;
-  a: ActivityDef;
-  left: number;
-  pointer: number;
-}) {
-  const { s, r, a, left, pointer } = props;
+/**
+ * The card for the hovered button, in the bottom right corner. The train arrow stays over the
+ * button, so the card only names the price.
+ */
+function Tooltip(props: { s: GameState; r: Resident; a: ActivityDef }) {
+  const { s, r, a } = props;
   const auto = effort(r, a.id) === 0;
+  const skill = r.skill[a.id];
   return (
-    <div class="tooltip" style={{ left: `${left}px` }}>
-      <div class="tip-card">
-        <span class="tip-icon">{a.icon}</span>
-        <span class="title">{a.label}</span>
-        <span class="lvl muted">lvl {r.skill[a.id] + 1}</span>
-        <span class="muted">{a.duration} sec duration</span>
-        <span class="refills">
-          {NEED_ORDER.filter((n) => a.refills[n]).map((n) => (
-            <span class="refill">
-              <span class="need-icon">{NEED_ICON[n]}</span>+{a.refills[n]}
-            </span>
-          ))}
+    <div class="tip-card">
+      <span class="tip-icon">{a.icon}</span>
+      <span class="title">{a.label}</span>
+      <span class="lvl muted">lvl {skill + 1}</span>
+      <span class="muted">{a.duration} sec</span>
+      <span class="refills">
+        {NEED_ORDER.filter((n) => a.refills[n]).map((n) => (
+          <span class="refill">
+            <span class="need-icon">{NEED_ICON[n]}</span>+{a.refills[n]}
+          </span>
+        ))}
+      </span>
+      {auto ? (
+        <span class="tip-train muted">Independent</span>
+      ) : (
+        <span class={`tip-train${canTrain(s, s.selected, a.id) ? '' : ' short'}`}>
+          Train {trainCost(skill)} overskudd
         </span>
-        {!auto && <TrainArrow s={s} r={r} a={a} class="in-card" />}
-      </div>
-      <span class="pointer" style={{ left: `${pointer}px` }} />
+      )}
     </div>
   );
 }
