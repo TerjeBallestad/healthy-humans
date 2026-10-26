@@ -14,7 +14,6 @@ import {
   GRANT_PER_BED,
   MAX_BEDS,
   NEED_THRESHOLD,
-  MAX_SKILL,
   OVERSKUDD_CAP,
   trainCost,
 } from '../../src/content/tuning';
@@ -665,21 +664,6 @@ function Detail(props: {
             <span class="need-icon">{NEED_ICON[n]}</span>+{a.refills[n]}
           </span>
         ))}
-      </span>
-      {/* The levels ahead: the ring shrinks, then goes. Orange arrows are the training price. */}
-      <span class="ladder">
-        {Array.from({ length: MAX_SKILL + 1 }, (_, k) => {
-          const size = effort(r, a.id, k);
-          const state = !open ? '' : k < skill ? ' past' : k === skill ? ' now' : '';
-          return (
-            <>
-              {k > 0 && <span class="cost">{trainCost(k - 1)}</span>}
-              <span class={`step${state}`}>
-                {size > 0 && <EffortRing size={size} filled={0} starved={false} />}
-              </span>
-            </>
-          );
-        })}
       </span>
       {open ? (
         <span class="places">

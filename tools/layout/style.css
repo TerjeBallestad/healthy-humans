@@ -36,6 +36,8 @@ body {
   line-height: 11px;
   color: var(--ink);
   -webkit-font-smoothing: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 button {
   font: inherit;
@@ -465,44 +467,12 @@ button {
 .f-detail .muted:not(.lvl) {
   grid-column: 2;
 }
-.ladder,
 .places,
 .unlock {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 4px;
-}
-/* The ladder: the levels ahead are light, the current level is bright, past levels go dark. */
-.step {
-  position: relative;
-  width: 24px;
-  height: 24px;
-}
-.step .ring {
-  width: 24px;
-  height: 24px;
-}
-.step .seg {
-  stroke: var(--muted);
-}
-.step.now .seg {
-  stroke: var(--bright);
-}
-.step.past .seg {
-  stroke: var(--empty);
-}
-/* Independent: a full disc, the goal. */
-.step:not(:has(.ring)) {
-  box-sizing: border-box;
-  border: 2px solid var(--muted);
-  border-radius: 50%;
-}
-.cost {
-  padding: 0 3px;
-  background: var(--overskudd);
-  color: var(--overskudd-ink);
-  font-weight: 800;
 }
 .place {
   box-sizing: border-box;
