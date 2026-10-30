@@ -205,12 +205,12 @@ button {
   bottom: 92px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 /* As in panels.aseprite: the icon on the left, the name over the bar. */
 .need {
   display: grid;
-  grid-template-columns: 18px auto;
+  grid-template-columns: 26px auto;
   grid-template-rows: 11px 11px;
   column-gap: 3px;
 }
@@ -221,19 +221,38 @@ button {
   font-size: 13px;
   line-height: 14px;
 }
-.need-art img {
+/*
+ * Icons from icons.aseprite: 32x32, with empty space around the art. Each spot shows them at 1x or
+ * at half size, never at a size of its own, so one art pixel is the same size on every icon. The
+ * negative margins let the empty space overlap the neighbours.
+ */
+.art {
   display: block;
+  width: 32px;
+  height: 32px;
   image-rendering: pixelated;
+}
+.need-art .art {
+  margin: -5px -3px;
+}
+.tip-icon .art {
+  margin: -1px;
+}
+.mini-disc .art,
+.place .art,
+.need-icon .art,
+.c-icons .art {
+  width: 16px;
+  height: 16px;
+}
+.need-icon .art,
+.c-icons .art {
+  display: inline-block;
+  margin: -2px 0;
+  vertical-align: middle;
 }
 .need.overskudd .label {
   color: var(--overskudd);
-}
-/* The train arrow in small. */
-.mini-arrow {
-  width: 10px;
-  height: 12px;
-  background: var(--overskudd);
-  clip-path: polygon(50% 0, 100% 45%, 77% 45%, 77% 100%, 23% 100%, 23% 45%, 0 45%);
 }
 .need .label {
   color: var(--bright);

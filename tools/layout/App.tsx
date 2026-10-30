@@ -32,6 +32,7 @@ import {
 } from '../../src/content/tuning';
 import { RESIDENT, UNITS } from '../../src/content/text';
 import { KitBar } from '../../src/kit/components';
+import { ICONS, type IconName } from '../../src/kit/icons';
 import { admit, buyBed, canNudge, canTrain, nudge, train } from '../../src/sim/actions';
 import {
   bedCost,
@@ -47,7 +48,6 @@ import { activeNeeds, effort, statusLine, unlockedActivities } from '../../src/s
 import { selectedResident, type GameState, type Resident } from '../../src/sim/state';
 import { TICKS_PER_SECOND, formatDate } from '../../src/sim/time';
 import { act, useGame } from '../../src/store';
-import needFood from './need-food.png';
 import portraitArvid from './portrait-arvid.png';
 import room from './room.jpg';
 
@@ -61,17 +61,35 @@ const OMSORG_WIDTH = 159;
 /** Portraits from panels.aseprite. The others show an initial until they have one. */
 const PORTRAIT: Record<string, string> = { Arvid: portraitArvid };
 
-/** Need art from panels.aseprite. The others use the emoji until they have art. */
-const NEED_ART: Partial<Record<NeedId, string>> = { food: needFood };
-
-/** Placeholder icons until icon set 1 exists. */
-const NEED_ICON: Record<NeedId, string> = {
-  food: '🍞',
-  hygiene: '🚿',
-  energy: '🛏️',
-  home: '🏠',
-  social: '📞',
+/** Need art from icons.aseprite. */
+const NEED_ART: Record<NeedId, IconName> = {
+  food: 'hunger',
+  hygiene: 'hygiene',
+  energy: 'sleep',
+  home: 'home',
+  social: 'social',
 };
+
+/** Action art from icons.aseprite. */
+const ACTION_ART: Record<ActivityId, IconName> = {
+  eat: 'bread',
+  shower: 'shower',
+  sleep: 'bed',
+  dishes: 'dishes',
+  laundry: 'laundry',
+  tidy: 'tidy',
+  groceries: 'groceries',
+  walk: 'walk',
+  call: 'phone',
+};
+
+function NeedIcon({ n }: { n: NeedId }) {
+  return <img class="art" src={ICONS[NEED_ART[n]]} alt="" />;
+}
+
+function ActionIcon({ id }: { id: ActivityId }) {
+  return <img class="art" src={ICONS[ACTION_ART[id]]} alt="" />;
+}
 
 function useZoom() {
   const fit = () => Math.max(1, Math.floor(Math.min(innerWidth / W, innerHeight / H)));
@@ -281,7 +299,7 @@ function NeedRows({ r, low }: { r: Resident; low?: boolean }) {
       {NEED_ORDER.filter((n) => activeNeeds(r).includes(n)).map((n) => (
         <div class="need" key={n}>
           <span class="need-art">
-            {NEED_ART[n] ? <img src={NEED_ART[n]} alt="" /> : NEED_ICON[n]}
+            <NeedIcon n={n} />
           </span>
           <span class="label">
             {NEEDS[n].label}
@@ -295,7 +313,7 @@ function NeedRows({ r, low }: { r: Resident; low?: boolean }) {
       {/* The arrow, as over the buttons: overskudd pays for training. */}
       <div class="need overskudd" title="Overskudd: spent on training">
         <span class="need-art">
-          <span class="mini-arrow" />
+          <img class="art" src={ICONS.overskudd} alt="" />
         </span>
         <span class="label">Overskudd {Math.floor(r.overskudd)}</span>
         <KitBar piece="bar-overskudd" value={r.overskudd / OVERSKUDD_CAP} />
@@ -327,7 +345,7 @@ const LAYERS: { label: string; needs?: NeedId[]; phases?: Phase[] }[] = [
   { label: 'Purpose', phases: ['purpose'] },
   { label: 'Esteem', phases: ['identity', 'mastery'] },
   { label: 'Belonging', needs: ['social'] },
-  { label: 'Home', needs: ['home'] },
+  { label: 'Security', needs: ['home'] },
   { label: 'Body', needs: ['food', 'hygiene', 'energy'] },
 ];
 
@@ -457,19 +475,20 @@ function ProfileTab({ s, r }: { s: GameState; r: Resident }) {
         <span class="c-icons">
           {good.map((a) => (
             <span title={a.label}>
-              {a.icon}
+              <ActionIcon id={a.id} />
               {r.skill[a.id]}
             </span>
           ))}
           {arch.hard.map((id) => (
             <span class="bad" title={`${ACTIVITY_BY_ID[id].label} is hard`}>
-              {ACTIVITY_BY_ID[id].icon}x2
+              <ActionIcon id={id} />
+              x2
             </span>
           ))}
         </span>
       ),
     },
-    { label: 'Loves', layer: 'Home', open: false, body: 'Not in the sim yet' },
+    { label: 'Loves', layer: 'Security', open: false, body: 'Not in the sim yet' },
     {
       label: 'Who they are',
       layer: 'Belonging',
@@ -712,7 +731,9 @@ function ActionButton(props: {
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), go())}
       >
         {!auto && <EffortRing size={size} filled={r.bars[a.id]} starved={starved} />}
-        <span class="icon">{a.icon}</span>
+        <span class="icon">
+          <ActionIcon id={a.id} />
+        </span>
       </span>
     </span>
   );
@@ -782,14 +803,19 @@ function Tooltip(props: { s: GameState; r: Resident; a: ActivityDef }) {
   const skill = r.skill[a.id];
   return (
     <div class="tip-card">
-      <span class="tip-icon">{a.icon}</span>
+      <span class="tip-icon">
+        <ActionIcon id={a.id} />
+      </span>
       <span class="title">{a.label}</span>
       <span class="lvl muted">lvl {skill + 1}</span>
       <span class="muted">{a.duration} sec</span>
       <span class="refills">
         {NEED_ORDER.filter((n) => a.refills[n]).map((n) => (
           <span class="refill">
-            <span class="need-icon">{NEED_ICON[n]}</span>+{a.refills[n]}
+            <span class="need-icon">
+              <NeedIcon n={n} />
+            </span>
+            +{a.refills[n]}
           </span>
         ))}
       </span>
@@ -890,7 +916,9 @@ function FurniturePanel(props: {
               onClick={() => setPicked(id)}
               {...(open(id) ? drag(id) : {})}
             >
-              <span class="mini-disc">{a.icon}</span>
+              <span class="mini-disc">
+                <ActionIcon id={a.id} />
+              </span>
               <span class="f-name">{a.label}</span>
             </li>
           );
@@ -923,7 +951,7 @@ function Detail(props: {
   return (
     <div class={`f-detail${open ? '' : ' locked'}`}>
       <span class="tip-icon" {...(open ? drag : {})}>
-        {a.icon}
+        <ActionIcon id={a.id} />
       </span>
       <span class="title">{a.label}</span>
       {open && <span class="lvl muted">lvl {skill + 1}</span>}
@@ -931,7 +959,10 @@ function Detail(props: {
       <span class="refills">
         {NEED_ORDER.filter((n) => a.refills[n]).map((n) => (
           <span class="refill">
-            <span class="need-icon">{NEED_ICON[n]}</span>+{a.refills[n]}
+            <span class="need-icon">
+              <NeedIcon n={n} />
+            </span>
+            +{a.refills[n]}
           </span>
         ))}
       </span>
@@ -942,7 +973,7 @@ function Detail(props: {
               class={`place${id === a.id ? ' here' : id ? ' taken' : ''}`}
               onClick={() => place(a.id, i)}
             >
-              {id ? ACTIVITY_BY_ID[id].icon : i + 1}
+              {id ? <ActionIcon id={id} /> : i + 1}
             </button>
           ))}
         </span>
