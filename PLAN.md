@@ -274,6 +274,132 @@ Terje: rungs make no sense to the player. Several actions per need is a given. T
 - **Unlocks:** the actions of a layer open when the layer below opens. Some actions also have a prerequisite (another action, or a colour). This replaces the learning window in the sim. The furniture detail shows a locked action's layer as a small pyramid, and the needs of the layer below with a full or empty mark.
 - **Open, next steps:** how prerequisites show in the furniture detail. The character menu layout (mock in Aseprite first). The list of actions per need, with names by Terje. The sizes of liking and aptitude.
 
+## Proposal screen spec (2026-11-01)
+
+The target for Terje's Aseprite mock at 640×360, and later for the Godot UI spike. The flow is 11b and 11c as played: four steps, one decision at a time. This spec only moves it onto the new screen. Every line the player reads is a slot for Terje, named here by what it says, not written.
+
+**Placement (Terje, 2026-11-01): split between the room and the bar.** The patient speaks in a bubble over the head in the room. The hand takes the place of the action bar, like an RPG battle menu. The odds bar sits under the cards. The reaction shows on the faces, in the bubble, and on the bars on the left edge. This moves to the 3D house with no change.
+
+**For the whole proposal:**
+
+- The game is paused, as now.
+- The action bar and the omsorg bar are hidden. The proposal owns the bottom of the screen.
+- The furniture does not respond, and the character window is closed.
+- The roster and the needs on the left edge stay. They show what the proposal costs and what it did.
+- The identity chip shows only when the patient's "who they are" part is open (the 10-25 grilling: tests replace the "Personality profiles" upgrade).
+- Clicks wait `GRACE_MS` on each step, as now.
+
+### Step 1: the question
+
+**The decision:** which card, or not now.
+
+- **The bubble** holds the phase as a question about this patient.
+- **The patient** in the room has a small quest mark over the head while the bubble is open.
+- **Three cards** sit where the action bar was. Each shows the card's icon and name.
+- **The playbook pick** is raised and outlined, so one click confirms it.
+- **A card the patient has tried** has a small mark with the reaction face it got.
+- **"Not now"** is a quiet button at the right end of the row.
+- **The overskudd row** on the left edge marks the 20 the proposal costs in red stripes.
+
+**Hover only:**
+
+- On a card: the place, and every earlier try of this card by this patient with the result.
+- On the chip: what the identity is.
+
+### Step 2: the answer
+
+**The decision:** how much to prepare, then go or pick something else.
+
+- **The bubble** holds the patient's answer to the pick. The patient sounds sure, unsure or doubtful from the odds (`readiness`).
+- **The picked card** stays in its place. The other two dim.
+- **The odds bar** under the cards shows the chance as a fill and a percentage.
+- **The preparation slider** sits next to the card, from 0 to the sure price. The knob stops at the budget, and the track past it is hatched, as now.
+- **With a case worker**, their portrait and level sit in place of the slider.
+- **"Go"** is the primary button. It shows the kroner and the overskudd it costs.
+- **"Something else"** is a quiet button. It goes back to step 1.
+
+**Hover only:**
+
+- On the odds bar: competence against difficulty, and what preparation or the case worker adds.
+- On the case worker: their name and what their level gives.
+
+### Step 3: the attempt
+
+**No decision.** It lasts `ATTEMPT_MS`.
+
+- **The bubble** holds one line about the attempt.
+- **The roll marker** runs along the odds bar and stops at the roll.
+- **The overskudd row** drains the striped 20.
+
+### Step 4: the reaction
+
+**No decision.** A click on Continue or anywhere on the screen closes it.
+
+- **The face** in the room and on the roster portrait turns into the reaction face (6 faces: success or failure, times good, neutral or poor fit).
+- **The bubble** holds two lines: one for the fit, then one for the result, keyed by the fit.
+- **Two stamps** sit over the card: the result (it worked, or not), and the fit (good, neutral or poor).
+- **The phase track** (three dots) shows next to the stamps. The current dot ticks on a success.
+- **The fit effect plays on the bars, with no line (Terje, 2026-11-01).** A good fit in identity or mastery: the overskudd row pulses, and a small buff icon stays next to it for the stay. A poor fit: the need rows pulse, and a small debuff icon stays while the strain lasts. A good purpose card: a buff icon on the roster portrait, for the tax at discharge.
+- **"Continue"** sits at the right end of the row.
+
+**Hover only:**
+
+- On a buff or debuff icon: what it does, how big it is, and where it came from.
+
+### Kit pieces this needs
+
+Already drawn: window and card 9-slices, buttons, quiet buttons, bars, the portraits, the need and overskudd icons.
+
+Still to draw:
+
+- **Speech bubble**, 9-slice with a tail.
+- **Card states:** normal, hover, picked, dimmed.
+- **Odds bar fill** and the **roll marker**.
+- **Slider knob.**
+- **Stamps:** good, poor, neutral.
+- **Phase dots:** empty, now, done.
+- **Quest mark** over the head.
+- **Buff and debuff icons**, small, for the bar rows and the portrait.
+- **Icons:** the 12 milestone cards and the 6 reaction faces (as faces or portrait overlays).
+
+### Start: the player opens it from the character window (Terje, 2026-11-01)
+
+Terje: the proposal that opens by itself is chill, but mid-game the player mostly waits for it, with no sign of when it comes. Today three hidden gates decide it (`maybePropose`): the phase is open, the patient has 20 overskudd, and `PROPOSAL_COOLDOWN_WEEKS` (3) have passed since the last proposal. The cooldown starts when the proposal opens, so "Not now" also costs 3 weeks.
+
+- **The gates show as one thing that fills.** The character window shows how close each gate is: the phase, the overskudd against the 20 mark, and the cooldown. The portrait shows the sum as a small fill or ring.
+- **When all three are open, a quest mark shows** on the portrait and over the patient in the room. The game does not pause.
+- **The player opens the proposal from the character window** (or with a click on the quest mark). Then step 1 starts, and the game pauses as before.
+- **This is the first verb of the character window as the place to manage one patient** (see "Diagnose and prescribe" below).
+  _Question: does the player feel in control of the timing, or does a proposal they can ignore lose its pull?_
+
+### Open
+
+- **The card size.** Three cards with an icon and a name must fit the bar area. A first guess is 72×56 each, with a 32×32 icon. Terje decides in the mock.
+- **The tax buff on the portrait** may be too far from its effect. The discharge has no place on the main screen yet.
+
+## Candidate: a shorter wait between tries (2026-11-01)
+
+Terje: the wait after a failed try is annoying, mostly at the third milestone. It also builds anticipation for the next try, so keep the wait, and let the player pay to make it shorter.
+
+- **An upgrade line or a case worker course shortens `PROPOSAL_COOLDOWN_WEEKS`.** For example 3 weeks, then 2, then 1. Not decided: an upgrade line (kroner) or a casework course (one case worker plans the next try sooner).
+- **Maybe "Not now" should not start the cooldown**, or start a shorter one. Today it costs the full 3 weeks.
+- It needs the gates to show first (see "Start" in the proposal spec), or the player cannot feel the change.
+
+## Diagnose and prescribe (open, 2026-11-01)
+
+Terje's dilemma. The standard incremental recipe is proven. The thesis carried for a year through `lifelines-core-loop` is the identities: nurture broken people into healthy humans. Terje feels obliged to explore an identity-based "diagnose and prescribe" model, with the character window as the place to manage one patient: discover personality and purpose, diagnose malformed behaviour and prescribe changes, train skills, and maybe start milestones. The fear: the design space is large, and it can grow the scope and damage what works.
+
+Notes from the session, not decisions:
+
+- **The two need not compete.** The incremental recipe is the engine (currencies, upgrades, the move from clicking to tactics to strategy). The identity is what the decisions are about. Game Dev Tycoon's genre and topic table is the model: a hidden fit, discovered inside a tycoon shell. The milestone hand is a small version of it, and it works.
+- **Most of it is already in this plan as small verbs:**
+  - Discover: tests and the profile parts (see "Profile and layers").
+  - Prescribe: the actions on the bar (liking, aptitude) and the milestone card.
+  - Train: exists.
+  - Start a milestone: the proposal start above.
+  - Diagnose malformed behaviour: new, and the largest. It links to the disorder ideas under "After Act 1". Park it until discover and prescribe are fun.
+- **A scope rule.** Each new patient verb uses a currency the game already has, is playable on its own in one step, and has a kill question. A verb that fails its question goes out.
+
 ## Content production (parked, 2026-10-16)
 
 The milestone mechanics work and are fun (Terje, 2026-10-16). The content is placeholder and does not hold together yet. In play, a Contemplative patient got a neutral fit on the meditation retreat, and the neutral line ("Not my cup of tea") read as a poor fit. Two fixes are in: pairs count both colours at 50%, and the neutral line sounds neutral. The rest waits for a content pass. Keep these rules in mind, so the content work stays clear and has an end:
