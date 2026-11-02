@@ -1,5 +1,5 @@
 // The UI kit gallery: every piece in every state, at the base resolution, in the game font.
-// UI rule 4 in GODOT.md: polish the pieces here, then build screens from finished pieces.
+// UI rule 4 in ../healthy-humans-godot/ROADMAP.md: polish the pieces here, then build screens from finished pieces.
 import { useEffect, useState } from 'preact/hooks';
 import { KitBar, KitRing } from '../../src/kit/components';
 import { KIT_FAMILIES, KIT_FONTS, loadKitFonts } from '../../src/kit/fonts';

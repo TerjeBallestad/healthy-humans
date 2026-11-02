@@ -14,35 +14,7 @@ You are the welfare state, a benevolent guardian that sees everything. Residents
 
 ## Glossary
 
-One word, one meaning.
-
-| Term               | Meaning                                                                                                                                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Omsorg**         | The player's resource. Builds up over time to a cap. Spent on nudges and on staff training.                                                                                                                                              |
-| **Budget**         | Kroner. From a weekly kommune grant (more for each bed) plus tax from discharged residents. Pays for job ads, wages, beds and upgrades.                                                                                                  |
-| **Need**           | A resident value that decays over time: food, hygiene, energy, home, social.                                                                                                                                                             |
-| **Overskudd**      | The resident's resource. Builds up with the share of needs above their threshold. Buys skill levels and milestones.                                                                                                                      |
-| **Activity**       | Something a resident does. Each activity is one rung.                                                                                                                                                                                    |
-| **Rung**           | Internal only, not shown to the player (see Layer). One step on the ladder. The resident learns the lowest rungs that are not yet automatic.                                                                                             |
-| **Nudge**          | One click on an activity. Puts omsorg into its effort ring. A full ring makes the activity ready.                                                                                                                                        |
-| **Skill level**    | Per activity, 0 to 3. Each level halves the nudges. Level 3 means automatic ("independent").                                                                                                                                             |
-| **Proposal**       | A milestone the resident suggests (NAV, application, work trial). Go or "Not now". Wager kroner for better odds.                                                                                                                         |
-| **Discharge tier** | Fit to live alone, fit for work, healthy human. Sets tax yield.                                                                                                                                                                          |
-| **Venteliste**     | The waiting list. Referrals with a trait, a skill sheet and health that drops each week. At 0 health the person is lost.                                                                                                                 |
-| **Staff**          | Hired from a job ad. A miljøarbeider nudges bars, best on a speciality. A coach spends overskudd on skill levels.                                                                                                                        |
-| **Upgrade**        | A one-off purchase with kroner, in lines: your nudge, omsorg rate and cap, staff speed, funding, the house.                                                                                                                              |
-| **Mestring**       | A staff course, paid with omsorg. Each staff member with it adds overskudd for every resident.                                                                                                                                           |
-| **Identity**       | A patient's colour, or a pair of colours with a primary. Shown as one chip with a keyword.                                                                                                                                               |
-| **Layer**          | One of five Maslow steps a patient climbs: body, home, belonging, esteem, purpose. Player-facing, in place of rungs. A layer opens when each need in it has an independent action. Esteem and purpose open with milestone successes.     |
-| **Profile**        | One patient's Ikigai diagram in their character menu: good at, loves, who they are, world needs, paid for. Per patient. Each part opens with a layer, or earlier with a test. The layers show here too.                                  |
-| **Test**           | Something the player orders for one patient in the character menu (an aptitude test, a personality test) to open a part of the profile before its layer. Costs kroner, and the result comes after one week. A test opens one whole part. |
-| **Prerequisite**   | A specific condition one action needs besides its layer: another action at some level, or a colour. Ordering takeaway needs the phone. A gourmet meal needs other cooking actions and a certain personality.                             |
-| **Phase**          | Identity, mastery, purpose. A patient needs one successful milestone in each, in order.                                                                                                                                                  |
-| **Hand**           | The 2 or 3 milestone cards a patient offers at a proposal, from their phase. The player picks one.                                                                                                                                       |
-| **Fit**            | Hidden. How well a milestone suits an identity, from −3 to +3. The player learns it from the reaction.                                                                                                                                   |
-| **Quality**        | The fit of a stay's successful milestones, added up. Multiplies the tax at discharge.                                                                                                                                                    |
-| **Playbook**       | The player's last pick for each identity and phase. It prefills the next pick.                                                                                                                                                           |
-| **Preparation**    | Kroner the player spends before a milestone to raise the odds (the old wager). After the hire, the case worker prepares the patient.                                                                                                     |
+One word, one meaning. The glossary lives on the PM board in `../healthy-humans-godot`: run `pm glossary` there.
 
 ## Mechanics (Act 1)
 
@@ -235,7 +207,7 @@ Each step ends with something playable and one question to answer by playing.
 
 Terje's direction (2026-10-10). Not built, not final.
 
-- **Decided 2026-10-16: a Godot rewrite in a third repo, for Steam.** See `GODOT.md`. This web build stays for itch.io and market fit.
+- **Decided 2026-10-16: a Godot rewrite in a third repo, for Steam.** See `../healthy-humans-godot/ROADMAP.md`. This web build stays for itch.io and market fit.
 - In the end the game joins the Godot sim in `../lifelines-core-loop`. Facilities are places on a map, and you see residents move and do activities. In this UI, facilities can be tabs.
 - The top-level play: which staff go to which facility, and which patient goes to which bed. Moves should cost something.
 - Facilities are blank slates. The furniture and objects you put in them specialise them. A label such as "works as a rusbolig" can emerge from the objects. Objects change rules. Staff skills change rates.

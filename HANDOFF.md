@@ -1,10 +1,10 @@
 # Hand-off: Healthy Humans
 
-Last session: 2026-11-01 (this update, then the proposal spec). Before that 2026-10-21 to 10-30 (the UI kit and the layout prototype), and 2026-10-16 (11b, 11c, and the decision to rewrite in Godot). Read this first, then `PLAN.md`, then `GODOT.md`.
+Last session: 2026-11-01 (this update, then the proposal spec). Before that 2026-10-21 to 10-30 (the UI kit and the layout prototype), and 2026-10-16 (11b, 11c, and the decision to rewrite in Godot). Read this first, then `PLAN.md`, then `../healthy-humans-godot/ROADMAP.md`.
 
 ## Sessions 2026-10-25 to 2026-10-30: the layout prototype
 
-All work was in `tools/layout/` (`npm run layout`), the kit and the icons. The main game in `src/ui/` did not change. The layout page is now the reference for the look, as step 0 in `GODOT.md` asks.
+All work was in `tools/layout/` (`npm run layout`), the kit and the icons. The main game in `src/ui/` did not change. The layout page is now the reference for the look, as step 0 in `../healthy-humans-godot/ROADMAP.md` asks.
 
 - **The screen now (640×360):** left is the person, right is the house, the middle is the room.
   - **Top left, the roster:** one portrait per bed (from `panels.aseprite`), with a pip for the lowest need, and a bed button with the price below. A click on another portrait selects that patient. A click on an empty bed admits the first on the venteliste.
@@ -28,8 +28,8 @@ All work was in `tools/layout/` (`npm run layout`), the kit and the icons. The m
 - **Training badge.** The Training button and each staff tab count the courses ready now (`coursesReady` in `src/sim/staff.ts`).
 - **Pairs count both colours at 50%** (`PRIMARY_WEIGHT` 0.5). With 60%, one chip hid two different fits. The neutral fit line is "It was OK, I guess."
 - **Terje on the result (2026-10-16):** the milestones work well mechanically and are fun to play with. The content needs a pass: the fit table does not follow the keywords, and there are too few cards. **Parked.** The rules for that pass are in `PLAN.md` under "Content production", and the list of placeholder lines is below under "Milestone content".
-- **Big decision: a Godot rewrite in a third repo, for Steam.** This web build stays for itch.io and market fit. The look is pixel art (Terje draws fast in Aseprite) with an RPG frame, in a 3D tilt-shift world like Octopath Traveler or Tunic, with assets taken from `lifelines-core-loop`. The UI is the biggest risk, so it goes first. **Everything is in `GODOT.md`:** the why, the UI rules, the pixel rules, the order of work, and the list of UI kit pieces for Terje to draw.
-- **Next step: step 0 in `GODOT.md`.** Terje draws the minimal UI kit and picks a pixel font and a base resolution. Then the UI spike in the new repo: a theme, a gallery scene, and the proposal dialog built from the kit. Ideas still open for the web build: the activity loadout (several activities per need, with requirements, as an ability bar), 9c's UI, 9d.
+- **Big decision: a Godot rewrite in a third repo, for Steam.** This web build stays for itch.io and market fit. The look is pixel art (Terje draws fast in Aseprite) with an RPG frame, in a 3D tilt-shift world like Octopath Traveler or Tunic, with assets taken from `lifelines-core-loop`. The UI is the biggest risk, so it goes first. **Everything is in `../healthy-humans-godot/ROADMAP.md`:** the why, the UI rules, the pixel rules, the order of work, and the list of UI kit pieces for Terje to draw.
+- **Next step: step 0 in `../healthy-humans-godot/ROADMAP.md`.** Terje draws the minimal UI kit and picks a pixel font and a base resolution. Then the UI spike in the new repo: a theme, a gallery scene, and the proposal dialog built from the kit. Ideas still open for the web build: the activity loadout (several activities per need, with requirements, as an ability bar), 9c's UI, 9d.
 
 ## Where things are
 
