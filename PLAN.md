@@ -246,6 +246,22 @@ Terje: rungs make no sense to the player. Several actions per need is a given. T
 - **Unlocks:** the actions of a layer open when the layer below opens. Some actions also have a prerequisite (another action, or a colour). This replaces the learning window in the sim. The furniture detail shows a locked action's layer as a small pyramid, and the needs of the layer below with a full or empty mark.
 - **Open, next steps:** how prerequisites show in the furniture detail. The character menu layout (mock in Aseprite first). The list of actions per need, with names by Terje. The sizes of liking and aptitude.
 
+## Activities, Fit and aptitude (grilling, 2026-11-06)
+
+Settles "Action choice" above, for the furniture menu in the Godot build. Terms and decisions are on the board in `../healthy-humans-godot` (`pm glossary`, DD-005 to DD-007). No new mechanics: each rule reuses one that exists.
+
+- **What a nudge means.** A nudge does not make the patient eat. It helps them take care of their nutrition, their finances, their home: to live a healthy independent life. The mechanics simplify this. When the basic needs are covered, the patient moves to more complex needs and more complex activities.
+- **Fit covers activities too.** Fit is how well a milestone or an activity suits the identity, from the colours, with the same maths. "Liking" and "affinity" are not used. Each run of an activity gives or takes overskudd by its Fit.
+- **Slow growth only, never a real drain.** A resident with all needs above the threshold and only disliked activities still gains overskudd. The balance bot tests this.
+- **Fit's weight grows with the activity's layer.** A disliked sandwich costs almost nothing. A disliked fancy dinner costs more, and a liked one gives more.
+- **Aptitude is the highest skill level an activity can reach**, 1 to 3. Below 3 it never becomes independent. It replaces "hard". It is authored per archetype, not taken from the colours, so liked and able do not go together (DD-006). Aptitude is what they are good at, Fit is what they like.
+- **Skill level stays per activity.** Each activity is in one **category**, a life skill area apart from the needs (such as Household or Finance, 3 or 4 of them, names by Terje). The category level is the sum of its activities' skill levels. A layer opens at category levels. This replaces "each need has an independent action", so the player can climb through liked activities.
+- **Chains.** A need has activities across the layers, for example sandwich, then frozen pizza, then fancy dinner. Aptitude decides how far up the chain a resident can go.
+- **Discovery.** Fit shows on the face during each run. The furniture menu shows "?" until the first run, then the face seen. Aptitude shows as level pips: those above the aptitude stay "?" until the activity reaches its top, then they lock. The first run also gives a hint line per archetype and activity (text by Terje). A test shows everything.
+- **The loadout (trial, DD-007).** The resident's nine slots on the activity bar. Only activities in the loadout run, also independent ones, and staff nudge only those. Independent activities stay on the bar until the player takes them off: the bar shows and teaches independence. To test if this fails: independent activities run off the bar too. More slots can be an unlock later.
+- **Furniture (DD-005).** Each activity belongs to one piece of furniture. A click on furniture opens the furniture menu and never nudges. The menu lists the activities in layer order, locked ones too, with what opens them. The game pauses while it is open. Only the activity bar nudges and trains.
+- **Open:** whether the furniture in a room decides which activities exist (bought furniture adds activities). The category names and the layer gates. The chains per need, with names by Terje. The Fit and aptitude numbers (balance bot). The profile shows Fit and the colours, which partly tell the same thing: settle it with the character menu.
+
 ## Proposal screen spec (2026-11-01)
 
 The target for Terje's Aseprite mock at 640×360, and later for the Godot UI spike. The flow is 11b and 11c as played: four steps, one decision at a time. This spec only moves it onto the new screen. Every line the player reads is a slot for Terje, named here by what it says, not written.
